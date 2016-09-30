@@ -37,8 +37,8 @@ public:
 
 public:
     QList<Page*> m_pages;
-    int m_currentIndex;
     QSizeF m_baseSizeMM;
+    int m_currentIndex;
 
 
     /////////////////////////////////////

@@ -96,18 +96,6 @@ QString labelTableOfContents()
     return QObject::tr("Setlist");
 }
 
-static void configurePainter(QPainter* painter)
-{
-    QFont font = painter->font();
-    font.setBold( true );
-    font.setFamily( "lucida" );
-    painter->setFont( font );
-}
-
-#define GET_PAINTER painter = currentPage()->painter(); configurePainter(painter); painter->save();
-#define RESTORE_PAINTER painter->restore();
-
-
 void AbstractRenderer::decoratePageNumbers()
 {
     for (int i = 0; i < m_pages.length(); ++i)

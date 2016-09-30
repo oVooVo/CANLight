@@ -20,12 +20,13 @@ SOURCES += main.cpp\
     chord.cpp \
     looselines.cpp \
     util.cpp \
-    chordpainter.cpp \
     pdfview.cpp \
     abstractrenderer.cpp \
     page.cpp \
     importer.cpp \
-    importdialog.cpp
+    importdialog.cpp \
+    abstractnetworkreceiver.cpp \
+    contentnetworkreceiver.cpp
 
 HEADERS  += mainwindow.h \
     chordpatternedit.h \
@@ -33,12 +34,13 @@ HEADERS  += mainwindow.h \
     looselines.h \
     global.h \
     util.h \
-    chordpainter.h \
     pdfview.h \
     abstractrenderer.h \
     page.h \
     importer.h \
-    importdialog.h
+    importdialog.h \
+    abstractnetworkreceiver.h \
+    contentnetworkreceiver.h
 
 FORMS    += mainwindow.ui \
     pdfview.ui \

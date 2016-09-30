@@ -7,6 +7,8 @@
 #include <QTimer>
 #include <QtXml/QtXml>
 #include <QtXml/QDomNodeList>
+#include <functional>
+#include "abstractnetworkreceiver.h"
 
 namespace {
 static const QString URL_PATTERN = "https://www.ultimate-guitar.com/search.php?search_type=title&order=&value=%1";
@@ -14,29 +16,25 @@ static const QString URL_PATTERN = "https://www.ultimate-guitar.com/search.php?s
 
 ImportDialog::ImportDialog(const QString& searchString, QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::ImportDialog),
-    m_tableOfContentsReply(nullptr),
-    m_contentReply(nullptr),
-    m_progressDialog(this)
+    ui(new Ui::ImportDialog)
 {
     ui->setupUi(this);
     ui->stackedWidget->setCurrentIndex(0);
 
+    auto tocFinishedCallback = [this](const QByteArray& data)
+    {
+        Q_ASSERT(m_urls.isEmpty());
+        for (const QPair<QString, QUrl>& p : parseToc(data))
+        {
+            ui->listWidget->addItem(p.first);
+            m_urls << p.second;
+        }
+    };
+
     const QString url = URL_PATTERN.arg(QString(QUrl::toPercentEncoding(searchString)));
     QNetworkRequest request = QNetworkRequest(QUrl(url));
-    m_tableOfContentsReply = m_networkAccessManager.get(request);
-
-    connect(&m_progressDialog, SIGNAL(canceled()), m_tableOfContentsReply, SLOT(abort()));
-    connect(m_tableOfContentsReply, SIGNAL(finished()), this, SLOT(tableOfContentsArrived()));
-    connect(m_tableOfContentsReply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(tableOfContentsError(QNetworkReply::NetworkError)));
-    connect(m_tableOfContentsReply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(tableOfContentsSslErrors(QList<QSslError>)));
-
-
-    m_progressDialog.setWindowTitle(qAppName());
-    m_progressDialog.setLabelText(tr("Waiting for table of contents ..."));
-    m_progressDialog.setRange(0, 0);
-    m_progressDialog.exec();
-
+    QNetworkReply* reply = m_networkAccessManager.get(request);
+    new AbstractNetworkReceiver(*reply, *this, tocFinishedCallback); // deletes itself.
 }
 
 ImportDialog::~ImportDialog()
@@ -47,93 +45,6 @@ ImportDialog::~ImportDialog()
 void ImportDialog::on_buttonBack_clicked()
 {
     ui->stackedWidget->setCurrentIndex(0);
-}
-
-void ImportDialog::tableOfContentsError(QNetworkReply::NetworkError networkError)
-{
-    qWarning() << "Network Error: " << networkError;
-    QMessageBox::critical(this, qAppName(), tr("An error occured: \n%1").arg(m_tableOfContentsReply->errorString()));
-    m_tableOfContentsReply->deleteLater();
-    m_tableOfContentsReply = nullptr;
-    m_progressDialog.close();
-    reject();
-}
-
-void ImportDialog::tableOfContentsSslErrors(QList<QSslError> errors)
-{
-    Q_UNUSED(errors);
-    {
-        QMessageBox::critical(this, qAppName(), tr("SSL errors occured. Abort."));
-        m_tableOfContentsReply->deleteLater();
-        m_tableOfContentsReply = nullptr;
-        m_progressDialog.close();
-        reject();
-    }
-}
-
-void ImportDialog::tableOfContentsArrived()
-{
-    QByteArray data = m_tableOfContentsReply->readAll();
-    m_tableOfContentsReply->deleteLater();
-    m_tableOfContentsReply = nullptr;
-    m_progressDialog.close();
-
-    if (data.isEmpty())
-    {
-        qWarning() << "Received no data.";
-        QMessageBox::warning(this, qAppName(), tr("Did not receive any data."));
-        QTimer::singleShot(1, this, SLOT(reject()));
-    }
-
-    Q_ASSERT(m_urls.isEmpty());
-    for (const QPair<QString, QUrl>& p : parseToc(data))
-    {
-        ui->listWidget->addItem(p.first);
-        m_urls << p.second;
-    }
-}
-
-void ImportDialog::contentError(QNetworkReply::NetworkError networkError)
-{
-    qWarning() << "Network Error: " << networkError;
-    QMessageBox::critical(this, qAppName(), tr("An error occured: \n%1").arg(m_contentReply->errorString()));
-    m_contentReply->deleteLater();
-    m_contentReply = nullptr;
-    m_progressDialog.close();
-}
-
-void ImportDialog::contentSslErrors(QList<QSslError> errors)
-{
-//    if (m_tableOfContentsReply->ignoreSslErrors(errors))
-//    {
-//        qWarning() << "non-fatal SSL errors occured.";
-//    }
-//    else
-    {
-        QMessageBox::critical(this, qAppName(), tr("SSL errors occured. Abort."));
-        m_contentReply->deleteLater();
-        m_contentReply = nullptr;
-        m_progressDialog.close();
-    }
-}
-
-void ImportDialog::contentArrived()
-{
-    QByteArray data = m_contentReply->readAll();
-    m_contentReply->deleteLater();
-    m_contentReply = nullptr;
-    m_progressDialog.close();
-
-    if (data.isEmpty())
-    {
-        qWarning() << "Received no data.";
-        QMessageBox::warning(this, qAppName(), tr("Did not receive any data."));
-        return;
-    }
-
-    ui->chordPatternEdit->setChordPattern(parseContent(data));
-
-    ui->stackedWidget->setCurrentIndex(1);
 }
 
 QString ImportDialog::parseContent(const QByteArray& data)
@@ -235,24 +146,39 @@ QList<QPair<QString, QUrl> > ImportDialog::parseToc(const QByteArray &data)
 
 void ImportDialog::on_listWidget_clicked(const QModelIndex &index)
 {
-    Q_ASSERT(m_contentReply == nullptr);
     const QUrl url = m_urls[index.row()];
     qDebug() << "Url = " << url;
+
+    auto contentFinishedCallback = [this](const QByteArray& data)
+    {
+        ui->chordPatternEdit->setChordPattern(parseContent(data));
+        ui->stackedWidget->setCurrentIndex(1);
+    };
+
     QNetworkRequest request = QNetworkRequest(url);
-    m_contentReply = m_networkAccessManager.get(request);
-
-    connect(&m_progressDialog, SIGNAL(canceled()), m_contentReply, SLOT(abort()));
-    connect(m_contentReply, SIGNAL(finished()), this, SLOT(contentArrived()));
-    connect(m_contentReply, SIGNAL(error(QNetworkReply::NetworkError)), this, SLOT(contentError(QNetworkReply::NetworkError)));
-    connect(m_contentReply, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(contentSslErrors(QList<QSslError>)));
-
-    m_progressDialog.setWindowTitle(qAppName());
-    m_progressDialog.setLabelText(tr("Waiting for contents ..."));
-    m_progressDialog.setRange(0, 0);
-    m_progressDialog.exec();
+    QNetworkReply* reply = m_networkAccessManager.get(request);
+    new AbstractNetworkReceiver(*reply, *this, contentFinishedCallback); // deletes itself.
 }
 
 QString ImportDialog::currentPattern() const
 {
     return ui->chordPatternEdit->toPlainText();
+}
+
+void ImportDialog::rejectLater()
+{
+    m_reject = true;
+    QTimer::singleShot(1, this, SLOT(reject()));
+}
+
+int ImportDialog::exec()
+{
+    if (m_reject)
+    {
+        return QDialog::Rejected;
+    }
+    else
+    {
+        return QDialog::exec();
+    }
 }
