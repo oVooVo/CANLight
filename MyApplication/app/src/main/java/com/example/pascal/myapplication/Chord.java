@@ -30,21 +30,11 @@ public class Chord {
     private boolean isValid;
     private boolean isMinor;
 
-    static int hits = 0;
-    static int misses = 0;
-
     static public Chord chordFromString(String text) {
 
         if (!chordCache.containsKey(text)) {
             chordCache.put(text, new Chord(text));
-            misses++;
         }
-        else {
-            hits++;
-        }
-
-        System.out.println("Hits: " + hits + ", misses: " + misses + ", ratio: " + (hits / ((double) hits + misses)));
-
         return chordCache.get(text);
     }
 
