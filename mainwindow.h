@@ -31,11 +31,6 @@ private slots:
     void importFromFile();
     void on_buttonImport_clicked();
 
-    void on_pushButton_2_clicked();
-
-protected:
-    bool event(QEvent *event);
-
 private:
     Ui::MainWindow *ui;
     QStringList m_patterns;
@@ -43,6 +38,7 @@ private:
 
     QJsonDocument toJson() const;
     void fromJson(const QJsonDocument& json);
+
 };
 
 #endif // MAINWINDOW_H

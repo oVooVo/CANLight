@@ -8,6 +8,7 @@
 #include <QJsonDocument>
 #include <QSettings>
 #include <QJsonArray>
+#include <QTimer>
 
 #include "global.h"
 #include "importdialog.h"
@@ -17,18 +18,12 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow),
     m_currentRow(-1)
 {
-    qDebug() << "Create MW";
     ui->setupUi(this);
     ui->stackedWidget->setCurrentIndex(0);
-
-    ui->listWidget->setContextMenuPolicy(Qt::ActionsContextMenu);
-
-    QAction* action = new QAction(ui->listWidget);
-    connect(action, SIGNAL(triggered(bool)), this, SLOT(addItem()));
-    action->setText(tr("New"));
-    ui->listWidget->addAction(action);
+    connect(ui->listWidget, SIGNAL(newItemRequest()), this, SLOT(addItem()));
 
     load();
+
 }
 
 MainWindow::~MainWindow()
@@ -184,20 +179,4 @@ void MainWindow::on_buttonImport_clicked()
     {
         ui->chordPatternEdit->setChordPattern(dialog.currentPattern());
     }
-}
-
-#include <QMessageBox>
-bool MainWindow::event(QEvent *event)
-{
-    if (event->type() == QEvent::MouseButtonPress)
-    {
-        QMessageBox::information(this, qAppName(), "Hello World!");
-    }
-    return QMainWindow::event(event);
-}
-
-void MainWindow::on_pushButton_2_clicked()
-{
-    qDebug() << "add";
-    addItem("blub", "pattern");
 }

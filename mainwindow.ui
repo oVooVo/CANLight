@@ -47,14 +47,7 @@
          <number>0</number>
         </property>
         <item>
-         <widget class="QListWidget" name="listWidget"/>
-        </item>
-        <item>
-         <widget class="QPushButton" name="pushButton_2">
-          <property name="text">
-           <string>New</string>
-          </property>
-         </widget>
+         <widget class="ListWidget" name="listWidget"/>
         </item>
        </layout>
       </widget>
@@ -230,6 +223,11 @@
    <extends>QWidget</extends>
    <header>pdfview.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ListWidget</class>
+   <extends>QListWidget</extends>
+   <header>listwidget.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -26,7 +26,9 @@ SOURCES += main.cpp\
     importer.cpp \
     importdialog.cpp \
     abstractnetworkreceiver.cpp \
-    contentnetworkreceiver.cpp
+    contentnetworkreceiver.cpp \
+    longclickrightclicktransceiver.cpp \
+    listwidget.cpp
 
 HEADERS  += mainwindow.h \
     chordpatternedit.h \
@@ -40,7 +42,9 @@ HEADERS  += mainwindow.h \
     importer.h \
     importdialog.h \
     abstractnetworkreceiver.h \
-    contentnetworkreceiver.h
+    contentnetworkreceiver.h \
+    longclickrightclicktransceiver.h \
+    listwidget.h
 
 FORMS    += mainwindow.ui \
     pdfview.ui \
