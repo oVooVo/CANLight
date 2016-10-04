@@ -4,6 +4,7 @@ import android.text.TextUtils;
 import junit.framework.AssertionFailedError;
 
 import java.text.Normalizer;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
@@ -31,15 +32,22 @@ public class Chord {
     private boolean isMinor;
 
     static public Chord chordFromString(String text) {
-
         if (!chordCache.containsKey(text)) {
             chordCache.put(text, new Chord(text));
         }
-        return chordCache.get(text);
+        return new Chord(chordCache.get(text));
     }
 
     private Chord(String text) {
         isValid = parse(text);
+    }
+    private Chord(Chord chord) {
+        textBefore = chord.textBefore;
+        textAfter = chord.textAfter;
+        base = chord.base;
+        attachment = chord.attachment;
+        isValid = chord.isValid;
+        isMinor = chord.isMinor;
     }
 
     @org.jetbrains.annotations.Contract(pure = true)
@@ -261,25 +269,27 @@ public class Chord {
     }
 
     static public class Line {
-        private Line() {
+        private Line(boolean isChordLine, String[] tokens, String[] chords) {
+            this.isChordLine = isChordLine;
+            this.tokens = tokens;
+            this.chords = chords;
         }
-        public boolean isChordLine;
-        public String[] tokens;
+        public final boolean isChordLine;
+        public final String[] tokens;
+        public final String[] chords;
     }
 
     private static final Pattern WORD_PATTERN = Pattern.compile("^[a-zA-Z'].*");
     public static Line parseLine(String line) {
 
         if (!lineCache.containsKey(line)) {
-            Line result = new Line();
-            result.tokens = line.split("\\||,|-|/|`|\\*|'|\\s", -1);
-
+            String[] tokens = line.split("\\||,|-|/|`|\\*|'|\\s", -1);
+            ArrayList<String> chords = new ArrayList<>();
             int numWords = 0;
-            int numChords = 0;
-            for (String token : result.tokens) {
+            for (String token : tokens) {
                 Chord chord = new Chord(token);
                 if (chord.isValid()) {
-                    numChords++;
+                    chords.add(token);
                 } else {
                     String text = Normalizer.normalize(token, Normalizer.Form.NFD);
                     Matcher matcher = WORD_PATTERN.matcher(text);
@@ -288,8 +298,9 @@ public class Chord {
                     }
                 }
             }
-            result.isChordLine = (numChords > numWords);
-            lineCache.put(line, result);
+            final boolean isChordLine = (chords.size() > numWords);
+            final String[] chordsA = chords.toArray(new String[chords.size()]);
+            lineCache.put(line, new Line(isChordLine, tokens, chordsA));
         }
         return lineCache.get(line);
     }

@@ -30,6 +30,24 @@ public class EditActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.edit_menu, menu);
+
+        menu.findItem(R.id.transposeUp).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                ChordPatternEdit cpe = (ChordPatternEdit) findViewById(R.id.editText);
+                cpe.transpose(1);
+                return true;
+            }
+        });
+        menu.findItem(R.id.transposeDown).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                ChordPatternEdit cpe = (ChordPatternEdit) findViewById(R.id.editText);
+                cpe.transpose(-1);
+                return true;
+            }
+        });
+
         return true;
     }
 

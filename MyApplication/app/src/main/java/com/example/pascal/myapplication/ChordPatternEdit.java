@@ -40,7 +40,6 @@ public class ChordPatternEdit extends EditText {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (updateHighlightsHandler != null) {
-                    System.out.println("Cancel timer");
                     updateHighlightsHandler.removeCallbacksAndMessages(null);
                 }
                 updateHighlightsHandler = new Handler();
@@ -58,25 +57,52 @@ public class ChordPatternEdit extends EditText {
             public void afterTextChanged(Editable s) {
                 //updateHighlights();
             }
-
-            private void updateHighlights() {
-                Spannable span = getText();
-                String text = getText().toString();
-                String[] lines = text.split("\n");
-
-                int position = 0;
-                for (String line : lines) {
-                    Chord.Line cLine = Chord.parseLine(line);
-                    for (String token : cLine.tokens) {
-                        Chord chord = Chord.chordFromString(token);
-                        if (cLine.isChordLine && chord.isValid()) {
-                            StyleSpan bold = new StyleSpan(Typeface.BOLD);
-                            span.setSpan(bold, position, position + token.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
-                        }
-                        position = position + token.length() + 1;
-                    }
-                }
-            }
         });
+    }
+
+    private void updateHighlights() {
+        Spannable span = getText();
+        String text = getText().toString();
+        String[] lines = text.split("\n");
+
+        int position = 0;
+        for (String line : lines) {
+            Chord.Line cLine = Chord.parseLine(line);
+            for (String token : cLine.tokens) {
+                Chord chord = Chord.chordFromString(token);
+                if (cLine.isChordLine && chord.isValid()) {
+                    StyleSpan bold = new StyleSpan(Typeface.BOLD);
+                    span.setSpan(bold, position, position + token.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+                }
+                position = position + token.length() + 1;
+            }
+        }
+    }
+
+    public void transpose(int transpose)
+    {
+        String text = getText().toString();
+        int i = 0;
+        for (String line : text.split("\n", -1)) {
+            Chord.Line cLine = Chord.parseLine(line);
+            for (String token : cLine.tokens)
+            {
+                int additional = 0;
+                Chord chord = Chord.chordFromString(token);
+                if (chord.isValid() && cLine.isChordLine)
+                {
+                    chord.transpose(transpose);
+                    String c = chord.toString();
+                    final String before = i >= 0 ? text.substring(0, i) : "";
+                    final int endIndex = i + token.length();
+                    final String after =  endIndex < text.length() ? text.substring(endIndex) : "";
+                    text = before + c + after;
+                    additional = c.length() - token.length();
+                }
+                i += token.length() + additional + 1;
+            }
+        }
+        setText(text);
+        updateHighlights();
     }
 }
