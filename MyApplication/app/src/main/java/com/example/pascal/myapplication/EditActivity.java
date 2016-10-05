@@ -15,17 +15,26 @@ public class EditActivity extends AppCompatActivity {
     public static final int IMPORT_PATTERN_REQUEST = 1;
     private String name;
 
+    private boolean readOnly;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit);
         final String pattern = getIntent().getStringExtra("pattern");
         name = getIntent().getStringExtra("name");
+        readOnly = getIntent().getBooleanExtra("ReadOnly", false);
+
         final EditText editText = (EditText) findViewById(R.id.editText);
         editText.setText(pattern);
+        editText.setFocusable(!readOnly);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle(name);
+
+        if (editText.getText().toString().isEmpty() && !readOnly) {
+            importPattern();
+        }
     }
 
     public boolean onOptionsItemSelected(MenuItem item){

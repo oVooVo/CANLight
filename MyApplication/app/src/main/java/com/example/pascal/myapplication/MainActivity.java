@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 final int position = project.addItem();
-                editItemName(position);
+                editItemName(position, true);
                 return true;
             }
         });
@@ -71,13 +71,22 @@ public class MainActivity extends AppCompatActivity {
         menu.findItem(R.id.renameItem).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                editItemName(acmi.position);
+                editItemName(acmi.position, false);
                 return true;
             }
         });
+        menu.findItem(R.id.editPattern).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                openEditMode(acmi.position, false);
+                return true;
+            }
+        });
+
+
     }
 
-    private void editItemName(int position) {
+    private void editItemName(int position, boolean itemIsNew) {
         final EditText editName = new EditText(this);
         editName.setMaxLines(1);
         editName.setText(project.name(position));
@@ -88,18 +97,24 @@ public class MainActivity extends AppCompatActivity {
 //        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 //        imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
 
+        final boolean fItemIsNew = itemIsNew;
         final int fPosition = position;
-        new AlertDialog.Builder(this)
+        AlertDialog dialog = new AlertDialog.Builder(this)
             .setView(editName)
             .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int whichButton) {
-                final String newName = editName.getText().toString();
+                    final String newName = editName.getText().toString();
                     project.renameItem(fPosition, newName);
+                    if (fItemIsNew) {
+                        openEditMode(fPosition, false);
+                    }
                 }
             })
             .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int whichButton) {
-                    // do nothing.
+                    if (fItemIsNew) {
+                        project.remove(fPosition);
+                    }
                 }
             })
             .show();
@@ -119,15 +134,16 @@ public class MainActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
-                openEditMode(position);
+                openEditMode(position, true);
             }
         });
     }
 
-    private void openEditMode(int position) {
+    private void openEditMode(int position, boolean readOnly) {
         Intent intent = new Intent(MainActivity.this, EditActivity.class);
         intent.putExtra("pattern", project.pattern(position));
         intent.putExtra("name", project.name(position));
+        intent.putExtra("ReadOnly", readOnly);
         if (currentEditPosition >= 0) throw new AssertionFailedError();
         currentEditPosition = position;
         MainActivity.this.startActivityForResult(intent, PATTERN_REQUEST);

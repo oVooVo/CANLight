@@ -4,4 +4,6 @@
         android:title="Rename"/>
     <item android:id="@+id/deleteItem"
         android:title="Delete"/>
+    <item android:id="@+id/editPattern"
+        android:title="Edit Pattern"/>
 </menu>
