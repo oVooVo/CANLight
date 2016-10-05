@@ -126,6 +126,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         project = new Project(getApplicationContext());
+        project.load();
+
         ListView listView = (ListView) findViewById(R.id.listView);
         listView.setAdapter(project.itemAdapter());
 
@@ -137,6 +139,12 @@ public class MainActivity extends AppCompatActivity {
                 openEditMode(position, true);
             }
         });
+    }
+
+    @Override
+    protected void onStop() {
+        project.save();
+        super.onStop();
     }
 
     private void openEditMode(int position, boolean readOnly) {
