@@ -13,112 +13,108 @@ import java.util.ArrayList;
  */
 public class ParseSearchResults {
 
-    private ArrayList<URL> urls;
-    private ArrayList<String> items;
+    private ArrayList<Entry> entries;
 
     public ParseSearchResults(String result) {
-        urls = new ArrayList<>();
-        items = new ArrayList<>();
-        parse(result);
+        entries = getEntries(result);
     }
 
-    public ArrayList<String> items() { return items; }
-    public ArrayList<URL> urls() { return urls; }
+    public ArrayList<Entry> entries() { return entries; }
 
-    static final Pattern ENTRY_PATTERN = Pattern.compile(
-              Pattern.quote("<span>[ <b class=\"ratdig\">")
-            + "[0-9]*"
-            + Pattern.quote("</b> ]</span></td>")
-            + "\\s*"
-            + Pattern.quote("<td><strong>")
-            + "(chords|tab)"
-            + Pattern.quote("</strong></td>") );
-    static final Pattern CHORD_TAB_PATTERN = Pattern.compile(
-              Pattern.quote("<td><strong>")
-            + "(tab|chords)"
-            + Pattern.quote("</strong></td>"));
-    static final Pattern END_OF_NAME = Pattern.compile(
-              Pattern.quote("</div>")
-            + "|"
-            + Pattern.quote("<div")
-            + ".*"
-            + Pattern.quote(">") );
-
-    void handleUnexpectedHTML() throws AssertionFailedError {
-        System.err.println("Malformed HTML.");
-        throw new AssertionFailedError();
+    static public class Entry {
+        public String url = "";
+        public String name = "";
+        public String artist = "";
+        public String type = "";
     }
 
-    void parse(String text) {
-        int i = text.indexOf("<div class=\"content\">");
-        if (i < 0) {
-            return;
+    static private class StringPart {
+        public int start;
+        public int end;
+        private String string;
+
+        StringPart(String string) {
+            this.string = string;
+        }
+
+        String string() {
+            return string.substring(start, end);
+        }
+    }
+
+    StringPart getPart(String html, int offset, String pre, String post) {
+        StringPart sp = new StringPart(html);
+        sp.start = html.indexOf(pre, offset);
+        if (sp.start < 0) {
+            return null;
         } else {
-            text = text.substring(i);
-        }
-
-        ArrayList<Integer> indices = new ArrayList<>();
-        indices.add(0);
-        Matcher matcher = ENTRY_PATTERN.matcher(text);
-        while (matcher.find()) {
-            indices.add(matcher.end(matcher.groupCount() - 1));
-        }
-        ArrayList<String> encodedEntries = new ArrayList<>();
-        for (int j = 1; j < indices.size(); ++j) {
-            final int start = indices.get(j - 1);
-            final int end =   indices.get(j);
-            encodedEntries.add(text.substring(start, end));
-        }
-
-        for (String entry : encodedEntries) {
-            final Matcher chordTabPatternMatcher = CHORD_TAB_PATTERN.matcher(entry);
-            final String type;
-            if (chordTabPatternMatcher.find()) {
-                final boolean isTab = chordTabPatternMatcher.group().contains("tab");
-                type = isTab ? "Tab" : "Chord";
+            sp.end = html.indexOf(post, sp.start + 1);
+            if (sp.end <= sp.start) {
+                return null;
             } else {
-                type = "";
-                handleUnexpectedHTML();
+                return sp;
             }
-
-            final String urlStartSequence = "https://";
-            final String urlEndSequence = "\" class";
-            final int urlStart = entry.indexOf(urlStartSequence);
-            if (urlStart < 0) {
-                throw new AssertionFailedError();
-                //continue;
-            }
-            final int urlEnd = entry.indexOf(urlEndSequence, urlStart + 1);
-            if (urlEnd <= urlStart) {
-                handleUnexpectedHTML();
-            }
-            final String url_ = entry.substring(urlStart, urlEnd - 1);
-            URL url = null;
-            try {
-                url = new URL(url_);
-            } catch (MalformedURLException e) {
-                handleUnexpectedHTML();
-            }
-
-            final String nameStartSequence = "class=\"song result-link\">";
-            final int nameStart = entry.indexOf(nameStartSequence) + nameStartSequence.length();
-            if (nameStart < 0) {
-                handleUnexpectedHTML();
-            }
-            final Matcher endOfNameMatcher = END_OF_NAME.matcher(entry);
-            endOfNameMatcher.find(nameStart + 1);
-            final int nameEnd = endOfNameMatcher.start();
-            if (nameEnd <= nameStart) {
-                handleUnexpectedHTML();
-            }
-
-            String name = entry.substring(nameStart, nameEnd - 1);
-            name = name.replaceAll("<.*?>", "");
-            name = name.trim();
-
-            final String label = type + ": " + name;
-            items.add(label);
-            urls.add(url);
         }
+    }
+
+    static private String stripHtml(String html) {
+        return html.replaceAll("<.*?>", "");
+    }
+
+    ArrayList<Entry> getEntries(String html) {
+        ArrayList<Entry> entries = new ArrayList<>();
+
+        String artist = "No Artist";
+
+        int offset = 0;
+        StringPart part;
+        while ((part = getPart(html, offset, "<td", "</td>")) != null) {
+            String currentPart = part.string();
+            if (currentPart.startsWith("<td><a onclick=\"window.trackCorrected('ARTIST')\"")) {
+                // we found an artist!
+                artist = parseArtist(part.string());
+            } else if (currentPart.startsWith("<td class=\"search-version")) {
+                StringPart ignoreMe = getPart(html, part.end + 1, "<td>", "</td>");
+                StringPart typePart = getPart(html, ignoreMe.end + 1, "<td><strong>", "</strong></td>");
+                if (typePart != null) {
+                    final String type = stripHtml(typePart.string());
+                    final Entry e = parseEntry(part.string(), artist, type);
+                    if (e != null) {
+                        entries.add(e);
+                    } else {
+                        // "Found unreadable entry.";
+                    }
+                } else {
+                    // "Did not find type");
+                }
+            } else {
+                // unknown part. ignore.
+            }
+            offset = part.end + 1;
+        }
+        return entries;
+    }
+
+    private String parseArtist(String html) {
+        return stripHtml(html).trim();
+    }
+
+    private Entry parseEntry(String html, String artist, String type) {
+        final StringPart linkAndNamePart = getPart(html, 0, "<a onclick=\"window.trackCorrected('TAB')\"", "</a>");
+        if (linkAndNamePart == null) {
+            return null;
+        }
+        final String linkAndName = linkAndNamePart.string();
+        final String name = stripHtml(linkAndName);
+        final StringPart linkPart = getPart(linkAndName, 0, "href=\"", "\" class=\"");
+        if (linkPart == null) {
+            return null;
+        }
+        Entry e = new Entry();
+        e.name = name.trim();
+        e.url = linkPart.string().substring("href=\"".length()).trim();
+        e.artist = artist;
+        e.type = type;
+        return e;
     }
 }

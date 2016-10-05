@@ -1,14 +1,15 @@
 package com.example.pascal.myapplication;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -19,20 +20,14 @@ import android.widget.Toast;
 
 import junit.framework.AssertionFailedError;
 
-import org.apache.commons.io.IOUtils;
-
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 
 public class ImportActivity extends AppCompatActivity {
 
     ArrayList<String> items;
-    ArrayList<URL> urls;
+    ArrayList<String> urls;
     ArrayAdapter<String> adapter;
 
     private void showProgressBar() {
@@ -54,7 +49,9 @@ public class ImportActivity extends AppCompatActivity {
 
         final EditText editText = (EditText) findViewById(R.id.importSearchKeywordEdit);
         editText.setText(name);
-        getSupportActionBar().setTitle("Import Pattern");
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle("Import Pattern");
+        }
 
         Button searchButton = (Button) findViewById(R.id.buttonRefreshImportList);
         searchButton.setOnClickListener(new View.OnClickListener() {
@@ -79,8 +76,38 @@ public class ImportActivity extends AppCompatActivity {
         };
         ListView listView = (ListView) findViewById(R.id.importVersionsListView);
         listView.setAdapter(adapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                ImportActivity.this.onItemClick(position);
+            }
+        });
 
         search();
+    }
+
+    private void onItemClick(int position) {
+        final String url = urls.get(position);
+
+        ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        if (networkInfo != null && networkInfo.isConnected()) {
+            new DownloadWebpageTask() {
+                // onPostExecute displays the results of the AsyncTask.
+                @Override
+                protected void onPostExecute(String result) {
+                    hideProgressBar();
+                    ParsePatternResult parser = new ParsePatternResult(result);
+                    Intent resultIntent = new Intent();
+                    resultIntent.putExtra("pattern", parser.pattern());
+                    setResult(RESULT_OK, resultIntent);
+                    finish();
+                }
+            }.execute(url);
+            showProgressBar();
+        } else {
+            Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private static final String URL_PATTERN = "https://www.ultimate-guitar.com/search.php?search_type=title&order=&value=";
@@ -97,7 +124,26 @@ public class ImportActivity extends AppCompatActivity {
             } catch (UnsupportedEncodingException e) {
                 throw new AssertionFailedError();
             }
-            new DownloadWebpageTask().execute(url);
+            new DownloadWebpageTask() {
+                // onPostExecute displays the results of the AsyncTask.
+                @Override
+                protected void onPostExecute(String result) {
+                    ParseSearchResults parser = new ParseSearchResults(result);
+                    items.clear();
+                    urls.clear();
+                    for (ParseSearchResults.Entry e : parser.entries()) {
+                        String label = e.type + ": " + e.name + " - " + e.artist;
+                        items.add(label);
+                        urls.add(e.url);
+                    }
+                    adapter.notifyDataSetChanged();
+
+                    if (items.isEmpty()) {
+                        Toast.makeText(ImportActivity.this, "Nothing found", Toast.LENGTH_SHORT).show();
+                    }
+                    hideProgressBar();
+                }
+            }.execute(url);
 
             showProgressBar();
         } else {
@@ -106,62 +152,6 @@ public class ImportActivity extends AppCompatActivity {
 
     }
 
-    private class DownloadWebpageTask extends AsyncTask<String, Void, String> {
-        @Override
-        protected String doInBackground(String... urls) {
-
-            // params comes from the execute() call: params[0] is the url.
-            try {
-                return downloadUrl(urls[0]);
-            } catch (IOException e) {
-                return "Unable to retrieve web page. URL may be invalid.";
-            }
-        }
-
-        // onPostExecute displays the results of the AsyncTask.
-        @Override
-        protected void onPostExecute(String result) {
-            ParseSearchResults parser = new ParseSearchResults(result);
-            items.clear();
-            items.addAll(parser.items());
-            urls = parser.urls();
-            adapter.notifyDataSetChanged();
-
-            if (items.isEmpty()) {
-                Toast.makeText(ImportActivity.this, "Nothing found", Toast.LENGTH_SHORT).show();
-            }
-
-            hideProgressBar();
-        }
-
-        private String downloadUrl(String myurl) throws IOException {
-            InputStream is = null;
-            // Only display the first 500 characters of the retrieved
-            // web page content.
-            try {
-                URL url = new URL(myurl);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setReadTimeout(10000 /* milliseconds */);
-                conn.setConnectTimeout(15000 /* milliseconds */);
-                conn.setRequestMethod("GET");
-                conn.setDoInput(true);
-                // Starts the query
-                conn.connect();
-                is = conn.getInputStream();
-
-                // Convert the InputStream into a string
-                String contentAsString = IOUtils.toString(is);
-                return contentAsString;
-
-                // Makes sure that the InputStream is closed after the app is
-                // finished using it.
-            } finally {
-                if (is != null) {
-                    is.close();
-                }
-            }
-        }
-    }
 
 }
 

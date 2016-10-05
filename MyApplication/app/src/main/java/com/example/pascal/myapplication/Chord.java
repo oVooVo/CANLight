@@ -250,7 +250,7 @@ public class Chord {
 
         if (Character.isLowerCase(baseCharacter)) {
             isMinor = true;
-        } else if (!text.startsWith("min") && !text.startsWith("maj") && !text.startsWith("m")) {
+        } else if (!text.startsWith("min") && !text.startsWith("maj") && text.startsWith("m")) {
             isMinor = true;
             text =  text.substring(1);
         } else {
