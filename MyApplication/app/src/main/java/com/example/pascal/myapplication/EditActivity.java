@@ -11,15 +11,21 @@ import android.widget.EditText;
  * Created by pascal on 02.10.16.
  */
 public class EditActivity extends AppCompatActivity {
+
+    public static final int IMPORT_PATTERN_REQUEST = 1;
+    private String name;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit);
         final String pattern = getIntent().getStringExtra("pattern");
+        name = getIntent().getStringExtra("name");
         final EditText editText = (EditText) findViewById(R.id.editText);
         editText.setText(pattern);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setTitle(name);
     }
 
     public boolean onOptionsItemSelected(MenuItem item){
@@ -47,8 +53,31 @@ public class EditActivity extends AppCompatActivity {
                 return true;
             }
         });
+        menu.findItem(R.id.importPattern).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                importPattern();
+                return true;
+            }
+        });
 
         return true;
+    }
+
+    private void importPattern() {
+        Intent intent = new Intent(EditActivity.this, ImportActivity.class);
+        intent.putExtra("name", name);
+        EditActivity.this.startActivityForResult(intent, IMPORT_PATTERN_REQUEST);
+    }
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == IMPORT_PATTERN_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                final String pattern = data.getExtras().getString("pattern");
+                ChordPatternEdit cpe = (ChordPatternEdit) findViewById(R.id.editText);
+                cpe.setText(pattern);
+            }
+        }
     }
 
     @Override

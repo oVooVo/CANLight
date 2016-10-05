@@ -30,7 +30,7 @@ import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
-    static final int PATTERN_REQUEST = 0;
+    public static final int PATTERN_REQUEST = 0;
     int currentEditPosition = -1;
     private Project project;
 
@@ -127,14 +127,15 @@ public class MainActivity extends AppCompatActivity {
     private void openEditMode(int position) {
         Intent intent = new Intent(MainActivity.this, EditActivity.class);
         intent.putExtra("pattern", project.pattern(position));
+        intent.putExtra("name", project.name(position));
         if (currentEditPosition >= 0) throw new AssertionFailedError();
         currentEditPosition = position;
-        MainActivity.this.startActivityForResult(intent, 0);
+        MainActivity.this.startActivityForResult(intent, PATTERN_REQUEST);
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == PATTERN_REQUEST) {
-            if (resultCode == RESULT_OK || true) {
+            if (resultCode == RESULT_OK) {
                 if (currentEditPosition < 0) throw new AssertionFailedError();
 
                 final String pattern = data.getExtras().getString("pattern");

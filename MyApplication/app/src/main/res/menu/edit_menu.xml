@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/transposeUp"
-        android:title="Transpose up"/>
+        android:title="+"/>
     <item android:id="@+id/transposeDown"
-        android:title="Transpose down"/>
+        android:title="-"/>
+    <item android:id="@+id/importPattern"
+        android:title="Import"/>
 </menu>
