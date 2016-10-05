@@ -18,8 +18,8 @@ public class Chord {
     public enum MinorPolicy { LowerCase, FollowingM}
     public static final MinorPolicy MINOR_POLICY = MinorPolicy.LowerCase;
     public static final EnharmonicPolicy ENHARMONIC_POLICY = EnharmonicPolicy.Natural;
-    public static final String FLAT = "\u266D";
-    public static final String SHARP = "\u266F";
+    public static final String FLAT = "#";  //"\u266D"; // Nice unicode version makes issues with monospace font.
+    public static final String SHARP = "b"; //"\u266F"; // Nice unicode version makes issues with monospace font.
 
     private static HashMap<String, Line> lineCache = new HashMap<>();
     private static HashMap<String, Chord> chordCache = new HashMap<>();
@@ -279,11 +279,12 @@ public class Chord {
         public final String[] chords;
     }
 
+    public static final String CHORD_SPLIT_PATTERN = "\\||,|-|/|`|\\*|'|\\s";
     private static final Pattern WORD_PATTERN = Pattern.compile("^[a-zA-Z'].*");
     public static Line parseLine(String line) {
 
         if (!lineCache.containsKey(line)) {
-            String[] tokens = line.split("\\||,|-|/|`|\\*|'|\\s", -1);
+            String[] tokens = line.split(CHORD_SPLIT_PATTERN, -1);
             ArrayList<String> chords = new ArrayList<>();
             int numWords = 0;
             for (String token : tokens) {
@@ -295,6 +296,7 @@ public class Chord {
                     Matcher matcher = WORD_PATTERN.matcher(text);
                     if (matcher.matches()) {
                         numWords++;
+                        //TODO do not use numWords, but the length of the longest sequence of words.
                     }
                 }
             }

@@ -12,6 +12,9 @@ import android.util.AttributeSet;
 import android.view.Gravity;
 import android.widget.EditText;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Created by pascal on 03.10.16.
  */
@@ -22,6 +25,8 @@ public class ChordPatternEdit extends EditText {
     public ChordPatternEdit(final Context context, AttributeSet attrs) {
         super(context, attrs);
         setGravity(Gravity.LEFT | Gravity.TOP);
+        setHorizontallyScrolling(true);
+        setTypeface(Typeface.MONOSPACE);
 
         addTextChangedListener(new TextWatcher() {
             @Override
@@ -73,6 +78,7 @@ public class ChordPatternEdit extends EditText {
         }
     }
 
+    static final Pattern CAN_REMOVE_FIRST_CHARACTER_PATTERN = Pattern.compile("^\\s(" + Chord.CHORD_SPLIT_PATTERN + ").*", Pattern.DOTALL);
     public void transpose(int transpose)
     {
         String text = getText().toString();
@@ -89,9 +95,21 @@ public class ChordPatternEdit extends EditText {
                     String c = chord.toString();
                     final String before = i >= 0 ? text.substring(0, i) : "";
                     final int endIndex = i + token.length();
-                    final String after =  endIndex < text.length() ? text.substring(endIndex) : "";
-                    text = before + c + after;
+                    String after =  endIndex < text.length() ? text.substring(endIndex) : "";
                     additional = c.length() - token.length();
+
+                    // expand c to match length of token (if token is longer than c)
+                    while (!after.startsWith("\n") && additional < 0) {
+                        c += " ";
+                        additional++;
+                    }
+                    // try to trim after to match length of token (if c is longer than token)
+                    while (!after.startsWith("\n") && additional > 0 && CAN_REMOVE_FIRST_CHARACTER_PATTERN.matcher(after).matches()) {
+                        additional -= 1;
+                        after = after.substring(1);
+                    }
+
+                    text = before + c + after;
                 }
                 i += token.length() + additional + 1;
             }
