@@ -2,17 +2,19 @@ package com.example.pascal.myapplication;
 
 import android.content.Context;
 import android.graphics.Typeface;
+import android.os.Build;
 import android.os.Handler;
 import android.text.Editable;
+import android.text.Html;
 import android.text.Spannable;
 import android.text.Spanned;
 import android.text.TextWatcher;
+import android.text.method.ScrollingMovementMethod;
 import android.text.style.StyleSpan;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.widget.EditText;
 
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -21,12 +23,15 @@ import java.util.regex.Pattern;
 public class ChordPatternEdit extends EditText {
 
     private Handler updateHighlightsHandler;
+    private boolean editLoopKillerFlag = true;
+
 
     public ChordPatternEdit(final Context context, AttributeSet attrs) {
         super(context, attrs);
         setGravity(Gravity.LEFT | Gravity.TOP);
         setHorizontallyScrolling(true);
         setTypeface(Typeface.MONOSPACE);
+        setMovementMethod(ScrollingMovementMethod.getInstance());
 
         addTextChangedListener(new TextWatcher() {
             @Override
@@ -38,18 +43,25 @@ public class ChordPatternEdit extends EditText {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (updateHighlightsHandler != null) {
-                    updateHighlightsHandler.removeCallbacksAndMessages(null);
-                }
-                updateHighlightsHandler = new Handler();
-                updateHighlightsHandler.postDelayed(new Runnable()
-                {
-                    @Override
-                    public void run()
-                    {
-                        updateHighlights();
+                if (editLoopKillerFlag) {
+                    if (updateHighlightsHandler != null) {
+                        updateHighlightsHandler.removeCallbacksAndMessages(null);
                     }
-                }, 1000);
+                    updateHighlightsHandler = new Handler();
+                    updateHighlightsHandler.postDelayed(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            editLoopKillerFlag = false;
+                            updateHighlights();
+                            editLoopKillerFlag = true;
+
+                        }
+                    }, 1000);
+                }
+
+
             }
 
             @Override
@@ -59,11 +71,23 @@ public class ChordPatternEdit extends EditText {
         });
     }
 
+    @SuppressWarnings("deprecation")
+    static Spanned spannableFromHTML(String html) {
+        if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            return Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY);
+        } else {
+            return Html.fromHtml(html);
+        }
+    }
+
     private void updateHighlights() {
-        Spannable span = getText();
         String text = getText().toString();
         String[] lines = text.split("\n");
 
+        //TODO encode stuff with html, then use HTML.fromHtml() seems to be faster.
+        //TODO   However, handling whitespaces makes trouble. Also editing is not easy.
+
+        Spannable span = getText();
         int position = 0;
         for (String line : lines) {
             Chord.Line cLine = Chord.parseLine(line);
@@ -77,6 +101,12 @@ public class ChordPatternEdit extends EditText {
             }
         }
     }
+
+    public void setText(String text) {
+        super.setText(text);
+        updateHighlights();
+    }
+
 
     static final Pattern CAN_REMOVE_FIRST_CHARACTER_PATTERN = Pattern.compile("^\\s(" + Chord.CHORD_SPLIT_PATTERN + ").*", Pattern.DOTALL);
     public void transpose(int transpose)

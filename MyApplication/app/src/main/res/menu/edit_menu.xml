@@ -10,4 +10,7 @@
     <item android:id="@+id/importPattern"
         android:title="Import"
         compat:showAsAction="always" />
+    <item android:id="@+id/makeEditable"
+        android:title="Edit"
+        compat:showAsAction="always" />
 </menu>

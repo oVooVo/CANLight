@@ -1,34 +1,21 @@
 package com.example.pascal.myapplication;
 
-import android.app.ActionBar;
 import android.app.AlertDialog;
-import android.content.ComponentName;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.ContextMenu;
-import android.view.KeyEvent;
-import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.SubMenu;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import junit.framework.AssertionFailedError;
-
-import java.util.ArrayList;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -60,15 +47,6 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
-        menu.findItem(R.id.editPattern).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                openEditMode(acmi.position, false);
-                return true;
-            }
-        });
-
-
     }
 
     private void editItemName(int position, boolean itemIsNew) {
@@ -78,9 +56,9 @@ public class MainActivity extends AppCompatActivity {
         editName.selectAll();
 
         // show keyboard
-//        editName.requestFocus();
-//        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-//        imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
+        editName.requestFocus();
+        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+        imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
 
         final boolean fItemIsNew = itemIsNew;
         final int fPosition = position;
@@ -91,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
                     final String newName = editName.getText().toString();
                     project.renameItem(fPosition, newName);
                     if (fItemIsNew) {
-                        openEditMode(fPosition, false);
+                        openEditMode(fPosition);
                     }
                 }
             })
@@ -130,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
-                openEditMode(position, true);
+                openEditMode(position);
             }
         });
     }
@@ -141,11 +119,10 @@ public class MainActivity extends AppCompatActivity {
         super.onStop();
     }
 
-    private void openEditMode(int position, boolean readOnly) {
+    private void openEditMode(int position) {
         Intent intent = new Intent(MainActivity.this, EditActivity.class);
         intent.putExtra("pattern", project.pattern(position));
         intent.putExtra("name", project.name(position));
-        intent.putExtra("ReadOnly", readOnly);
         if (currentEditPosition >= 0) throw new AssertionFailedError();
         currentEditPosition = position;
         MainActivity.this.startActivityForResult(intent, PATTERN_REQUEST);
@@ -156,8 +133,11 @@ public class MainActivity extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 if (currentEditPosition < 0) throw new AssertionFailedError();
 
-                final String pattern = data.getExtras().getString("pattern");
-                project.setPattern(currentEditPosition, pattern);
+                if (data.getExtras() != null && data.getExtras().containsKey("pattern")) {
+                    // if EditActivity was not read-only.
+                    final String pattern = data.getExtras().getString("pattern");
+                    project.setPattern(currentEditPosition, pattern);
+                }
             }
             currentEditPosition = -1;
         }

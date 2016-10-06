@@ -90,7 +90,7 @@ public class ParseSearchResults {
                         // "Found unreadable entry.";
                     }
                 } else {
-                    // "Did not find type");
+                    // "Did not find type";
                 }
             } else {
                 // unknown part. ignore.

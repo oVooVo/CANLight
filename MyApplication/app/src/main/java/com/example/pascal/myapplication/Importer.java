@@ -87,11 +87,10 @@ public class Importer {
                             final String pattern = parser.pattern();
                             if (pattern == null) {
                                 Toast.makeText(fContext, "Could not download pattern.", Toast.LENGTH_SHORT).show();
-                                onPatternArrived("");
                             } else {
                                 patternCache.put(fUrl, pattern);
-                                onPatternArrived(pattern);
                             }
+                            onPatternArrived(pattern);
                         }
                     }.execute(url);
                 } else {

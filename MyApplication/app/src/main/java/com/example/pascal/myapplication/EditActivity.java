@@ -13,8 +13,9 @@ import android.widget.EditText;
 public class EditActivity extends AppCompatActivity {
 
     private String name;
+    private boolean readOnly = true;
+    private Menu optionsMenu;
 
-    private boolean readOnly;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,11 +23,10 @@ public class EditActivity extends AppCompatActivity {
         setContentView(R.layout.activity_edit);
         final String pattern = getIntent().getStringExtra("pattern");
         name = getIntent().getStringExtra("name");
-        readOnly = getIntent().getBooleanExtra("ReadOnly", false);
 
         final EditText editText = (EditText) findViewById(R.id.editText);
         editText.setText(pattern);
-        editText.setFocusable(!readOnly);
+        editText.setFocusable(false);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle(name);
@@ -44,7 +44,11 @@ public class EditActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.edit_menu, menu);
-        menu.findItem(R.id.transposeUp).setVisible(!readOnly);
+        optionsMenu = menu;
+        menu.findItem(R.id.transposeDown).setVisible(false);
+        menu.findItem(R.id.transposeUp).setVisible(false);
+        menu.findItem(R.id.importPattern).setVisible(false);
+
         menu.findItem(R.id.transposeUp).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
@@ -53,7 +57,6 @@ public class EditActivity extends AppCompatActivity {
                 return true;
             }
         });
-        menu.findItem(R.id.transposeDown).setVisible(!readOnly);
         menu.findItem(R.id.transposeDown).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
@@ -62,7 +65,7 @@ public class EditActivity extends AppCompatActivity {
                 return true;
             }
         });
-        menu.findItem(R.id.importPattern).setVisible(!readOnly);
+
         menu.findItem(R.id.importPattern).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
@@ -70,8 +73,29 @@ public class EditActivity extends AppCompatActivity {
                 return true;
             }
         });
+        menu.findItem(R.id.makeEditable).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                makeEditable();
+                return true;
+            }
+        });
 
         return true;
+    }
+
+    public void makeEditable() {
+        optionsMenu.findItem(R.id.makeEditable).setVisible(false);
+        optionsMenu.findItem(R.id.transposeDown).setVisible(true);
+        optionsMenu.findItem(R.id.transposeUp).setVisible(true);
+        optionsMenu.findItem(R.id.importPattern).setVisible(true);
+
+        final EditText editText = (EditText) findViewById(R.id.editText);
+        editText.setFocusableInTouchMode(true);
+        editText.setFocusable(true);
+
+        onPrepareOptionsMenu(optionsMenu);
+        readOnly = false;
     }
 
     private void importPattern() {
@@ -98,7 +122,9 @@ public class EditActivity extends AppCompatActivity {
     private void returnToMain() {
         final EditText editText = (EditText) findViewById(R.id.editText);
         Intent resultIntent = new Intent();
-        resultIntent.putExtra("pattern", editText.getText().toString());
+        if (!readOnly) {
+            resultIntent.putExtra("pattern", editText.getText().toString());
+        }
         setResult(RESULT_OK, resultIntent);
         finish();
     }

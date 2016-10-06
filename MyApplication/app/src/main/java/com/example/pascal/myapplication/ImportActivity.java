@@ -94,9 +94,11 @@ public class ImportActivity extends AppCompatActivity {
             @Override
             void onPatternArrived(String pattern) {
                 hideProgressBar();
-                Intent intent = new Intent(ImportActivity.this, PatternPreviewActivity.class);
-                intent.putExtra("pattern", pattern);
-                ImportActivity.this.startActivityForResult(intent, MainActivity.IMPORT_PATTERN_PREVIEW_REQUEST);
+                if (pattern != null) {
+                    Intent intent = new Intent(ImportActivity.this, PatternPreviewActivity.class);
+                    intent.putExtra("pattern", pattern);
+                    ImportActivity.this.startActivityForResult(intent, MainActivity.IMPORT_PATTERN_PREVIEW_REQUEST);
+                }
             }
         };
     }
