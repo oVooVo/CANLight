@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/renameItem"
-        android:title="Rename"/>
+        android:title="@string/rename_song"/>
     <item android:id="@+id/deleteItem"
-        android:title="Delete"/>
-    <item android:id="@+id/editPattern"
-        android:title="Edit Pattern"/>
+        android:title="@string/delete_song"/>
 </menu>
