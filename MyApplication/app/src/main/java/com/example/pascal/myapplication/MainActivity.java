@@ -43,16 +43,16 @@ public class MainActivity extends AppCompatActivity {
         menu.findItem(R.id.renameItem).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                editItemName(acmi.position, false);
+                editSongName(acmi.position, false);
                 return true;
             }
         });
     }
 
-    private void editItemName(int position, boolean itemIsNew) {
+    private void editSongName(int position, boolean itemIsNew) {
         final EditText editName = new EditText(this);
         editName.setMaxLines(1);
-        editName.setText(project.name(position));
+        editName.setText(project.getSong(position).getName());
         editName.selectAll();
 
         // show keyboard
@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 final int position = project.addItem();
-                editItemName(position, true);
+                editSongName(position, true);
             }
         });
 
@@ -121,8 +121,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void openEditMode(int position) {
         Intent intent = new Intent(MainActivity.this, EditActivity.class);
-        intent.putExtra("pattern", project.pattern(position));
-        intent.putExtra("name", project.name(position));
+        intent.putExtra("song", project.getSong(position));
         if (currentEditPosition >= 0) throw new AssertionFailedError();
         currentEditPosition = position;
         MainActivity.this.startActivityForResult(intent, PATTERN_REQUEST);
@@ -133,10 +132,10 @@ public class MainActivity extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 if (currentEditPosition < 0) throw new AssertionFailedError();
 
-                if (data.getExtras() != null && data.getExtras().containsKey("pattern")) {
+                if (data.getExtras() != null && data.getExtras().containsKey("song")) {
                     // if EditActivity was not read-only.
-                    final String pattern = data.getExtras().getString("pattern");
-                    project.setPattern(currentEditPosition, pattern);
+                    Song song = data.getExtras().getParcelable("song");
+                    project.setSong(currentEditPosition, song);
                 }
             }
             currentEditPosition = -1;

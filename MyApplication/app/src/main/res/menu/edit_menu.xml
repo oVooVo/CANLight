@@ -12,5 +12,14 @@
         compat:showAsAction="always" />
     <item android:id="@+id/makeEditable"
         android:title="Edit"
+        compat:showAsAction="never" />
+    <item android:id="@+id/AutoScrollStart"
+        android:title="Start"
         compat:showAsAction="always" />
+    <item android:id="@+id/AutoScrollPause"
+        android:title="Pause"
+        compat:showAsAction="always" />
+    <item android:id="@+id/AutoScrollSpeed"
+        android:title="Speed"
+        compat:showAsAction="never" />
 </menu>

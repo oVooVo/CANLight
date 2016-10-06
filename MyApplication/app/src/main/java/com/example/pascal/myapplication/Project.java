@@ -19,6 +19,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -26,74 +27,60 @@ import java.util.TreeMap;
  * Created by pascal on 02.10.16.
  */
 public class Project {
-
-    private ArrayList<String> names;
-    private ArrayList<String> patterns;
-    private ArrayAdapter<String> itemAdapter;
+    private ArrayList<Song> songs;
+    private Song.SongAdapter songsAdapter;
     private Context context;
 
     public Project(Context context) {
-        names = new ArrayList<>();
-        patterns = new ArrayList<>();
+        songs = new ArrayList<>();
         this.context = context;
-        itemAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, names) {
-            @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
-                View view = super.getView(position, convertView, parent);
-                TextView textView = (TextView) view.findViewById(android.R.id.text1);
-                textView.setTextColor(Color.BLUE);
-                return view;
-            }
-        };
+        songsAdapter = new Song.SongAdapter(context, android.R.layout.simple_list_item_1, songs);
     }
 
-    public ArrayAdapter<String> itemAdapter() {
-        return itemAdapter;
+    public Song.SongAdapter itemAdapter() {
+        return songsAdapter;
     }
 
     public int addItem() {
-        if (names.contains("")) throw new AssertionFailedError();
-
-        names.add(getDefaultItemName());
-        patterns.add("");
-        itemAdapter.notifyDataSetChanged();
-        return names.size() - 1;
+        Song song = new Song(getDefaultItemName());
+        songs.add(song);
+        songsAdapter.notifyDataSetChanged();
+        return songs.size() - 1;
     }
 
     public boolean renameItem(int position, String newName) {
-        if (names.contains(newName)) {
+        if (songNames().contains(newName)) {
+            //TODO notify user
             return false;
         } else {
-            final String oldName = name(position);
-            names.set(position, newName);
-            itemAdapter.notifyDataSetChanged();
+            songs.get(position).setName(newName);
+            songsAdapter.notifyDataSetChanged();
             return true;
         }
     }
 
-    public void setPattern(int position, String pattern) {
-        patterns.set(position, pattern);
-    }
-
-    public String name(int position) {
-        return names.get(position);
-    }
-
-    public String pattern(int position) {
-        return patterns.get(position);
+    public Song getSong(int position) {
+        return songs.get(position);
     }
 
     public void remove(int position) {
-        patterns.remove(position);
-        names.remove(position);
-        itemAdapter.notifyDataSetChanged();
+        songs.remove(position);
+        songsAdapter.notifyDataSetChanged();
+    }
+
+    private List<String> songNames() {
+        List<String> names = new ArrayList<>(songs.size());
+        for (Song s : songs) {
+            names.add(s.getName());
+        }
+        return names;
     }
 
     public String getDefaultItemName() {
         final String template = "New Item";
         String itemName = template;
         int i = 0;
-        while (names.contains(itemName)) {
+        while (songNames().contains(itemName)) {
             i++;
             itemName = template + " " + i;
         }
@@ -104,18 +91,9 @@ public class Project {
     public JSONObject toJson() {
         JSONArray array = new JSONArray();
         JSONObject object = new JSONObject();
-        if (patterns.size() != names.size()) {
-            throw new AssertionFailedError();
-        }
-
-        final int n = patterns.size();
-
         try {
-            for (int i = 0; i < n; ++i) {
-                JSONObject o = new JSONObject();
-                o.put("name", name(i));
-                o.put("pattern", pattern(i));
-                array.put(o);
+            for (Song s : songs) {
+                array.put(s.toJson());
             }
             object.put("items", array);
         } catch (JSONException e) {
@@ -125,14 +103,12 @@ public class Project {
     }
 
     public void fromJson(JSONObject object) {
-        names.clear();
-        patterns.clear();
+        songs.clear();
         try {
             final JSONArray array = object.getJSONArray("items");
             for (int i = 0; i < array.length(); ++i) {
-                JSONObject o2 = array.getJSONObject(i);
-                names.add(o2.getString("name"));
-                patterns.add(o2.getString("pattern"));
+                Song s = Song.fromJson(array.getJSONObject(i));
+                songs.add(s);
             }
         } catch (JSONException e) {
             throw new AssertionFailedError();
@@ -165,5 +141,9 @@ public class Project {
         } catch (FileNotFoundException e) {
             // that's okay, no file to restore, maybe it's the first start.
         }
+    }
+
+    public void setSong(int currentEditPosition, Song song) {
+        songs.set(currentEditPosition, song);
     }
 }

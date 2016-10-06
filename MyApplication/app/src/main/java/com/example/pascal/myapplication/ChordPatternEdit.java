@@ -13,14 +13,13 @@ import android.text.method.ScrollingMovementMethod;
 import android.text.style.StyleSpan;
 import android.util.AttributeSet;
 import android.view.Gravity;
-import android.widget.EditText;
 
 import java.util.regex.Pattern;
 
 /**
  * Created by pascal on 03.10.16.
  */
-public class ChordPatternEdit extends EditText {
+public class ChordPatternEdit extends AutoScrollEditText {
 
     private Handler updateHighlightsHandler;
     private boolean editLoopKillerFlag = true;
