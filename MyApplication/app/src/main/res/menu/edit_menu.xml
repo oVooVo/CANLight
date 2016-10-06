@@ -3,14 +3,11 @@
     xmlns:compat="http://schemas.android.com/apk/res-auto">
     <item android:id="@+id/transposeUp"
         android:title="Transpose Up"
-        android:drawableStart="@android:drawable/arrow_up_float"
         compat:showAsAction="always" />
     <item android:id="@+id/transposeDown"
         android:title="Transpose Down"
-        android:drawableStart="@android:drawable/arrow_down_float"
         compat:showAsAction="always" />
     <item android:id="@+id/importPattern"
         android:title="Import"
-        android:drawableStart="@android:drawable/stat_sys_download_done"
         compat:showAsAction="always" />
 </menu>

@@ -86,69 +86,56 @@ public class ImportActivity extends AppCompatActivity {
         search();
     }
 
+
     private void onItemClick(int position) {
         final String url = urls.get(position);
+        showProgressBar();
+        new Importer.Pattern(url, getApplicationContext()) {
+            @Override
+            void onPatternArrived(String pattern) {
+                hideProgressBar();
+                Intent intent = new Intent(ImportActivity.this, PatternPreviewActivity.class);
+                intent.putExtra("pattern", pattern);
+                ImportActivity.this.startActivityForResult(intent, MainActivity.IMPORT_PATTERN_PREVIEW_REQUEST);
+            }
+        };
+    }
 
-        ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-        if (networkInfo != null && networkInfo.isConnected()) {
-            new DownloadWebpageTask() {
-                // onPostExecute displays the results of the AsyncTask.
-                @Override
-                protected void onPostExecute(String result) {
-                    hideProgressBar();
-                    ParsePatternResult parser = new ParsePatternResult(result);
-                    Intent resultIntent = new Intent();
-                    resultIntent.putExtra("pattern", parser.pattern());
-                    setResult(RESULT_OK, resultIntent);
-                    finish();
-                }
-            }.execute(url);
-            showProgressBar();
-        } else {
-            Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show();
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == MainActivity.IMPORT_PATTERN_PREVIEW_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                Intent resultIntent = new Intent();
+                resultIntent.putExtra("pattern", data.getStringExtra("pattern"));
+                setResult(RESULT_OK, resultIntent);
+                finish();
+            } else {
+                // user does not like the pattern. Do nothing.
+            }
         }
     }
 
-    private static final String URL_PATTERN = "https://www.ultimate-guitar.com/search.php?search_type=title&order=&value=";
 
     private void search() {
         final String key = ((EditText) findViewById(R.id.importSearchKeywordEdit)).getText().toString();
-
-        ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-        if (networkInfo != null && networkInfo.isConnected()) {
-            final String url;
-            try {
-                url = URL_PATTERN + URLEncoder.encode(key, "utf-8");
-            } catch (UnsupportedEncodingException e) {
-                throw new AssertionFailedError();
-            }
-            new DownloadWebpageTask() {
-                // onPostExecute displays the results of the AsyncTask.
-                @Override
-                protected void onPostExecute(String result) {
-                    ParseSearchResults parser = new ParseSearchResults(result);
-                    items.clear();
-                    urls.clear();
-                    for (ParseSearchResults.Entry e : parser.entries()) {
-                        String label = e.type + ": " + e.name + " - " + e.artist;
-                        items.add(label);
-                        urls.add(e.url);
-                    }
-                    adapter.notifyDataSetChanged();
-
-                    if (items.isEmpty()) {
-                        Toast.makeText(ImportActivity.this, "Nothing found", Toast.LENGTH_SHORT).show();
-                    }
-                    hideProgressBar();
+        showProgressBar();
+        new Importer.SearchResults(key, getApplicationContext()) {
+            @Override
+            void onSearchResultsArrived(Importer.SearchResult[] results) {
+                items.clear();
+                urls.clear();
+                for (Importer.SearchResult e : results) {
+                    String label = e.type + ": " + e.name + " - " + e.artist;
+                    items.add(label);
+                    urls.add(e.url);
                 }
-            }.execute(url);
+                adapter.notifyDataSetChanged();
 
-            showProgressBar();
-        } else {
-            Toast.makeText(this, "No internet connection", Toast.LENGTH_SHORT).show();
-        }
+                if (items.isEmpty()) {
+                    Toast.makeText(ImportActivity.this, "Nothing found", Toast.LENGTH_SHORT).show();
+                }
+                hideProgressBar();
+            }
+        };
 
     }
 

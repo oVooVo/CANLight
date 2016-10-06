@@ -1,11 +1,8 @@
 package com.example.pascal.myapplication;
 
-import junit.framework.AssertionFailedError;
-
-import java.net.MalformedURLException;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
-import java.net.URL;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 import java.util.ArrayList;
 
 /**
@@ -13,20 +10,28 @@ import java.util.ArrayList;
  */
 public class ParseSearchResults {
 
-    private ArrayList<Entry> entries;
+    private ArrayList<Importer.SearchResult> entries;
 
     public ParseSearchResults(String result) {
         entries = getEntries(result);
+        for (Iterator<Importer.SearchResult> iterator = entries.iterator(); iterator.hasNext();) {
+            Importer.SearchResult s = iterator.next();
+            if (!filterResult(s)) {
+                iterator.remove();
+            }
+        }
     }
 
-    public ArrayList<Entry> entries() { return entries; }
-
-    static public class Entry {
-        public String url = "";
-        public String name = "";
-        public String artist = "";
-        public String type = "";
+    static boolean filterResult(Importer.SearchResult r) {
+        final List<String> typeWhitelist = Arrays.asList("tab", "chords", "ukulele chords");
+        if (typeWhitelist.contains(r.type)) {
+            return true;
+        } else {
+            return false;
+        }
     }
+
+    public ArrayList<Importer.SearchResult> entries() { return entries; }
 
     static private class StringPart {
         public int start;
@@ -61,8 +66,8 @@ public class ParseSearchResults {
         return html.replaceAll("<.*?>", "");
     }
 
-    ArrayList<Entry> getEntries(String html) {
-        ArrayList<Entry> entries = new ArrayList<>();
+    ArrayList<Importer.SearchResult> getEntries(String html) {
+        ArrayList<Importer.SearchResult> entries = new ArrayList<>();
 
         String artist = "No Artist";
 
@@ -78,7 +83,7 @@ public class ParseSearchResults {
                 StringPart typePart = getPart(html, ignoreMe.end + 1, "<td><strong>", "</strong></td>");
                 if (typePart != null) {
                     final String type = stripHtml(typePart.string());
-                    final Entry e = parseEntry(part.string(), artist, type);
+                    final Importer.SearchResult e = parseEntry(part.string(), artist, type);
                     if (e != null) {
                         entries.add(e);
                     } else {
@@ -99,7 +104,7 @@ public class ParseSearchResults {
         return stripHtml(html).trim();
     }
 
-    private Entry parseEntry(String html, String artist, String type) {
+    private Importer.SearchResult parseEntry(String html, String artist, String type) {
         final StringPart linkAndNamePart = getPart(html, 0, "<a onclick=\"window.trackCorrected('TAB')\"", "</a>");
         if (linkAndNamePart == null) {
             return null;
@@ -110,7 +115,7 @@ public class ParseSearchResults {
         if (linkPart == null) {
             return null;
         }
-        Entry e = new Entry();
+        Importer.SearchResult e = new Importer.SearchResult();
         e.name = name.trim();
         e.url = linkPart.string().substring("href=\"".length()).trim();
         e.artist = artist;
