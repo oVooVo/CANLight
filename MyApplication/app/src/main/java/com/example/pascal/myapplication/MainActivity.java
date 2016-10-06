@@ -8,6 +8,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
@@ -20,6 +22,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -33,26 +36,6 @@ public class MainActivity extends AppCompatActivity {
     public static final int PATTERN_REQUEST = 0;
     int currentEditPosition = -1;
     private Project project;
-
-    private void showMsg(String msg) {
-        Toast.makeText(MainActivity.this, msg, Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_menu, menu);
-
-        menu.findItem(R.id.addItem).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                final int position = project.addItem();
-                editItemName(position, true);
-                return true;
-            }
-        });
-
-        return true;
-    }
 
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo info) {
         super.onCreateContextMenu(menu, v, info);
@@ -99,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
 
         final boolean fItemIsNew = itemIsNew;
         final int fPosition = position;
-        AlertDialog dialog = new AlertDialog.Builder(this)
+        new AlertDialog.Builder(this)
             .setView(editName)
             .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int whichButton) {
@@ -124,6 +107,15 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final int position = project.addItem();
+                editItemName(position, true);
+            }
+        });
 
         project = new Project(getApplicationContext());
         project.load();
