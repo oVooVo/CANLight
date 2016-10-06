@@ -287,6 +287,7 @@ public class Chord {
             String[] tokens = line.split(CHORD_SPLIT_PATTERN, -1);
             ArrayList<String> chords = new ArrayList<>();
             int numWords = 0;
+            int numOther = 0;
             for (String token : tokens) {
                 Chord chord = new Chord(token);
                 if (chord.isValid()) {
@@ -296,11 +297,12 @@ public class Chord {
                     Matcher matcher = WORD_PATTERN.matcher(text);
                     if (matcher.matches()) {
                         numWords++;
-                        //TODO do not use numWords, but the length of the longest sequence of words.
+                    } else {
+                        numOther++;
                     }
                 }
             }
-            final boolean isChordLine = (chords.size() > numWords);
+            final boolean isChordLine = (chords.size() + numOther >= numWords);
             final String[] chordsA = chords.toArray(new String[chords.size()]);
             lineCache.put(line, new Line(isChordLine, tokens, chordsA));
         }
