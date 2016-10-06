@@ -68,9 +68,6 @@ public class MainActivity extends AppCompatActivity {
                 public void onClick(DialogInterface dialog, int whichButton) {
                     final String newName = editName.getText().toString();
                     project.renameItem(fPosition, newName);
-                    if (fItemIsNew) {
-                        openEditMode(fPosition);
-                    }
                 }
             })
             .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {

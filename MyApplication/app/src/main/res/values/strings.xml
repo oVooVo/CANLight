@@ -4,6 +4,7 @@
     <string name="transpose_down">Transpose Down</string>
     <string name="import_pattern">Import</string>
     <string name="edit_pattern">Edit</string>
+    <string name="view_pattern">View</string>
     <string name="start_auto_scroll">Start</string>
     <string name="pause_auto_scroll">Pause</string>
     <string name="speed_auto_scroll">Speed</string>

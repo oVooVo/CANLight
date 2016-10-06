@@ -21,25 +21,20 @@ import java.util.List;
  */
 public class Song implements Parcelable {
     private String name;
-    private String pattern;
-    private double scrollRate;
+    private String pattern = "";
+    private double scrollRate = 2;
+    private boolean uninitalizedPattern;
 
     public Song(String name) {
         this.name = name;
-        this.pattern = "";
-        this.scrollRate = 1;
-    }
-
-    public Song(String name, String pattern, double scrollRate) {
-        this.name = name;
-        this.pattern = pattern;
-        this.scrollRate = scrollRate;
+        this.uninitalizedPattern = true;
     }
 
     public Song(Parcel in) {
         name = in.readString();
         pattern = in.readString();
         scrollRate = in.readDouble();
+        uninitalizedPattern = in.readInt() != 0;
     }
 
     public void setName(String name) {
@@ -47,6 +42,7 @@ public class Song implements Parcelable {
     }
 
     public void setPattern(String pattern) {
+        this.uninitalizedPattern = false;
         this.pattern = pattern;
     }
 
@@ -67,9 +63,10 @@ public class Song implements Parcelable {
     }
 
     public static Song fromJson(JSONObject o) {
+        Song song = new Song("");
         String name;
-        String pattern;
-        double scrollRate;
+        String pattern = song.getPattern();
+        double scrollRate = song.getScrollRate();
         try {
             name = o.getString("name");
         } catch (JSONException e) {
@@ -85,9 +82,11 @@ public class Song implements Parcelable {
             scrollRate = o.getDouble("scrollRate");
         } catch (JSONException e) {
             // ignore. its okay.
-            scrollRate = 1;
         }
-        return new Song(name, pattern, scrollRate);
+        song.setPattern(pattern);
+        song.setScrollRate(scrollRate);
+        song.setName(name);
+        return song;
     }
 
     public JSONObject toJson() {
@@ -102,6 +101,10 @@ public class Song implements Parcelable {
         return o;
     }
 
+    public boolean getPatternIsUninitialized() {
+        return uninitalizedPattern;
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -112,6 +115,7 @@ public class Song implements Parcelable {
         dest.writeString(name);
         dest.writeString(pattern);
         dest.writeDouble(scrollRate);
+        dest.writeInt(uninitalizedPattern ? 1 : 0);
     }
 
     // this is used to regenerate your object. All Parcelables must have a CREATOR that implements these two methods

@@ -13,6 +13,9 @@
     <item android:id="@+id/makeEditable"
         android:title="@string/edit_pattern"
         compat:showAsAction="never" />
+    <item android:id="@+id/makeReadOnly"
+        android:title="@string/view_pattern"
+        compat:showAsAction="never" />
     <item android:id="@+id/AutoScrollStart"
         android:title="@string/start_auto_scroll"
         compat:showAsAction="ifRoom" />

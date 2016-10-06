@@ -2,10 +2,14 @@ package com.example.pascal.myapplication;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.Window;
 import android.widget.EditText;
 import android.widget.SeekBar;
 
@@ -36,6 +40,9 @@ public class EditActivity extends AppCompatActivity {
             importPattern();
         }
         setScrollRate(currentSong.getScrollRate());
+        if (currentSong.getPatternIsUninitialized()) {
+            importPattern();
+        }
     }
 
     public boolean onOptionsItemSelected(MenuItem item){
@@ -47,10 +54,6 @@ public class EditActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.edit_menu, menu);
         optionsMenu = menu;
-        menu.findItem(R.id.transposeDown).setVisible(false);
-        menu.findItem(R.id.transposeUp).setVisible(false);
-        menu.findItem(R.id.importPattern).setVisible(false);
-
         menu.findItem(R.id.transposeUp).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
@@ -78,7 +81,14 @@ public class EditActivity extends AppCompatActivity {
         menu.findItem(R.id.makeEditable).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                makeEditable();
+                setReadOnly(false);
+                return true;
+            }
+        });
+        menu.findItem(R.id.makeReadOnly).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                setReadOnly(true);
                 return true;
             }
         });
@@ -102,7 +112,15 @@ public class EditActivity extends AppCompatActivity {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 Dialog dialog = new Dialog(EditActivity .this);
-                dialog.setContentView(R.layout.autoscroll_set_speed_dialog);
+                Rect displayRectangle = new Rect();
+                Window window = EditActivity.this.getWindow();
+                window.getDecorView().getWindowVisibleDisplayFrame(displayRectangle);
+                LayoutInflater inflater = (LayoutInflater)
+                        EditActivity.this.getSystemService(
+                                getApplicationContext().LAYOUT_INFLATER_SERVICE);
+                View view = inflater.inflate(R.layout.autoscroll_set_speed_dialog, null);
+                view.setMinimumWidth((int)(displayRectangle.width() * 0.9f));
+                dialog.setContentView(view);
                 dialog.setTitle("Set Auto Scroll Speed");
                 SeekBar slider = (SeekBar) dialog.findViewById(R.id.seekBar);
                 double percent = getScrollRatePercent(currentSong.getScrollRate());
@@ -121,10 +139,12 @@ public class EditActivity extends AppCompatActivity {
                     public void onStopTrackingTouch(SeekBar seekBar) { }
                 });
                 dialog.show();
+
                 return true;
             }
         });
 
+        setReadOnly(true);
         return true;
     }
 
@@ -156,22 +176,20 @@ public class EditActivity extends AppCompatActivity {
         cpe.setAutoScrollRate(rate);
     }
 
-    public void makeEditable() {
-        readOnly = false;
-        // Disable view-mode
-        optionsMenu.findItem(R.id.makeEditable).setVisible(false);
-        optionsMenu.findItem(R.id.AutoScrollStart).setVisible(false);
-        optionsMenu.findItem(R.id.AutoScrollPause).setVisible(false);
-        optionsMenu.findItem(R.id.AutoScrollSpeed).setVisible(false);
-
-        // enable edit-mode
-        optionsMenu.findItem(R.id.transposeDown).setVisible(true);
-        optionsMenu.findItem(R.id.transposeUp).setVisible(true);
-        optionsMenu.findItem(R.id.importPattern).setVisible(true);
+    public void setReadOnly(boolean ro) {
+        readOnly = ro;
+        optionsMenu.findItem(R.id.makeEditable).setVisible(ro);
+        optionsMenu.findItem(R.id.AutoScrollStart).setVisible(ro);
+        optionsMenu.findItem(R.id.AutoScrollPause).setVisible(ro);
+        optionsMenu.findItem(R.id.AutoScrollSpeed).setVisible(ro);
+        optionsMenu.findItem(R.id.makeReadOnly).setVisible(!ro);
+        optionsMenu.findItem(R.id.transposeDown).setVisible(!ro);
+        optionsMenu.findItem(R.id.transposeUp).setVisible(!ro);
+        optionsMenu.findItem(R.id.importPattern).setVisible(!ro);
 
         final ChordPatternEdit editText = (ChordPatternEdit) findViewById(R.id.editText);
-        editText.setFocusableInTouchMode(true);
-        editText.setFocusable(true);
+        editText.setFocusableInTouchMode(!ro);
+        editText.setFocusable(!ro);
         editText.stopAutoScroll();
 
         onPrepareOptionsMenu(optionsMenu);
@@ -189,6 +207,7 @@ public class EditActivity extends AppCompatActivity {
                 final String pattern = data.getExtras().getString("pattern");
                 ChordPatternEdit cpe = (ChordPatternEdit) findViewById(R.id.editText);
                 cpe.setText(pattern);
+                currentSong.setPattern(pattern);
             }
         }
     }
