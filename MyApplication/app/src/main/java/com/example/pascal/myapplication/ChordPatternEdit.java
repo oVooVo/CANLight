@@ -37,7 +37,6 @@ public class ChordPatternEdit extends AutoScrollEditText {
         setGravity(Gravity.LEFT | Gravity.TOP);
         setHorizontallyScrolling(true);
         setTypeface(Typeface.MONOSPACE);
-        setMovementMethod(ScrollingMovementMethod.getInstance());
 
         addTextChangedListener(new TextWatcher() {
             @Override

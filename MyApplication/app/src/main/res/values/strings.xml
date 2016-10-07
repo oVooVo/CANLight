@@ -23,6 +23,8 @@
     <string name="eliminate_empty_lines">Eliminate Empty Lines</string>
     <string name="add_empty_lines_before_chords">Add Empty Lines before Chords</string>
     <string name="clear_cache">Clear Cache</string>
+    <string name="pref_keep_screen_on">Don\'t Sleep</string>
+    <string name="pref_keep_screen_on_summ">Only in Pattern View Mode</string>
 
     <plurals name="numberOfRemovedLines">
         <item quantity="one">Removed %d line</item>

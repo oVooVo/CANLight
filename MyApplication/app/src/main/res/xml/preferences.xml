@@ -3,4 +3,9 @@
     <Preference
         android:title="@string/clear_cache"
         android:key="clear_cache" />
+    <CheckBoxPreference
+        android:title="@string/pref_keep_screen_on"
+        android:summary="@string/pref_keep_screen_on_summ"
+        android:defaultValue="true"
+        android:key="pref_keep_screen_on" />
 </PreferenceScreen>

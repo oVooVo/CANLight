@@ -6,12 +6,15 @@ import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.preference.PreferenceActivity;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.Toast;
@@ -28,6 +31,13 @@ public class EditActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+
+        final boolean keepScreenOn = PreferenceManager.getDefaultSharedPreferences(this)
+                .getBoolean("pref_keep_screen_on", false);
+        if (keepScreenOn) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit);
         currentSong = getIntent().getParcelableExtra("song");
@@ -218,6 +228,7 @@ public class EditActivity extends AppCompatActivity {
         optionsMenu.findItem(R.id.importPattern).setVisible(!ro);
         optionsMenu.findItem(R.id.eliminate_empty_lines).setVisible(!ro);
         optionsMenu.findItem(R.id.add_empty_lines_before_chords).setVisible(!ro);
+
 
         final ChordPatternEdit editText = (ChordPatternEdit) findViewById(R.id.editText);
         editText.setFocusableInTouchMode(!ro);
