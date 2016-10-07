@@ -49,14 +49,9 @@ public class Project {
     }
 
     public boolean renameItem(int position, String newName) {
-        if (songNames().contains(newName)) {
-            //TODO notify user
-            return false;
-        } else {
-            songs.get(position).setName(newName);
-            songsAdapter.notifyDataSetChanged();
-            return true;
-        }
+        songs.get(position).setName(newName);
+        songsAdapter.notifyDataSetChanged();
+        return true;
     }
 
     public Song getSong(int position) {
@@ -68,24 +63,8 @@ public class Project {
         songsAdapter.notifyDataSetChanged();
     }
 
-    private List<String> songNames() {
-        List<String> names = new ArrayList<>(songs.size());
-        for (Song s : songs) {
-            names.add(s.getName());
-        }
-        return names;
-    }
-
     public String getDefaultItemName() {
-        final String template = "New Item";
-        String itemName = template;
-        int i = 0;
-        while (songNames().contains(itemName)) {
-            i++;
-            itemName = template + " " + i;
-        }
-
-        return itemName;
+        return context.getString(R.string.default_song_name);
     }
 
     public JSONObject toJson() {

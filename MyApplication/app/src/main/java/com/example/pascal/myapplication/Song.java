@@ -1,7 +1,6 @@
 package com.example.pascal.myapplication;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.view.View;
@@ -42,7 +41,7 @@ public class Song implements Parcelable {
     }
 
     public void setPattern(String pattern) {
-        this.uninitalizedPattern = false;
+        this.uninitalizedPattern = (pattern == null);
         this.pattern = pattern;
     }
 
@@ -76,7 +75,6 @@ public class Song implements Parcelable {
             pattern = o.getString("pattern");
         } catch (JSONException e) {
             // ignore. its okay.
-            pattern = "";
         }
         try {
             scrollRate = o.getDouble("scrollRate");
@@ -136,7 +134,6 @@ public class Song implements Parcelable {
         public View getView(int position, View convertView, ViewGroup parent) {
             View view = super.getView(position, convertView, parent);
             TextView textView = (TextView) view.findViewById(android.R.id.text1);
-            textView.setTextColor(Color.BLUE);
             textView.setText(getItem(position).getName());
             return view;
         }

@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.view.ContextMenu;
+import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -25,6 +26,10 @@ public class MainActivity extends AppCompatActivity {
     public static final int IMPORT_PATTERN_PREVIEW_REQUEST = 2;
     int currentEditPosition = -1;
     private Project project;
+
+    //public static void setTheme(AppCompatActivity activity) {
+     //   activity.setTheme(activity.getApplicationContext().getSharedPreferences("pref_theme"));
+   // }
 
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo info) {
         super.onCreateContextMenu(menu, v, info);
@@ -58,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
         // show keyboard
         editName.requestFocus();
         InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-        imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
+        imm.toggleSoftInput(InputMethodManager.SHOW_IMPLICIT, InputMethodManager.HIDE_NOT_ALWAYS);
 
         final boolean fItemIsNew = itemIsNew;
         final int fPosition = position;
@@ -137,5 +142,19 @@ public class MainActivity extends AppCompatActivity {
             }
             currentEditPosition = -1;
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_menu, menu);
+        menu.findItem(R.id.action_settings).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+                MainActivity.this.startActivityForResult(intent, PATTERN_REQUEST);
+                return true;
+            }
+        });
+        return true;
     }
 }

@@ -63,7 +63,9 @@ public class ParseSearchResults {
     }
 
     static private String stripHtml(String html) {
-        return html.replaceAll("<.*?>", "");
+        html = html.replaceAll("&nbsp;", " ");
+        html = html.replaceAll("<.*?>", "");
+        return html;
     }
 
     ArrayList<Importer.SearchResult> getEntries(String html) {

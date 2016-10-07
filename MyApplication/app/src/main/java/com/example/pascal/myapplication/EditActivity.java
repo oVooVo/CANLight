@@ -220,9 +220,7 @@ public class EditActivity extends AppCompatActivity {
     private void returnToMain() {
         final EditText editText = (EditText) findViewById(R.id.editText);
         Intent resultIntent = new Intent();
-        if (!readOnly) {
-            currentSong.setPattern(editText.getText().toString());
-        }
+        currentSong.setPattern(editText.getText().toString());
         resultIntent.putExtra("song", currentSong);
         setResult(RESULT_OK, resultIntent);
         finish();

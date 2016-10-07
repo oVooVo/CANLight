@@ -61,7 +61,8 @@ public class Importer {
                         }
                     }.execute(url);
                 } else {
-                    Toast.makeText(context, "No internet connection", Toast.LENGTH_SHORT).show();
+                    onSearchResultsArrived(new SearchResult[0]);
+                    Toast.makeText(context, R.string.no_internet_connection, Toast.LENGTH_SHORT).show();
                 }
             }
         }
@@ -86,7 +87,7 @@ public class Importer {
                             ParsePatternResult parser = new ParsePatternResult(result);
                             final String pattern = parser.pattern();
                             if (pattern == null) {
-                                Toast.makeText(fContext, "Could not download pattern.", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(fContext, R.string.download_pattern_failed, Toast.LENGTH_SHORT).show();
                             } else {
                                 patternCache.put(fUrl, pattern);
                             }
@@ -94,7 +95,8 @@ public class Importer {
                         }
                     }.execute(url);
                 } else {
-                    Toast.makeText(context, "No internet connection", Toast.LENGTH_SHORT).show();
+                    onPatternArrived(null);
+                    Toast.makeText(context, R.string.no_internet_connection, Toast.LENGTH_SHORT).show();
                 }
             }
         }

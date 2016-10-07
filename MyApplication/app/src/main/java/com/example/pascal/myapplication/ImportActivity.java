@@ -71,15 +71,7 @@ public class ImportActivity extends AppCompatActivity {
 
         items = new ArrayList<>();
         urls = new ArrayList<>();
-        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, items) {
-            @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
-                View view = super.getView(position, convertView, parent);
-                TextView textView = (TextView) view.findViewById(android.R.id.text1);
-                textView.setTextColor(Color.BLUE);
-                return view;
-            }
-        };
+        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, items);
         ListView listView = (ListView) findViewById(R.id.importVersionsListView);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -139,7 +131,7 @@ public class ImportActivity extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
 
                 if (items.isEmpty()) {
-                    Toast.makeText(ImportActivity.this, "Nothing found", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ImportActivity.this, R.string.nothing_found_search_songs, Toast.LENGTH_SHORT).show();
                 }
                 hideProgressBar();
             }

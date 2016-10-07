@@ -10,7 +10,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/Theme.AppCompat">
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|screenSize">
@@ -29,7 +29,8 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
-        <activity android:name=".PatternPreviewActivity"></activity>
+        <activity android:name=".PatternPreviewActivity" />
+        <activity android:name=".SettingsActivity"></activity>
     </application>
 
 </manifest>

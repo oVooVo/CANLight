@@ -13,7 +13,7 @@ public class PatternPreviewActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pattern_preview);
-        getSupportActionBar().setTitle("Import Preview");
+        getSupportActionBar().setTitle(R.string.import_preview);
 
         final String pattern = getIntent().getStringExtra("pattern");
         final EditText editText = (EditText) findViewById(R.id.editTextPreview);
