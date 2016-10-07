@@ -10,12 +10,20 @@
     <item android:id="@+id/importPattern"
         android:title="@string/import_pattern"
         compat:showAsAction="ifRoom" />
+    <item android:id="@+id/eliminate_empty_lines"
+        android:title="@string/eliminate_empty_lines"
+        compat:showAsAction="never" />
+    <item android:id="@+id/add_empty_lines_before_chords"
+        android:title="@string/add_empty_lines_before_chords"
+        compat:showAsAction="never" />
+
     <item android:id="@+id/makeEditable"
         android:title="@string/edit_pattern"
         compat:showAsAction="never" />
     <item android:id="@+id/makeReadOnly"
         android:title="@string/view_pattern"
         compat:showAsAction="never" />
+
     <item android:id="@+id/AutoScrollStart"
         android:title="@string/start_auto_scroll"
         compat:showAsAction="ifRoom" />

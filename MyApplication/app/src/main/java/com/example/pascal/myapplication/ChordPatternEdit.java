@@ -1,6 +1,7 @@
 package com.example.pascal.myapplication;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Build;
 import android.os.Handler;
@@ -8,12 +9,18 @@ import android.text.Editable;
 import android.text.Html;
 import android.text.Spannable;
 import android.text.Spanned;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.method.ScrollingMovementMethod;
+import android.text.style.BackgroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.AttributeSet;
 import android.view.Gravity;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -70,26 +77,25 @@ public class ChordPatternEdit extends AutoScrollEditText {
         });
     }
 
-    @SuppressWarnings("deprecation")
-    static Spanned spannableFromHTML(String html) {
-        if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
-            return Html.fromHtml(html, Html.FROM_HTML_MODE_LEGACY);
-        } else {
-            return Html.fromHtml(html);
-        }
-    }
+    private static final Pattern HEADLINE_PATTERN = Pattern.compile(
+            "^\\W*((verse\\W*[0-9]*)|chorus|(((pre|post)\\W*)*\\W*chorus)|bridge|intro|outro)\\W*$",
+            Pattern.CASE_INSENSITIVE);
 
     private void updateHighlights() {
         String text = getText().toString();
         String[] lines = text.split("\n");
 
-        //TODO encode stuff with html, then use HTML.fromHtml() seems to be faster.
-        //TODO   However, handling whitespaces makes trouble. Also editing is not easy.
+        //encode stuff with html, then use HTML.fromHtml() seems to be faster.
+        //  However, handling whitespaces makes trouble. Also editing is not easy.
 
         Spannable span = getText();
         int position = 0;
         for (String line : lines) {
             Chord.Line cLine = Chord.parseLine(line);
+            if (HEADLINE_PATTERN.matcher(line).matches()) {
+                BackgroundColorSpan headline = new BackgroundColorSpan(Color.BLUE);
+                span.setSpan(headline, position, position + line.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+            }
             for (String token : cLine.tokens) {
                 Chord chord = Chord.chordFromString(token);
                 if (cLine.isChordLine && chord.isValid()) {
@@ -145,5 +151,67 @@ public class ChordPatternEdit extends AutoScrollEditText {
         }
         setText(text);
         updateHighlights();
+    }
+
+    public int addEmptyLinesBeforeChords() {
+        final String[] lines = getText().toString().split("\n", -1);
+        List<String> newLines = new ArrayList<>();
+
+        int addedLines = 0;
+        boolean lastLineWasEmpty = true;
+        for (String line : lines) {
+            if (!lastLineWasEmpty && Chord.parseLine(line).isChordLine) {
+                newLines.add("");
+                addedLines++;
+            }
+            newLines.add(line);
+            lastLineWasEmpty = line.isEmpty();
+        }
+
+        setText(TextUtils.join("\n", newLines));
+        return addedLines;
+    }
+
+    private boolean multipleSubsequentEmptyLines(String[] lines) {
+        boolean lastLineWasEmpty = false;
+        for (String line : lines) {
+            if (line.isEmpty() && lastLineWasEmpty) {
+                return true;
+            }
+            lastLineWasEmpty = line.isEmpty();
+        }
+        return false;
+    }
+
+    private boolean keepLine(boolean currentLineIsEmpty, boolean lastLineWasEmpty, boolean removeSingleEmptyLines) {
+        if (!currentLineIsEmpty) {
+            return true;
+        } else if (removeSingleEmptyLines) {
+            return false;
+        } else if (lastLineWasEmpty) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    public int eliminateEmptyLines() {
+        final String[] lines = getText().toString().split("\n", -1);
+        final boolean removeSingleEmptyLines = !multipleSubsequentEmptyLines(lines);
+        List<String> newLines = new ArrayList<>();
+
+        int removedLines = 0;
+        boolean lastLineWasEmpty = false;
+        for (String line : lines) {
+            if (keepLine(line.isEmpty(), lastLineWasEmpty, removeSingleEmptyLines)) {
+                newLines.add(line);
+            } else {
+                removedLines++;
+            }
+            lastLineWasEmpty = line.isEmpty();
+        }
+
+        setText(TextUtils.join("\n", newLines));
+        return removedLines;
     }
 }

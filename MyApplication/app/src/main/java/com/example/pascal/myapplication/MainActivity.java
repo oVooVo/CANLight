@@ -101,6 +101,7 @@ public class MainActivity extends AppCompatActivity {
 
         project = new Project(getApplicationContext());
         project.load();
+        ImportCache.load();
 
         ListView listView = (ListView) findViewById(R.id.listView);
         listView.setAdapter(project.itemAdapter());
@@ -118,6 +119,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         project.save();
+        ImportCache.save();
         super.onStop();
     }
 

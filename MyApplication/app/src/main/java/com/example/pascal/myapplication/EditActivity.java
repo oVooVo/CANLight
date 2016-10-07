@@ -2,7 +2,9 @@ package com.example.pascal.myapplication;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.Rect;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
@@ -12,6 +14,7 @@ import android.view.View;
 import android.view.Window;
 import android.widget.EditText;
 import android.widget.SeekBar;
+import android.widget.Toast;
 
 /**
  * Created by pascal on 02.10.16.
@@ -54,6 +57,8 @@ public class EditActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.edit_menu, menu);
         optionsMenu = menu;
+
+        // Edit Stuff
         menu.findItem(R.id.transposeUp).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
@@ -70,7 +75,6 @@ public class EditActivity extends AppCompatActivity {
                 return true;
             }
         });
-
         menu.findItem(R.id.importPattern).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
@@ -78,6 +82,29 @@ public class EditActivity extends AppCompatActivity {
                 return true;
             }
         });
+        menu.findItem(R.id.eliminate_empty_lines).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                ChordPatternEdit cpe = (ChordPatternEdit) findViewById(R.id.editText);
+                final int n = cpe.eliminateEmptyLines();
+                final String text = getResources().getQuantityString(R.plurals.numberOfRemovedLines, n, n);
+                Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
+                return true;
+            }
+        });
+        menu.findItem(R.id.add_empty_lines_before_chords).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                ChordPatternEdit cpe = (ChordPatternEdit) findViewById(R.id.editText);
+                final int n = cpe.addEmptyLinesBeforeChords();
+                final String text = getResources().getQuantityString(R.plurals.numberOfInsertedLines, n, n);
+                Toast.makeText(getApplicationContext(), text, Toast.LENGTH_SHORT).show();
+                return true;
+            }
+        });
+
+
+        // Switch Edit/view stuff
         menu.findItem(R.id.makeEditable).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
@@ -92,6 +119,9 @@ public class EditActivity extends AppCompatActivity {
                 return true;
             }
         });
+
+
+        // View stuff
         menu.findItem(R.id.AutoScrollPause).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
@@ -186,6 +216,8 @@ public class EditActivity extends AppCompatActivity {
         optionsMenu.findItem(R.id.transposeDown).setVisible(!ro);
         optionsMenu.findItem(R.id.transposeUp).setVisible(!ro);
         optionsMenu.findItem(R.id.importPattern).setVisible(!ro);
+        optionsMenu.findItem(R.id.eliminate_empty_lines).setVisible(!ro);
+        optionsMenu.findItem(R.id.add_empty_lines_before_chords).setVisible(!ro);
 
         final ChordPatternEdit editText = (ChordPatternEdit) findViewById(R.id.editText);
         editText.setFocusableInTouchMode(!ro);

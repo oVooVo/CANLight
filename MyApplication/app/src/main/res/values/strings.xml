@@ -8,8 +8,8 @@
     <string name="start_auto_scroll">Start</string>
     <string name="pause_auto_scroll">Pause</string>
     <string name="speed_auto_scroll">Speed</string>
-    <string name="apply_preview">Apply</string>
-    <string name="cancel_preview">Cancel</string>
+    <string name="apply_preview">Use this</string>
+    <string name="cancel_preview">Go back</string>
     <string name="rename_song">Rename</string>
     <string name="delete_song">Delete</string>
     <string name="action_settings">Settings</string>
@@ -20,4 +20,23 @@
     <string name="nothing_found_search_songs">Nothing found</string>
     <string name="download_pattern_failed">Could not download pattern.</string>
     <string name="no_internet_connection">No internet connection</string>
+    <string name="eliminate_empty_lines">Eliminate Empty Lines</string>
+    <string name="add_empty_lines_before_chords">Add Empty Lines before Chords</string>
+    <string name="clear_cache">Clear Cache</string>
+
+    <plurals name="numberOfRemovedLines">
+        <item quantity="one">Removed %d line</item>
+        <item quantity="other">Removed %d lines</item>
+    </plurals>
+    <plurals name="numberOfInsertedLines">
+        <item quantity="one">Inserted %d line</item>
+        <item quantity="other">Inserted %d lines</item>
+    </plurals>
+    <plurals name="importCacheCount">
+        <item quantity="one">%d Item</item>
+        <item quantity="other">"%d Items"</item>
+    </plurals>
+    <plurals name="importCacheSize">
+        <item quantity="other">", Size: %d kB"</item>
+    </plurals>
 </resources>

@@ -1,7 +1,6 @@
 package com.example.pascal.myapplication;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.KeyEvent;
@@ -12,6 +11,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -71,7 +71,20 @@ public class ImportActivity extends AppCompatActivity {
 
         items = new ArrayList<>();
         urls = new ArrayList<>();
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, items);
+        adapter = new ArrayAdapter<String>(this, R.layout.search_song_list_item, R.id.search_song_item_name, items) {
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                View view = super.getView(position, convertView, parent);
+
+                ImageView imageView = (ImageView) view.findViewById(R.id.search_song_item_icon);
+                if (ImportCache.isPatternCached(urls.get(position))) {
+                    imageView.setImageResource(android.R.drawable.btn_star_big_on);
+                } else {
+                    imageView.setImageResource(android.R.drawable.btn_star_big_off);
+                }
+                return view;
+            }
+        };
         ListView listView = (ListView) findViewById(R.id.importVersionsListView);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -112,6 +125,7 @@ public class ImportActivity extends AppCompatActivity {
                 // user does not like the pattern. Do nothing.
             }
         }
+        adapter.notifyDataSetChanged();
     }
 
 
