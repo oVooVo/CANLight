@@ -25,6 +25,8 @@
     <string name="clear_cache">Clear Cache</string>
     <string name="pref_keep_screen_on">Don\'t Sleep</string>
     <string name="pref_keep_screen_on_summ">Only in Pattern View Mode</string>
+    <string name="scale_text">Scale</string>
+    <string name="auto_scroll_speed_slider_dialog_title">Set Auto Scroll Speed</string>
 
     <plurals name="numberOfRemovedLines">
         <item quantity="one">Removed %d line</item>

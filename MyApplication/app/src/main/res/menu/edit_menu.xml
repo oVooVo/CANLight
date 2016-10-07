@@ -18,6 +18,9 @@
     <item android:id="@+id/add_empty_lines_before_chords"
         android:title="@string/add_empty_lines_before_chords"
         compat:showAsAction="never" />
+    <item android:id="@+id/ScaleText"
+        android:title="@string/scale_text"
+        compat:showAsAction="never" />
 
     <item android:id="@+id/makeEditable"
         android:title="@string/edit_pattern"

@@ -2,11 +2,8 @@ package com.example.pascal.myapplication;
 
 import android.app.Dialog;
 import android.content.Intent;
-import android.graphics.Color;
 import android.graphics.Rect;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
-import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
@@ -25,14 +22,10 @@ import android.widget.Toast;
 public class EditActivity extends AppCompatActivity {
 
     private Song currentSong;
-    private boolean readOnly = true;
     private Menu optionsMenu;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
-
         final boolean keepScreenOn = PreferenceManager.getDefaultSharedPreferences(this)
                 .getBoolean("pref_keep_screen_on", false);
         if (keepScreenOn) {
@@ -151,35 +144,31 @@ public class EditActivity extends AppCompatActivity {
         menu.findItem(R.id.AutoScrollSpeed).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                Dialog dialog = new Dialog(EditActivity .this);
-                Rect displayRectangle = new Rect();
-                Window window = EditActivity.this.getWindow();
-                window.getDecorView().getWindowVisibleDisplayFrame(displayRectangle);
-                LayoutInflater inflater = (LayoutInflater)
-                        EditActivity.this.getSystemService(
-                                getApplicationContext().LAYOUT_INFLATER_SERVICE);
-                View view = inflater.inflate(R.layout.autoscroll_set_speed_dialog, null);
-                view.setMinimumWidth((int)(displayRectangle.width() * 0.9f));
-                dialog.setContentView(view);
-                dialog.setTitle("Set Auto Scroll Speed");
-                SeekBar slider = (SeekBar) dialog.findViewById(R.id.seekBar);
-                double percent = getScrollRatePercent(currentSong.getScrollRate());
-                slider.setProgress((int) (percent * slider.getMax()));
-                slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                final String title = getString(R.string.auto_scroll_speed_slider_dialog_title);
+                new SliderDialog.ExpSliderDialog(title,
+                        0, 5, 3,
+                        EditActivity.this) {
                     @Override
-                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                        final double scrollRate = getExpScrollRate(((double) progress) / seekBar.getMax());
-                        setScrollRate(scrollRate);
+                    void onValueChanged(double value) {
+                        setScrollRate(value);
                     }
+                }.setValue(currentSong.getScrollRate());
+                return true;
+            }
+        });
+        menu.findItem(R.id.ScaleText).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                final String title = getString(R.string.scale_text);
+                new SliderDialog.ExpSliderDialog(title,
+                        2, 30, 3,
+                        EditActivity.this) {
 
                     @Override
-                    public void onStartTrackingTouch(SeekBar seekBar) { }
-
-                    @Override
-                    public void onStopTrackingTouch(SeekBar seekBar) { }
-                });
-                dialog.show();
-
+                    void onValueChanged(double value) {
+                        setTextSize(value);
+                    }
+                }.setValue(currentSong.getPatternTextSize());
                 return true;
             }
         });
@@ -188,40 +177,24 @@ public class EditActivity extends AppCompatActivity {
         return true;
     }
 
-    private static final double maxRate = 5.0;
-    private static final double minRate = 0.0;
-    private static final double factor = 3.0;
-    private double getExpScrollRate(double rate) {
-        rate *= factor;
-        rate = Math.exp(rate);
-        rate -= Math.exp(0.0);
-        rate /= (Math.exp(factor) - Math.exp(0.0));
-        rate *= (maxRate - minRate);
-        rate += minRate;
-        return rate;
-    }
-    private double getScrollRatePercent(double rate) {
-        rate -= minRate;
-        rate /= (maxRate - minRate);
-        rate *= (Math.exp(factor) - Math.exp(0.0));
-        rate += Math.exp(0.0);
-        rate = Math.log(rate);
-        rate /= factor;
-        return rate;
-    }
-
     private void setScrollRate(double rate) {
         ChordPatternEdit cpe = (ChordPatternEdit) findViewById(R.id.editText);
         currentSong.setScrollRate(rate);
         cpe.setAutoScrollRate(rate);
     }
 
+    private void setTextSize(double s) {
+        ChordPatternEdit cpe = (ChordPatternEdit) findViewById(R.id.editText);
+        currentSong.setPatternTextSize(s);
+        cpe.setTextSize((float) s);
+    }
+
     public void setReadOnly(boolean ro) {
-        readOnly = ro;
         optionsMenu.findItem(R.id.makeEditable).setVisible(ro);
         optionsMenu.findItem(R.id.AutoScrollStart).setVisible(ro);
         optionsMenu.findItem(R.id.AutoScrollPause).setVisible(ro);
         optionsMenu.findItem(R.id.AutoScrollSpeed).setVisible(ro);
+        optionsMenu.findItem(R.id.ScaleText).setVisible(ro);
         optionsMenu.findItem(R.id.makeReadOnly).setVisible(!ro);
         optionsMenu.findItem(R.id.transposeDown).setVisible(!ro);
         optionsMenu.findItem(R.id.transposeUp).setVisible(!ro);
@@ -229,11 +202,16 @@ public class EditActivity extends AppCompatActivity {
         optionsMenu.findItem(R.id.eliminate_empty_lines).setVisible(!ro);
         optionsMenu.findItem(R.id.add_empty_lines_before_chords).setVisible(!ro);
 
-
         final ChordPatternEdit editText = (ChordPatternEdit) findViewById(R.id.editText);
         editText.setFocusableInTouchMode(!ro);
         editText.setFocusable(!ro);
         editText.stopAutoScroll();
+
+        if (ro) {
+            setTextSize(currentSong.getPatternTextSize());
+        } else {
+            editText.setTextSize((float) Song.DEFAULT_PATTERN_TEXT_SIZE);
+        }
 
         onPrepareOptionsMenu(optionsMenu);
     }
@@ -268,5 +246,4 @@ public class EditActivity extends AppCompatActivity {
         setResult(RESULT_OK, resultIntent);
         finish();
     }
-
 }

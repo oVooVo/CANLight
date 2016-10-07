@@ -19,10 +19,13 @@ import java.util.List;
  * Created by pascal on 06.10.16.
  */
 public class Song implements Parcelable {
+
     private String name;
     private String pattern = "";
     private double scrollRate = 2;
     private boolean uninitalizedPattern;
+    public static final double DEFAULT_PATTERN_TEXT_SIZE = 18;
+    private double patternTextSize = DEFAULT_PATTERN_TEXT_SIZE;
 
     public Song(String name) {
         this.name = name;
@@ -34,6 +37,7 @@ public class Song implements Parcelable {
         pattern = in.readString();
         scrollRate = in.readDouble();
         uninitalizedPattern = in.readInt() != 0;
+        patternTextSize = in.readDouble();
     }
 
     public void setName(String name) {
@@ -65,25 +69,19 @@ public class Song implements Parcelable {
         Song song = new Song("");
         String name;
         String pattern = song.getPattern();
+        double patternTextSize = song.getPatternTextSize();
         double scrollRate = song.getScrollRate();
-        try {
-            name = o.getString("name");
-        } catch (JSONException e) {
+        try { name = o.getString("name"); } catch (JSONException e) {
             throw new AssertionFailedError();
         }
-        try {
-            pattern = o.getString("pattern");
-        } catch (JSONException e) {
-            // ignore. its okay.
-        }
-        try {
-            scrollRate = o.getDouble("scrollRate");
-        } catch (JSONException e) {
-            // ignore. its okay.
-        }
+        try { pattern = o.getString("pattern"); } catch (JSONException e) {} // ignore. its okay.
+        try { scrollRate = o.getDouble("scrollRate"); } catch (JSONException e) {} // ignore. its okay.
+        try { patternTextSize = o.getDouble("patternTextSize"); } catch (JSONException e) {} // ignore. its okay.
+
         song.setPattern(pattern);
         song.setScrollRate(scrollRate);
         song.setName(name);
+        song.setPatternTextSize(patternTextSize);
         return song;
     }
 
@@ -93,6 +91,7 @@ public class Song implements Parcelable {
             o.put("name", getName());
             o.put("pattern", getPattern());
             o.put("scrollRate", getScrollRate());
+            o.put("patternTextSize", getPatternTextSize());
         } catch (JSONException e) {
             throw new AssertionFailedError();
         }
@@ -114,6 +113,7 @@ public class Song implements Parcelable {
         dest.writeString(pattern);
         dest.writeDouble(scrollRate);
         dest.writeInt(uninitalizedPattern ? 1 : 0);
+        dest.writeDouble(patternTextSize);
     }
 
     // this is used to regenerate your object. All Parcelables must have a CREATOR that implements these two methods
@@ -137,5 +137,13 @@ public class Song implements Parcelable {
             textView.setText(getItem(position).getName());
             return view;
         }
+    }
+
+    public void setPatternTextSize(double s) {
+        patternTextSize = s;
+    }
+
+    public double getPatternTextSize() {
+        return patternTextSize;
     }
 }

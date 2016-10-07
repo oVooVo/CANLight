@@ -16,6 +16,8 @@ import android.text.style.BackgroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.AttributeSet;
 import android.view.Gravity;
+import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,7 +32,6 @@ public class ChordPatternEdit extends AutoScrollEditText {
 
     private Handler updateHighlightsHandler;
     private boolean editLoopKillerFlag = true;
-
 
     public ChordPatternEdit(final Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -65,8 +66,6 @@ public class ChordPatternEdit extends AutoScrollEditText {
                         }
                     }, 1000);
                 }
-
-
             }
 
             @Override
@@ -93,13 +92,15 @@ public class ChordPatternEdit extends AutoScrollEditText {
             Chord.Line cLine = Chord.parseLine(line);
             if (HEADLINE_PATTERN.matcher(line).matches()) {
                 BackgroundColorSpan headline = new BackgroundColorSpan(Color.BLUE);
-                span.setSpan(headline, position, position + line.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+                span.setSpan(headline, position, position + line.length(),
+                        Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
             }
             for (String token : cLine.tokens) {
                 Chord chord = Chord.chordFromString(token);
                 if (cLine.isChordLine && chord.isValid()) {
                     StyleSpan bold = new StyleSpan(Typeface.BOLD);
-                    span.setSpan(bold, position, position + token.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+                    span.setSpan(bold, position, position + token.length(),
+                            Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
                 }
                 position = position + token.length() + 1;
             }
@@ -112,7 +113,8 @@ public class ChordPatternEdit extends AutoScrollEditText {
     }
 
 
-    static final Pattern CAN_REMOVE_FIRST_CHARACTER_PATTERN = Pattern.compile("^\\s(" + Chord.CHORD_SPLIT_PATTERN + ").*", Pattern.DOTALL);
+    static final Pattern CAN_REMOVE_FIRST_CHARACTER_PATTERN =
+            Pattern.compile("^\\s(" + Chord.CHORD_SPLIT_PATTERN + ").*", Pattern.DOTALL);
     public void transpose(int transpose)
     {
         String text = getText().toString();
@@ -138,7 +140,8 @@ public class ChordPatternEdit extends AutoScrollEditText {
                         additional++;
                     }
                     // try to trim after to match length of token (if c is longer than token)
-                    while (!after.startsWith("\n") && additional > 0 && CAN_REMOVE_FIRST_CHARACTER_PATTERN.matcher(after).matches()) {
+                    while (!after.startsWith("\n") && additional > 0
+                            && CAN_REMOVE_FIRST_CHARACTER_PATTERN.matcher(after).matches()) {
                         additional -= 1;
                         after = after.substring(1);
                     }
