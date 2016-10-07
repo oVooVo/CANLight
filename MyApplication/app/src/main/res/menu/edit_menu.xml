@@ -3,9 +3,11 @@
     xmlns:compat="http://schemas.android.com/apk/res-auto">
     <item android:id="@+id/transposeUp"
         android:title="@string/transpose_up"
+        android:icon="@drawable/ic_transpose_up"
         compat:showAsAction="ifRoom" />
     <item android:id="@+id/transposeDown"
         android:title="@string/transpose_down"
+        android:icon="@drawable/ic_transpose_down"
         compat:showAsAction="ifRoom" />
     <item android:id="@+id/importPattern"
         android:title="@string/import_pattern"
@@ -26,9 +28,11 @@
 
     <item android:id="@+id/AutoScrollStart"
         android:title="@string/start_auto_scroll"
+        android:icon="@android:drawable/ic_media_play"
         compat:showAsAction="ifRoom" />
     <item android:id="@+id/AutoScrollPause"
         android:title="@string/pause_auto_scroll"
+        android:icon="@android:drawable/ic_media_pause"
         compat:showAsAction="ifRoom" />
     <item android:id="@+id/AutoScrollSpeed"
         android:title="@string/speed_auto_scroll"

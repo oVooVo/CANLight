@@ -3,8 +3,10 @@
     xmlns:compat="http://schemas.android.com/apk/res-auto">
     <item android:id="@+id/applyImport"
         android:title="@string/apply_preview"
+        android:icon="@drawable/ic_import_pattern_apply"
         compat:showAsAction="ifRoom" />
     <item android:id="@+id/cancelImport"
         android:title="@string/cancel_preview"
+        android:icon="@drawable/ic_import_pattern_cancel"
         compat:showAsAction="ifRoom" />
 </menu>
