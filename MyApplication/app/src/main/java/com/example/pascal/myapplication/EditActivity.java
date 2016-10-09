@@ -25,14 +25,13 @@ import android.widget.Toast;
 public class EditActivity extends AppCompatActivity {
 
     private Song currentSong;
-    private boolean readOnly = true;
+    private MenuItem autoScrollPlayPauseMenuItem;
     private Menu optionsMenu;
+    AutoScroller autoScroller;
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
-
         final boolean keepScreenOn = PreferenceManager.getDefaultSharedPreferences(this)
                 .getBoolean("pref_keep_screen_on", false);
         if (keepScreenOn) {
@@ -43,6 +42,13 @@ public class EditActivity extends AppCompatActivity {
         currentSong = getIntent().getParcelableExtra("song");
 
         final EditText editText = (EditText) findViewById(R.id.editText);
+        autoScroller = new AutoScroller(editText) {
+            public void stopAutoScroll() {
+                super.stopAutoScroll();
+                System.out.println("auto stop");
+                updateAutoScrollStartPauseMenuItem(false);
+            }
+        };
         editText.setText(currentSong.getPattern());
         editText.setFocusable(false);
 
@@ -66,6 +72,7 @@ public class EditActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.edit_menu, menu);
+        autoScrollPlayPauseMenuItem = menu.findItem(R.id.AutoScrollPlayPause);
         optionsMenu = menu;
 
         // Edit Stuff
@@ -130,21 +137,16 @@ public class EditActivity extends AppCompatActivity {
             }
         });
 
-
         // View stuff
-        menu.findItem(R.id.AutoScrollPause).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+        menu.findItem(R.id.AutoScrollPlayPause).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                ChordPatternEdit cpe = (ChordPatternEdit) findViewById(R.id.editText);
-                cpe.stopAutoScroll();
-                return true;
-            }
-        });
-        menu.findItem(R.id.AutoScrollStart).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                ChordPatternEdit cpe = (ChordPatternEdit) findViewById(R.id.editText);
-                cpe.startAutoScroll();
+                if (autoScroller.isPlaying()) {
+                    autoScroller.stopAutoScroll();
+                } else {
+                    autoScroller.startAutoScroll();
+                }
+                updateAutoScrollStartPauseMenuItem(autoScroller.isPlaying());
                 return true;
             }
         });
@@ -188,6 +190,16 @@ public class EditActivity extends AppCompatActivity {
         return true;
     }
 
+    void updateAutoScrollStartPauseMenuItem(boolean play) {
+        if (play) {
+            autoScrollPlayPauseMenuItem.setTitle(R.string.pause_auto_scroll);
+            autoScrollPlayPauseMenuItem.setIcon(android.R.drawable.ic_media_pause);
+        } else {
+            autoScrollPlayPauseMenuItem.setTitle(R.string.start_auto_scroll);
+            autoScrollPlayPauseMenuItem.setIcon(android.R.drawable.ic_media_play);
+        }
+    }
+
     private static final double maxRate = 5.0;
     private static final double minRate = 0.0;
     private static final double factor = 3.0;
@@ -211,16 +223,13 @@ public class EditActivity extends AppCompatActivity {
     }
 
     private void setScrollRate(double rate) {
-        ChordPatternEdit cpe = (ChordPatternEdit) findViewById(R.id.editText);
         currentSong.setScrollRate(rate);
-        cpe.setAutoScrollRate(rate);
+        autoScroller.setAutoScrollRate(rate);
     }
 
     public void setReadOnly(boolean ro) {
-        readOnly = ro;
         optionsMenu.findItem(R.id.makeEditable).setVisible(ro);
-        optionsMenu.findItem(R.id.AutoScrollStart).setVisible(ro);
-        optionsMenu.findItem(R.id.AutoScrollPause).setVisible(ro);
+        optionsMenu.findItem(R.id.AutoScrollPlayPause).setVisible(ro);
         optionsMenu.findItem(R.id.AutoScrollSpeed).setVisible(ro);
         optionsMenu.findItem(R.id.makeReadOnly).setVisible(!ro);
         optionsMenu.findItem(R.id.transposeDown).setVisible(!ro);
@@ -233,7 +242,7 @@ public class EditActivity extends AppCompatActivity {
         final ChordPatternEdit editText = (ChordPatternEdit) findViewById(R.id.editText);
         editText.setFocusableInTouchMode(!ro);
         editText.setFocusable(!ro);
-        editText.stopAutoScroll();
+        autoScroller.stopAutoScroll();
 
         onPrepareOptionsMenu(optionsMenu);
     }

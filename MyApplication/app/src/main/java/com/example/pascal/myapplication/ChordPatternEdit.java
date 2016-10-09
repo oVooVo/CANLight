@@ -16,6 +16,8 @@ import android.text.style.BackgroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.AttributeSet;
 import android.view.Gravity;
+import android.widget.EditText;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,7 +28,7 @@ import java.util.regex.Pattern;
 /**
  * Created by pascal on 03.10.16.
  */
-public class ChordPatternEdit extends AutoScrollEditText {
+public class ChordPatternEdit extends EditText {
 
     private Handler updateHighlightsHandler;
     private boolean editLoopKillerFlag = true;

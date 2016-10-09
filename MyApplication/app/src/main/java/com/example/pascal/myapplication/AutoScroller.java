@@ -1,37 +1,35 @@
 package com.example.pascal.myapplication;
 
-import android.content.Context;
-import android.util.AttributeSet;
-import android.widget.EditText;
-
-import java.util.Timer;
-import java.util.TimerTask;
+import android.os.Handler;
+import android.widget.TextView;
 
 /**
  * Created by pascal on 06.10.16.
  */
-public class AutoScrollEditText extends EditText {
-
-    Timer timer;
-    boolean active = false;
+public class AutoScroller {
+    private final TextView textView;
     double scrollBuffer = 0;
     double scrollRate = 2;
+    boolean active = false;
+    final Handler handler;
 
-    public AutoScrollEditText(final Context context, AttributeSet attrs) {
-        super(context, attrs);
-        timer = new Timer();
-        timer.scheduleAtFixedRate(new TimerTask() {
+    public AutoScroller(TextView view) {
+        textView = view;
+        handler = new Handler();
+        new Runnable() {
             @Override
             public void run() {
                 if (active) {
                     scrollBy(scrollRate);
-                    if (getScrollY() >= computeVerticalScrollRange() - getHeight()) {
+                    if (!textView.canScrollVertically(1)) {
                         stopAutoScroll();
                     }
                 }
+                handler.postDelayed(this, 50);
             }
-        }, 0, 50);
+        }.run();
     }
+
 
     public void startAutoScroll() {
         active = true;
@@ -50,6 +48,11 @@ public class AutoScrollEditText extends EditText {
         scrollBuffer += y;
         int integer = (int) scrollBuffer;
         scrollBuffer -= integer;
-        scrollBy(0, integer);
+        textView.scrollBy(0, integer);
     }
+
+    public boolean isPlaying() {
+        return active;
+    }
+
 }
