@@ -1,4 +1,4 @@
-package com.example.pascal.myapplication;
+package com.example.pascal.canlight;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;

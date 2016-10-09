@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.pascal.myapplication">
+    package="com.example.pascal.canlight">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat">
         <activity
-            android:name=".MainActivity"
+            android:name="com.example.pascal.canlight.MainActivity"
             android:configChanges="orientation|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -20,17 +20,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".EditActivity" />
+        <activity android:name="com.example.pascal.canlight.EditActivity" />
         <activity
-            android:name=".ImportActivity"
+            android:name="com.example.pascal.canlight.ImportActivity"
             android:configChanges="orientation|screenSize" />
 
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
-        <activity android:name=".PatternPreviewActivity" />
-        <activity android:name=".SettingsActivity"></activity>
+        <activity android:name="com.example.pascal.canlight.PatternPreviewActivity" />
+        <activity android:name="com.example.pascal.canlight.SettingsActivity"></activity>
     </application>
 
 </manifest>

@@ -1,4 +1,4 @@
-package com.example.pascal.myapplication;
+package com.example.pascal.canlight;
 
 import junit.framework.AssertionFailedError;
 

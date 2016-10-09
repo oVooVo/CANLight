@@ -1,11 +1,6 @@
-package com.example.pascal.myapplication;
+package com.example.pascal.canlight;
 
 import android.content.Context;
-import android.graphics.Color;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.TextView;
 
 import junit.framework.AssertionFailedError;
 
@@ -19,9 +14,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * Created by pascal on 02.10.16.
