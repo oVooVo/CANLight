@@ -60,7 +60,7 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
             ListPreference lp = (ListPreference) preference;
             lp.setSummary(lp.getEntry());
         } else if (preference != null) {
-            if (preference.getKey().equals(getString(R.string.pref_clear_cache_key))) {
+            if (preference.getKey().equals(getActivity().getString(R.string.pref_clear_cache_key))) {
                 final int size = ImportCache.computeSizeInKB();
                 final int count = ImportCache.numberOfItems();
                 String text = getResources().getQuantityString(R.plurals.importCacheCount, count, count);
