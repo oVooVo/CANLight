@@ -153,35 +153,12 @@ public class EditActivity extends AppCompatActivity {
         menu.findItem(R.id.AutoScrollSpeed).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                Dialog dialog = new Dialog(EditActivity .this);
-                Rect displayRectangle = new Rect();
-                Window window = EditActivity.this.getWindow();
-                window.getDecorView().getWindowVisibleDisplayFrame(displayRectangle);
-                LayoutInflater inflater = (LayoutInflater)
-                        EditActivity.this.getSystemService(
-                                getApplicationContext().LAYOUT_INFLATER_SERVICE);
-                View view = inflater.inflate(R.layout.autoscroll_set_speed_dialog, null);
-                view.setMinimumWidth((int)(displayRectangle.width() * 0.9f));
-                dialog.setContentView(view);
-                dialog.setTitle("Set Auto Scroll Speed");
-                SeekBar slider = (SeekBar) dialog.findViewById(R.id.seekBar);
-                double percent = getScrollRatePercent(currentSong.getScrollRate());
-                slider.setProgress((int) (percent * slider.getMax()));
-                slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                new SliderDialog.ExpSliderDialog(0, 6, 1, EditActivity.this) {
                     @Override
-                    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                        final double scrollRate = getExpScrollRate(((double) progress) / seekBar.getMax());
-                        setScrollRate(scrollRate);
+                    void onValueChanged(double value) {
+                        setScrollRate(value);
                     }
-
-                    @Override
-                    public void onStartTrackingTouch(SeekBar seekBar) { }
-
-                    @Override
-                    public void onStopTrackingTouch(SeekBar seekBar) { }
-                });
-                dialog.show();
-
+                }.setValue(currentSong.getScrollRate());
                 return true;
             }
         });
