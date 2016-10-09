@@ -46,6 +46,9 @@ public class ChordPatternEdit extends EditText {
                 for (StyleSpan ss : getText().getSpans(0, getText().length() - 1, StyleSpan.class)) {
                     getText().removeSpan(ss);
                 }
+                for (BackgroundColorSpan ss : getText().getSpans(0, getText().length() - 1, BackgroundColorSpan.class)) {
+                    getText().removeSpan(ss);
+                }
             }
 
             @Override
