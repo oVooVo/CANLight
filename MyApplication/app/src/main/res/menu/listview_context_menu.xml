@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:id="@+id/renameItem"
-        android:title="@string/rename_song"/>
-    <item android:id="@+id/deleteItem"
-        android:title="@string/delete_song"/>
+    <item android:id="@+id/menu_rename_song"
+        android:title="@string/menu_rename_song_title"/>
+    <item android:id="@+id/menu_delete_song"
+        android:title="@string/menu_delete_song_title"/>
 </menu>

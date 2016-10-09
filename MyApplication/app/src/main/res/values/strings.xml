@@ -1,31 +1,45 @@
 <resources>
     <string name="app_name">CANLight</string>
-    <string name="transpose_up">"Transpose Up"</string>
-    <string name="transpose_down">Transpose Down</string>
-    <string name="import_pattern">Import</string>
-    <string name="edit_pattern">Edit</string>
-    <string name="view_pattern">View</string>
-    <string name="start_auto_scroll">Start</string>
-    <string name="pause_auto_scroll">Pause</string>
-    <string name="speed_auto_scroll">Speed</string>
-    <string name="scale_text">Scale</string>
-    <string name="apply_preview">Use this</string>
-    <string name="cancel_preview">Go back</string>
-    <string name="rename_song">Rename</string>
-    <string name="delete_song">Delete</string>
-    <string name="action_settings">Settings</string>
-    <string name="pref_theme_default_value">Material Light</string>
-    <string name="pref_themeTitle">Theme</string>
-    <string name="import_preview">Import Preview</string>
-    <string name="default_song_name">New Song</string>
+
+    <!-- edit_menu -->
+    <string name="menu_transpose_up_title">"Transpose Up"</string>
+    <string name="menu_transpose_down_title">Transpose Down</string>
+    <string name="menu_import_pattern_title">Import</string>
+    <string name="menu_edit_pattern_title">Edit</string>
+    <string name="menu_view_pattern_title">View</string>
+    <string name="menu_auto_scroll_pause_title">Start</string>
+    <string name="menu_auto_scroll_start_title">Pause</string>
+    <string name="menu_speed_auto_scroll_title">Speed</string>
+    <string name="menu_scale_text_title">Scale</string>
+    <string name="menu_eliminate_empty_lines_title">Eliminate Empty Lines</string>
+    <string name="menu_add_empty_lines_before_chords_title">Add Empty Lines before Chords</string>
+
+    <!-- improt_preview_menu -->
+    <string name="menu_apply_preview_title">Use this</string>
+    <string name="menu_discard_preview_title">Go Back</string>
+
+    <!-- listview context menu -->
+    <string name="menu_rename_song_title">Rename</string>
+    <string name="menu_delete_song_title">Delete</string>
+
+    <!-- main_menu -->
+    <string name="menu_settings_title">Settings</string>
+
+    <!-- preferences -->
+    <string name="pref_keep_screen_on_key">pref_keep_screen_on</string>
+    <string name="pref_keep_screen_on_title">Don\'t Sleep</string>
+    <string name="pref_keep_screen_on_summary">Only in Pattern View Mode</string>
+    <string name="pref_clear_cache_key">Clear Cache</string>
+    <string name="pref_clear_cache_title">Clear Cache</string>
+
+    <!-- misc -->
     <string name="nothing_found_search_songs">Nothing found</string>
     <string name="download_pattern_failed">Could not download pattern.</string>
     <string name="no_internet_connection">No internet connection</string>
-    <string name="eliminate_empty_lines">Eliminate Empty Lines</string>
-    <string name="add_empty_lines_before_chords">Add Empty Lines before Chords</string>
-    <string name="clear_cache">Clear Cache</string>
-    <string name="pref_keep_screen_on">Don\'t Sleep</string>
-    <string name="pref_keep_screen_on_summ">Only in Pattern View Mode</string>
+    <string name="default_song_name">New Song</string>
+
+
+    <string name="activity_import_preview_title">Import Preview</string>
 
     <plurals name="numberOfRemovedLines">
         <item quantity="one">Removed %d line</item>

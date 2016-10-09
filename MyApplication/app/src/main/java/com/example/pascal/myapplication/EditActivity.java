@@ -72,11 +72,11 @@ public class EditActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.edit_menu, menu);
-        autoScrollPlayPauseMenuItem = menu.findItem(R.id.AutoScrollPlayPause);
+        autoScrollPlayPauseMenuItem = menu.findItem(R.id.menu_auto_scroll_start_pause);
         optionsMenu = menu;
 
         // Edit Stuff
-        menu.findItem(R.id.transposeUp).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+        menu.findItem(R.id.menu_transpose_up).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 ChordPatternEdit cpe = (ChordPatternEdit) findViewById(R.id.editText);
@@ -84,7 +84,7 @@ public class EditActivity extends AppCompatActivity {
                 return true;
             }
         });
-        menu.findItem(R.id.transposeDown).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+        menu.findItem(R.id.menu_transpose_down).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 ChordPatternEdit cpe = (ChordPatternEdit) findViewById(R.id.editText);
@@ -92,14 +92,14 @@ public class EditActivity extends AppCompatActivity {
                 return true;
             }
         });
-        menu.findItem(R.id.importPattern).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+        menu.findItem(R.id.menu_import_pattern).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 importPattern();
                 return true;
             }
         });
-        menu.findItem(R.id.eliminate_empty_lines).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+        menu.findItem(R.id.menu_eliminate_empty_lines).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 ChordPatternEdit cpe = (ChordPatternEdit) findViewById(R.id.editText);
@@ -109,7 +109,7 @@ public class EditActivity extends AppCompatActivity {
                 return true;
             }
         });
-        menu.findItem(R.id.add_empty_lines_before_chords).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+        menu.findItem(R.id.menu_add_empty_lines_before_chords).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 ChordPatternEdit cpe = (ChordPatternEdit) findViewById(R.id.editText);
@@ -122,14 +122,14 @@ public class EditActivity extends AppCompatActivity {
 
 
         // Switch Edit/view stuff
-        menu.findItem(R.id.makeEditable).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+        menu.findItem(R.id.menu_edit_pattern).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 setReadOnly(false);
                 return true;
             }
         });
-        menu.findItem(R.id.makeReadOnly).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+        menu.findItem(R.id.menu_view_pattern).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 setReadOnly(true);
@@ -138,7 +138,7 @@ public class EditActivity extends AppCompatActivity {
         });
 
         // View stuff
-        menu.findItem(R.id.AutoScrollPlayPause).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+        menu.findItem(R.id.menu_auto_scroll_start_pause).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 if (autoScroller.isPlaying()) {
@@ -150,7 +150,7 @@ public class EditActivity extends AppCompatActivity {
                 return true;
             }
         });
-        menu.findItem(R.id.AutoScrollSpeed).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+        menu.findItem(R.id.menu_auto_scroll_speed).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 new SliderDialog.ExpSliderDialog(0, 6, 1, EditActivity.this) {
@@ -162,7 +162,7 @@ public class EditActivity extends AppCompatActivity {
                 return true;
             }
         });
-        menu.findItem(R.id.ScaleText).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+        menu.findItem(R.id.menu_scale_pattern).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 new SliderDialog.ExpSliderDialog(2, 30, 3, EditActivity.this) {
@@ -188,10 +188,10 @@ public class EditActivity extends AppCompatActivity {
 
     void updateAutoScrollStartPauseMenuItem(boolean play) {
         if (play) {
-            autoScrollPlayPauseMenuItem.setTitle(R.string.pause_auto_scroll);
+            autoScrollPlayPauseMenuItem.setTitle(R.string.menu_auto_scroll_pause_title);
             autoScrollPlayPauseMenuItem.setIcon(android.R.drawable.ic_media_pause);
         } else {
-            autoScrollPlayPauseMenuItem.setTitle(R.string.start_auto_scroll);
+            autoScrollPlayPauseMenuItem.setTitle(R.string.menu_auto_scroll_start_title);
             autoScrollPlayPauseMenuItem.setIcon(android.R.drawable.ic_media_play);
         }
     }
@@ -202,17 +202,16 @@ public class EditActivity extends AppCompatActivity {
     }
 
     public void setReadOnly(boolean ro) {
-        optionsMenu.findItem(R.id.makeEditable).setVisible(ro);
-        optionsMenu.findItem(R.id.AutoScrollPlayPause).setVisible(ro);
-        optionsMenu.findItem(R.id.AutoScrollSpeed).setVisible(ro);
-        optionsMenu.findItem(R.id.ScaleText).setVisible(ro);
-        optionsMenu.findItem(R.id.makeReadOnly).setVisible(!ro);
-        optionsMenu.findItem(R.id.transposeDown).setVisible(!ro);
-        optionsMenu.findItem(R.id.transposeUp).setVisible(!ro);
-        optionsMenu.findItem(R.id.importPattern).setVisible(!ro);
-        optionsMenu.findItem(R.id.eliminate_empty_lines).setVisible(!ro);
-        optionsMenu.findItem(R.id.add_empty_lines_before_chords).setVisible(!ro);
-
+        optionsMenu.findItem(R.id.menu_edit_pattern).setVisible(ro);
+        optionsMenu.findItem(R.id.menu_auto_scroll_start_pause).setVisible(ro);
+        optionsMenu.findItem(R.id.menu_auto_scroll_speed).setVisible(ro);
+        optionsMenu.findItem(R.id.menu_scale_pattern).setVisible(ro);
+        optionsMenu.findItem(R.id.menu_view_pattern).setVisible(!ro);
+        optionsMenu.findItem(R.id.menu_transpose_up).setVisible(!ro);
+        optionsMenu.findItem(R.id.menu_transpose_down).setVisible(!ro);
+        optionsMenu.findItem(R.id.menu_import_pattern).setVisible(!ro);
+        optionsMenu.findItem(R.id.menu_eliminate_empty_lines).setVisible(!ro);
+        optionsMenu.findItem(R.id.menu_add_empty_lines_before_chords).setVisible(!ro);
 
         final ChordPatternEdit editText = (ChordPatternEdit) findViewById(R.id.editText);
         editText.setFocusableInTouchMode(!ro);

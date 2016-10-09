@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <Preference
-        android:title="@string/clear_cache"
-        android:key="clear_cache" />
+        android:title="@string/pref_clear_cache_title"
+        android:key="@string/pref_clear_cache_key"/>
     <CheckBoxPreference
-        android:title="@string/pref_keep_screen_on"
-        android:summary="@string/pref_keep_screen_on_summ"
+        android:title="@string/pref_keep_screen_on_title"
+        android:summary="@string/pref_keep_screen_on_summary"
         android:defaultValue="true"
-        android:key="pref_keep_screen_on" />
+        android:key="@string/pref_keep_screen_on_key" />
 </PreferenceScreen>

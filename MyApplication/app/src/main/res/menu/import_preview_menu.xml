@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:compat="http://schemas.android.com/apk/res-auto">
-    <item android:id="@+id/applyImport"
-        android:title="@string/apply_preview"
+    <item android:id="@+id/menu_apply_preview"
+        android:title="@string/menu_apply_preview_title"
+        android:icon="@drawable/ic_apply"
         compat:showAsAction="ifRoom" />
-    <item android:id="@+id/cancelImport"
-        android:title="@string/cancel_preview"
+    <item android:id="@+id/menu_discard_preview"
+        android:title="@string/menu_discard_preview_title"
+        android:icon="@drawable/ic_discard"
         compat:showAsAction="ifRoom" />
 </menu>

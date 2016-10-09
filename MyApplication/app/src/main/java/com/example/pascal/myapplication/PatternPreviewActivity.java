@@ -13,7 +13,7 @@ public class PatternPreviewActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pattern_preview);
-        getSupportActionBar().setTitle(R.string.import_preview);
+        getSupportActionBar().setTitle(R.string.activity_import_preview_title);
 
         final String pattern = getIntent().getStringExtra("pattern");
         final EditText editText = (EditText) findViewById(R.id.editTextPreview);
@@ -25,7 +25,7 @@ public class PatternPreviewActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.import_preview_menu, menu);
 
-        menu.findItem(R.id.applyImport).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+        menu.findItem(R.id.menu_apply_preview).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 final EditText editText = (EditText) findViewById(R.id.editTextPreview);
@@ -36,7 +36,7 @@ public class PatternPreviewActivity extends AppCompatActivity {
                 return true;
             }
         });
-        menu.findItem(R.id.cancelImport).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+        menu.findItem(R.id.menu_discard_preview).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 Intent resultIntent = new Intent();

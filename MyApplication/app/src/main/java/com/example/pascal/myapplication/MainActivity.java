@@ -27,25 +27,22 @@ public class MainActivity extends AppCompatActivity {
     int currentEditPosition = -1;
     private Project project;
 
-    //public static void setTheme(AppCompatActivity activity) {
-     //   activity.setTheme(activity.getApplicationContext().getSharedPreferences("pref_theme"));
-   // }
-
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo info) {
         super.onCreateContextMenu(menu, v, info);
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.listview_context_menu, menu);
 
+        setTitle(R.string.app_name);
         final AdapterView.AdapterContextMenuInfo acmi = (AdapterView.AdapterContextMenuInfo) info;
 
-        menu.findItem(R.id.deleteItem).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+        menu.findItem(R.id.menu_delete_song).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 project.remove(acmi.position);
                 return true;
             }
         });
-        menu.findItem(R.id.renameItem).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+        menu.findItem(R.id.menu_rename_song).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 editSongName(acmi.position, false);
@@ -149,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
-        menu.findItem(R.id.action_settings).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+        menu.findItem(R.id.menu_settings).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
