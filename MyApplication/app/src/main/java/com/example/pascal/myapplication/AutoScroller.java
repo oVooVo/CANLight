@@ -20,7 +20,8 @@ public class AutoScroller {
             @Override
             public void run() {
                 if (active) {
-                    scrollBy(scrollRate);
+                    final double actualScrollRate = scrollRate * textView.getTextSize() / 18.0;
+                    scrollBy(actualScrollRate);
                     if (!textView.canScrollVertically(1)) {
                         stopAutoScroll();
                     }

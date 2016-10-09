@@ -8,6 +8,7 @@
     <string name="start_auto_scroll">Start</string>
     <string name="pause_auto_scroll">Pause</string>
     <string name="speed_auto_scroll">Speed</string>
+    <string name="scale_text">Scale</string>
     <string name="apply_preview">Use this</string>
     <string name="cancel_preview">Go back</string>
     <string name="rename_song">Rename</string>

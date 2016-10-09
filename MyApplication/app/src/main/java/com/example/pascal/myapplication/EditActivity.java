@@ -45,11 +45,11 @@ public class EditActivity extends AppCompatActivity {
         autoScroller = new AutoScroller(editText) {
             public void stopAutoScroll() {
                 super.stopAutoScroll();
-                System.out.println("auto stop");
                 updateAutoScrollStartPauseMenuItem(false);
             }
         };
         editText.setText(currentSong.getPattern());
+        editText.setTextSize((float) currentSong.getPatternTextSize());
         editText.setFocusable(false);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -162,9 +162,28 @@ public class EditActivity extends AppCompatActivity {
                 return true;
             }
         });
+        menu.findItem(R.id.ScaleText).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                new SliderDialog.ExpSliderDialog(2, 30, 3, EditActivity.this) {
+
+                    @Override
+                    void onValueChanged(double value) {
+                        setTextSize(value);
+                    }
+                }.setValue(currentSong.getPatternTextSize());
+                return true;
+            }
+        });
 
         setReadOnly(true);
         return true;
+    }
+
+    private void setTextSize(double s) {
+        ChordPatternEdit cpe = (ChordPatternEdit) findViewById(R.id.editText);
+        currentSong.setPatternTextSize(s);
+        cpe.setTextSize((float) s);
     }
 
     void updateAutoScrollStartPauseMenuItem(boolean play) {
@@ -177,28 +196,6 @@ public class EditActivity extends AppCompatActivity {
         }
     }
 
-    private static final double maxRate = 5.0;
-    private static final double minRate = 0.0;
-    private static final double factor = 3.0;
-    private double getExpScrollRate(double rate) {
-        rate *= factor;
-        rate = Math.exp(rate);
-        rate -= Math.exp(0.0);
-        rate /= (Math.exp(factor) - Math.exp(0.0));
-        rate *= (maxRate - minRate);
-        rate += minRate;
-        return rate;
-    }
-    private double getScrollRatePercent(double rate) {
-        rate -= minRate;
-        rate /= (maxRate - minRate);
-        rate *= (Math.exp(factor) - Math.exp(0.0));
-        rate += Math.exp(0.0);
-        rate = Math.log(rate);
-        rate /= factor;
-        return rate;
-    }
-
     private void setScrollRate(double rate) {
         currentSong.setScrollRate(rate);
         autoScroller.setAutoScrollRate(rate);
@@ -208,6 +205,7 @@ public class EditActivity extends AppCompatActivity {
         optionsMenu.findItem(R.id.makeEditable).setVisible(ro);
         optionsMenu.findItem(R.id.AutoScrollPlayPause).setVisible(ro);
         optionsMenu.findItem(R.id.AutoScrollSpeed).setVisible(ro);
+        optionsMenu.findItem(R.id.ScaleText).setVisible(ro);
         optionsMenu.findItem(R.id.makeReadOnly).setVisible(!ro);
         optionsMenu.findItem(R.id.transposeDown).setVisible(!ro);
         optionsMenu.findItem(R.id.transposeUp).setVisible(!ro);
@@ -220,6 +218,11 @@ public class EditActivity extends AppCompatActivity {
         editText.setFocusableInTouchMode(!ro);
         editText.setFocusable(!ro);
         autoScroller.stopAutoScroll();
+        if (ro) {
+            editText.setTextSize((float) currentSong.getPatternTextSize());
+        } else {
+            editText.setTextSize(18);
+        }
 
         onPrepareOptionsMenu(optionsMenu);
     }

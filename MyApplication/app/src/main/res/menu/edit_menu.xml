@@ -33,4 +33,7 @@
     <item android:id="@+id/AutoScrollSpeed"
         android:title="@string/speed_auto_scroll"
         compat:showAsAction="never" />
+    <item android:id="@+id/ScaleText"
+        android:title="@string/scale_text"
+        compat:showAsAction="never" />
 </menu>
