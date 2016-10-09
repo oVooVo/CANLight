@@ -23,7 +23,9 @@ public class MainActivity extends AppCompatActivity {
 
     public static final int PATTERN_REQUEST = 0;
     public static final int IMPORT_PATTERN_REQUEST = 2;
-    public static final int IMPORT_PATTERN_PREVIEW_REQUEST = 2;
+    public static final int IMPORT_PATTERN_PREVIEW_REQUEST = 3;
+    public static final int LOGIN_SPOTIFY_REQUEST = 4;
+
     int currentEditPosition = -1;
     private Project project;
 

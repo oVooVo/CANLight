@@ -29,8 +29,11 @@
     <string name="pref_keep_screen_on_key">pref_keep_screen_on</string>
     <string name="pref_keep_screen_on_title">Don\'t Sleep</string>
     <string name="pref_keep_screen_on_summary">Only in Pattern View Mode</string>
-    <string name="pref_clear_cache_key">Clear Cache</string>
+    <string name="pref_clear_cache_key">pref_clear_cache</string>
     <string name="pref_clear_cache_title">Clear Cache</string>
+    <string name="pref_loggin_spotify_key">pref_loggin_spotify</string>
+    <string name="pref_loggin_spotify_title">Spotify: Loggin</string>
+    pref_loggin_spotify_title
 
     <!-- misc -->
     <string name="nothing_found_search_songs">Nothing found</string>

@@ -1,8 +1,16 @@
 package com.example.pascal.canlight;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.widget.Toast;
+
+import com.spotify.sdk.android.authentication.AuthenticationClient;
+import com.spotify.sdk.android.authentication.AuthenticationRequest;
+import com.spotify.sdk.android.authentication.AuthenticationResponse;
+
+import java.util.Arrays;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -20,4 +28,21 @@ public class SettingsActivity extends AppCompatActivity {
         finish();
         return true;
     }
-}
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        super.onActivityResult(requestCode, resultCode, intent);
+
+        // Check if result comes from the correct activity
+        if (requestCode == MainActivity.LOGIN_SPOTIFY_REQUEST) {
+            AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, intent);
+            AuthenticationResponse.Type result = MySpotify.onLoginResponse(response);
+            if (AuthenticationResponse.Type.ERROR.equals(result)) {
+                Toast.makeText(this, "Unable to authorize", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Authorized successfully", Toast.LENGTH_SHORT).show();
+
+                System.out.println("Search for tracks \"Into Flame\"");
+                MySpotify.getSuggestions("Into Flame");
+            }
+        }
+    }}

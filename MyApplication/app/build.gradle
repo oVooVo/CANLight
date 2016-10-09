@@ -19,6 +19,14 @@ android {
     }
 }
 
+repositories {
+    mavenCentral()
+    maven { url "https://jitpack.io" }
+    flatDir {
+        dirs 'libs'
+    }
+}
+
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
@@ -28,4 +36,6 @@ dependencies {
     compile 'org.apache.directory.studio:org.apache.commons.io:2.4'
     compile 'com.android.support:design:24.2.1'
     compile 'com.android.support:support-v4:24.2.1'
+    compile 'com.spotify.sdk:spotify-auth-beta23-noconnect-2.20b:@aar'
+    compile 'com.github.kaaes:spotify-web-api-android:0.4.1'
 }
