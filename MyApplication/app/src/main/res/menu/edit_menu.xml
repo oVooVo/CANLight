@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:compat="http://schemas.android.com/apk/res-auto">
+
+    <item android:id="@+id/menu_view_pattern"
+        android:title="@string/menu_view_pattern_title"
+        android:icon="@drawable/ic_apply"
+        compat:showAsAction="ifRoom" />
     <item android:id="@+id/menu_transpose_up"
         android:title="@string/menu_transpose_up_title"
         android:icon="@android:drawable/arrow_up_float"
@@ -21,9 +26,6 @@
 
     <item android:id="@+id/menu_edit_pattern"
         android:title="@string/menu_edit_pattern_title"
-        compat:showAsAction="never" />
-    <item android:id="@+id/menu_view_pattern"
-        android:title="@string/menu_view_pattern_title"
         compat:showAsAction="never" />
 
     <item android:id="@+id/menu_auto_scroll_start_pause"
