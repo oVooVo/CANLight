@@ -39,7 +39,7 @@
     <string name="nothing_found_search_songs">Nothing found</string>
     <string name="download_pattern_failed">Could not download pattern.</string>
     <string name="no_internet_connection">No internet connection</string>
-    <string name="default_song_name">New Song</string>
+    <string name="default_song_name">\</string>
 
 
     <string name="activity_import_preview_title">Import Preview</string>

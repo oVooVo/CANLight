@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.view.ContextMenu;
@@ -54,15 +55,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void editSongName(int position, boolean itemIsNew) {
-        final EditText editName = new EditText(this);
+        final EditText editName = new SpotifySpinner(this);
         editName.setMaxLines(1);
         editName.setText(project.getSong(position).getName());
         editName.selectAll();
 
         // show keyboard
         editName.requestFocus();
-        InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-        imm.toggleSoftInput(InputMethodManager.SHOW_IMPLICIT, InputMethodManager.HIDE_NOT_ALWAYS);
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+                imm.showSoftInput(editName, InputMethodManager.SHOW_IMPLICIT);
+            }
+        }, 100);
 
         final boolean fItemIsNew = itemIsNew;
         final int fPosition = position;

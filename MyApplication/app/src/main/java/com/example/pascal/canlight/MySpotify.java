@@ -6,6 +6,8 @@ import com.spotify.sdk.android.authentication.AuthenticationClient;
 import com.spotify.sdk.android.authentication.AuthenticationRequest;
 import com.spotify.sdk.android.authentication.AuthenticationResponse;
 
+import junit.framework.AssertionFailedError;
+
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Track;
@@ -21,6 +23,18 @@ public class MySpotify {
     public static final String CLIENT_ID = "8874e81dddd441fb8854482e4aafc634";
     public static final String REDIRECT_URL = "canlight-spotify://callback";
     private static SpotifyApi spotifyApi = null;
+
+    public static SpotifyApi getSpotifyApi() {
+        if (spotifyApi == null) {
+            spotifyApi = new SpotifyApi();
+        }
+        return spotifyApi;
+    }
+
+    public static SpotifyService getSpotifyService() {
+        return getSpotifyApi().getService();
+    }
+
 
     public static void loginRequest(Activity activity) {
         // Request code will be used to verify if result comes from the login activity. Can be set to any integer.
@@ -52,34 +66,4 @@ public class MySpotify {
         }
         return r.getType();
     }
-
-    public static SpotifyApi spotifyApi() {
-        return spotifyApi;
-    }
-
-    public static boolean isLoggedIn() {
-        return spotifyApi != null;
-    }
-
-    public static void getSuggestions(String key) {
-        if (spotifyApi == null) {
-            System.out.println("NULL");
-        }
-
-        SpotifyService service = spotifyApi().getService();
-        service.searchTracks(key, new Callback<TracksPager>() {
-            @Override
-            public void success(TracksPager tracksPager, Response response) {
-                for (Track t : tracksPager.tracks.items) {
-                    System.out.println("Track: " + t.name + t.type);
-                }
-            }
-
-            @Override
-            public void failure(RetrofitError error) {
-
-            }
-        });
-    }
-
 }

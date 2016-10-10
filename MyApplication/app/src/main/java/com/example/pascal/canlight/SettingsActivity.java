@@ -40,9 +40,6 @@ public class SettingsActivity extends AppCompatActivity {
                 Toast.makeText(this, "Unable to authorize", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(this, "Authorized successfully", Toast.LENGTH_SHORT).show();
-
-                System.out.println("Search for tracks \"Into Flame\"");
-                MySpotify.getSuggestions("Into Flame");
             }
         }
     }}
