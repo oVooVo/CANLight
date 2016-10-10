@@ -1,17 +1,21 @@
 package com.example.pascal.canlight;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
@@ -72,22 +76,30 @@ public class MainActivity extends AppCompatActivity {
 
         final boolean fItemIsNew = itemIsNew;
         final int fPosition = position;
-        new AlertDialog.Builder(this)
-            .setView(editName)
-            .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int whichButton) {
-                    final String newName = editName.getText().toString();
-                    project.renameItem(fPosition, newName);
-                }
-            })
-            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int whichButton) {
-                    if (fItemIsNew) {
-                        project.remove(fPosition);
+        new AlertDialog(this) {
+            {
+                final View view = editName;
+                setView(view);
+                getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN
+                | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+                setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.rename_dialog_ok),
+                        new OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        final String newName = editName.getText().toString();
+                        project.renameItem(fPosition, newName);
                     }
-                }
-            })
-            .show();
+                });
+                setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.rename_dialog_cancel),
+                        new OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        if (fItemIsNew) {
+                            project.remove(fPosition);
+                        }
+                    }
+                });
+            }
+
+        }.show();
     }
 
     @Override

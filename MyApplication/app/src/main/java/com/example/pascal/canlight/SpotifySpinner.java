@@ -114,7 +114,7 @@ public class SpotifySpinner extends AutoCompleteTextView {
                     }
                 });
             }
-        }, 500);
+        }, 300);
 
     }
 }

@@ -43,6 +43,8 @@
 
 
     <string name="activity_import_preview_title">Import Preview</string>
+    <string name="rename_dialog_ok">Ok</string>
+    <string name="rename_dialog_cancel">Cancel</string>
 
     <plurals name="numberOfRemovedLines">
         <item quantity="one">Removed %d line</item>

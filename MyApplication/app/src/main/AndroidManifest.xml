@@ -16,7 +16,6 @@
             android:configChanges="orientation|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -30,7 +29,7 @@
             android:value="@integer/google_play_services_version" />
 
         <activity android:name="com.example.pascal.canlight.PatternPreviewActivity" />
-        <activity android:name="com.example.pascal.canlight.SettingsActivity"></activity>
+        <activity android:name="com.example.pascal.canlight.SettingsActivity"/>
         <activity
             android:name="com.spotify.sdk.android.authentication.LoginActivity"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
