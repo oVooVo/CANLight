@@ -218,7 +218,7 @@ public class EditActivity extends AppCompatActivity {
     }
 
     private void importPattern() {
-        Intent intent = new Intent(EditActivity.this, ImportActivity.class);
+        Intent intent = new Intent(EditActivity.this, ImportPatternActivity.class);
         intent.putExtra("name", currentSong.getName());
         EditActivity.this.startActivityForResult(intent, MainActivity.IMPORT_PATTERN_REQUEST);
     }

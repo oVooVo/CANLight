@@ -17,7 +17,7 @@ import java.util.ArrayList;
 /**
  * Created by pascal on 06.10.16.
  */
-public class Importer {
+public class PatternImporter {
     static public class SearchResult {
         public String url = "";
         public String name = "";
@@ -49,15 +49,15 @@ public class Importer {
         }
     }
 
-    private Importer() {
+    private PatternImporter() {
 
     }
 
         public static abstract class SearchResults {
         private static final String URL_PATTERN = "https://www.ultimate-guitar.com/search.php?search_type=title&order=&value=";
         public SearchResults(String key, Context context) {
-            if (ImportCache.isSearchCached(key)) {
-                onSearchResultsArrived(ImportCache.searchResults(key));
+            if (ImportPatternCache.isSearchCached(key)) {
+                onSearchResultsArrived(ImportPatternCache.searchResults(key));
             } else {
                 final String fKey = key;
                 ConnectivityManager connMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -77,7 +77,7 @@ public class Importer {
                             ArrayList<SearchResult> srs = parser.entries();
                             SearchResult[] sar = srs.toArray(new SearchResult[srs.size()]);
                             if (sar.length > 0) {
-                                ImportCache.putSearchResults(fKey, sar);
+                                ImportPatternCache.putSearchResults(fKey, sar);
                             }
                             onSearchResultsArrived(srs.toArray(sar));
                         }
@@ -96,8 +96,8 @@ public class Importer {
         public Pattern(String url, Context context) {
             final String fUrl = url;
             final Context fContext = context;
-            if (ImportCache.isPatternCached(url)) {
-                onPatternArrived(ImportCache.pattern(url));
+            if (ImportPatternCache.isPatternCached(url)) {
+                onPatternArrived(ImportPatternCache.pattern(url));
             } else {
                 ConnectivityManager connMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
                 NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
@@ -111,7 +111,7 @@ public class Importer {
                             if (pattern == null) {
                                 Toast.makeText(fContext, R.string.download_pattern_failed, Toast.LENGTH_SHORT).show();
                             } else {
-                                ImportCache.putPattern(fUrl, pattern);
+                                ImportPatternCache.putPattern(fUrl, pattern);
                             }
                             onPatternArrived(pattern);
                         }

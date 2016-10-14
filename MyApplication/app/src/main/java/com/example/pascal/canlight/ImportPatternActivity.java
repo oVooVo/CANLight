@@ -19,7 +19,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
-public class ImportActivity extends AppCompatActivity {
+public class ImportPatternActivity extends AppCompatActivity {
 
     ArrayList<String> items;
     ArrayList<String> urls;
@@ -77,7 +77,7 @@ public class ImportActivity extends AppCompatActivity {
                 View view = super.getView(position, convertView, parent);
 
                 ImageView imageView = (ImageView) view.findViewById(R.id.search_song_item_icon);
-                if (ImportCache.isPatternCached(urls.get(position))) {
+                if (ImportPatternCache.isPatternCached(urls.get(position))) {
                     imageView.setImageResource(android.R.drawable.btn_star_big_on);
                 } else {
                     imageView.setImageResource(android.R.drawable.btn_star_big_off);
@@ -90,7 +90,7 @@ public class ImportActivity extends AppCompatActivity {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                ImportActivity.this.onItemClick(position);
+                ImportPatternActivity.this.onItemClick(position);
             }
         });
 
@@ -101,14 +101,14 @@ public class ImportActivity extends AppCompatActivity {
     private void onItemClick(int position) {
         final String url = urls.get(position);
         showProgressBar();
-        new Importer.Pattern(url, getApplicationContext()) {
+        new PatternImporter.Pattern(url, getApplicationContext()) {
             @Override
             void onPatternArrived(String pattern) {
                 hideProgressBar();
                 if (pattern != null) {
-                    Intent intent = new Intent(ImportActivity.this, PatternPreviewActivity.class);
+                    Intent intent = new Intent(ImportPatternActivity.this, PatternPreviewActivity.class);
                     intent.putExtra("pattern", pattern);
-                    ImportActivity.this.startActivityForResult(intent, MainActivity.IMPORT_PATTERN_PREVIEW_REQUEST);
+                    ImportPatternActivity.this.startActivityForResult(intent, MainActivity.IMPORT_PATTERN_PREVIEW_REQUEST);
                 }
             }
         };
@@ -132,12 +132,12 @@ public class ImportActivity extends AppCompatActivity {
     private void search() {
         final String key = ((EditText) findViewById(R.id.importSearchKeywordEdit)).getText().toString();
         showProgressBar();
-        new Importer.SearchResults(key, getApplicationContext()) {
+        new PatternImporter.SearchResults(key, getApplicationContext()) {
             @Override
-            void onSearchResultsArrived(Importer.SearchResult[] results) {
+            void onSearchResultsArrived(PatternImporter.SearchResult[] results) {
                 items.clear();
                 urls.clear();
-                for (Importer.SearchResult e : results) {
+                for (PatternImporter.SearchResult e : results) {
                     String label = e.type + ": " + e.name + " - " + e.artist;
                     items.add(label);
                     urls.add(e.url);
@@ -145,7 +145,7 @@ public class ImportActivity extends AppCompatActivity {
                 adapter.notifyDataSetChanged();
 
                 if (items.isEmpty()) {
-                    Toast.makeText(ImportActivity.this, R.string.nothing_found_search_songs, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(ImportPatternActivity.this, R.string.nothing_found_search_songs, Toast.LENGTH_SHORT).show();
                 }
                 hideProgressBar();
             }

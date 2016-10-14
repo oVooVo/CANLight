@@ -6,7 +6,6 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceGroup;
-import android.widget.Toast;
 
 public class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
     //@see http://stackoverflow.com/a/18807490/4248972
@@ -18,7 +17,7 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
         findPreference(getString(R.string.pref_clear_cache_key)).setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference) {
-                ImportCache.clear();
+                ImportPatternCache.clear();
                 updatePreference(preference);
                 return true;
             }
@@ -30,6 +29,15 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
                 return true;
             }
         });
+        /*
+        findPreference(getString(R.string.pref_loggin_google_drive_key)).setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                GoogleDriveWrapper.loginRequest(getActivity());
+                return true;
+            }
+        });
+        */
     }
 
     @Override
@@ -61,8 +69,8 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
             lp.setSummary(lp.getEntry());
         } else if (preference != null) {
             if (preference.getKey().equals(getActivity().getString(R.string.pref_clear_cache_key))) {
-                final int size = ImportCache.computeSizeInKB();
-                final int count = ImportCache.numberOfItems();
+                final int size = ImportPatternCache.computeSizeInKB();
+                final int count = ImportPatternCache.numberOfItems();
                 String text = getResources().getQuantityString(R.plurals.importCacheCount, count, count);
                 text += getResources().getQuantityString(R.plurals.importCacheSize, size, size);
                 preference.setSummary(text);

@@ -33,7 +33,7 @@
     <string name="pref_clear_cache_title">Clear Cache</string>
     <string name="pref_loggin_spotify_key">pref_loggin_spotify</string>
     <string name="pref_loggin_spotify_title">Spotify: Loggin</string>
-    pref_loggin_spotify_title
+    <string name="pref_loggin_google_drive_title">Google Drive: Loggin</string>
 
     <!-- misc -->
     <string name="nothing_found_search_songs">Nothing found</string>
@@ -45,6 +45,8 @@
     <string name="activity_import_preview_title">Import Preview</string>
     <string name="rename_dialog_ok">Ok</string>
     <string name="rename_dialog_cancel">Cancel</string>
+    <string name="menu_share_all">Share</string>
+    <string name="pref_loggin_google_drive_key">pref_loggin_google_drive</string>
 
     <plurals name="numberOfRemovedLines">
         <item quantity="one">Removed %d line</item>

@@ -10,19 +10,19 @@ import java.util.ArrayList;
  */
 public class ParseSearchResults {
 
-    private ArrayList<Importer.SearchResult> entries;
+    private ArrayList<PatternImporter.SearchResult> entries;
 
     public ParseSearchResults(String result) {
         entries = getEntries(result);
-        for (Iterator<Importer.SearchResult> iterator = entries.iterator(); iterator.hasNext();) {
-            Importer.SearchResult s = iterator.next();
+        for (Iterator<PatternImporter.SearchResult> iterator = entries.iterator(); iterator.hasNext();) {
+            PatternImporter.SearchResult s = iterator.next();
             if (!filterResult(s)) {
                 iterator.remove();
             }
         }
     }
 
-    static boolean filterResult(Importer.SearchResult r) {
+    static boolean filterResult(PatternImporter.SearchResult r) {
         final List<String> typeWhitelist = Arrays.asList("tab", "chords", "ukulele chords");
         if (typeWhitelist.contains(r.type)) {
             return true;
@@ -31,7 +31,7 @@ public class ParseSearchResults {
         }
     }
 
-    public ArrayList<Importer.SearchResult> entries() { return entries; }
+    public ArrayList<PatternImporter.SearchResult> entries() { return entries; }
 
     static private class StringPart {
         public int start;
@@ -68,8 +68,8 @@ public class ParseSearchResults {
         return html;
     }
 
-    ArrayList<Importer.SearchResult> getEntries(String html) {
-        ArrayList<Importer.SearchResult> entries = new ArrayList<>();
+    ArrayList<PatternImporter.SearchResult> getEntries(String html) {
+        ArrayList<PatternImporter.SearchResult> entries = new ArrayList<>();
 
         String artist = "No Artist";
 
@@ -85,7 +85,7 @@ public class ParseSearchResults {
                 StringPart typePart = getPart(html, ignoreMe.end + 1, "<td><strong>", "</strong></td>");
                 if (typePart != null) {
                     final String type = stripHtml(typePart.string());
-                    final Importer.SearchResult e = parseEntry(part.string(), artist, type);
+                    final PatternImporter.SearchResult e = parseEntry(part.string(), artist, type);
                     if (e != null) {
                         entries.add(e);
                     } else {
@@ -106,7 +106,7 @@ public class ParseSearchResults {
         return stripHtml(html).trim();
     }
 
-    private Importer.SearchResult parseEntry(String html, String artist, String type) {
+    private PatternImporter.SearchResult parseEntry(String html, String artist, String type) {
         final StringPart linkAndNamePart = getPart(html, 0, "<a onclick=\"window.trackCorrected('TAB')\"", "</a>");
         if (linkAndNamePart == null) {
             return null;
@@ -117,7 +117,7 @@ public class ParseSearchResults {
         if (linkPart == null) {
             return null;
         }
-        Importer.SearchResult e = new Importer.SearchResult();
+        PatternImporter.SearchResult e = new PatternImporter.SearchResult();
         e.name = name.trim();
         e.url = linkPart.string().substring("href=\"".length()).trim();
         e.artist = artist;

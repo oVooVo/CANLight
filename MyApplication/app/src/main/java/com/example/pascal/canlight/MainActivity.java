@@ -1,19 +1,18 @@
 package com.example.pascal.canlight;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
@@ -21,15 +20,24 @@ import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.drive.Drive;
+
 import junit.framework.AssertionFailedError;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener {
 
     public static final int PATTERN_REQUEST = 0;
     public static final int IMPORT_PATTERN_REQUEST = 2;
     public static final int IMPORT_PATTERN_PREVIEW_REQUEST = 3;
     public static final int LOGIN_SPOTIFY_REQUEST = 4;
+    public static final int LOGIN_GOOGLE_DRIVE_REQUEST = 5;
+    private static final String TAG = "GDRIVE";
+    private GoogleApiClient mClient;
 
     int currentEditPosition = -1;
     private Project project;
@@ -98,7 +106,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
             }
-
         }.show();
     }
 
@@ -118,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
 
         project = new Project(getApplicationContext());
         project.load();
-        ImportCache.load();
+        ImportPatternCache.load();
 
         ListView listView = (ListView) findViewById(R.id.listView);
         listView.setAdapter(project.itemAdapter());
@@ -136,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         project.save();
-        ImportCache.save();
+        ImportPatternCache.save();
         super.onStop();
     }
 
@@ -149,17 +156,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == PATTERN_REQUEST) {
-            if (resultCode == RESULT_OK) {
-                if (currentEditPosition < 0) throw new AssertionFailedError();
+        switch (requestCode) {
+            case PATTERN_REQUEST:
+                if (resultCode == RESULT_OK) {
+                    if (currentEditPosition < 0) throw new AssertionFailedError();
 
-                if (data.getExtras() != null && data.getExtras().containsKey("song")) {
-                    // if EditActivity was not read-only.
-                    Song song = data.getExtras().getParcelable("song");
-                    project.setSong(currentEditPosition, song);
+                    if (data.getExtras() != null && data.getExtras().containsKey("song")) {
+                        // if EditActivity was not read-only.
+                        Song song = data.getExtras().getParcelable("song");
+                        project.setSong(currentEditPosition, song);
+                    }
                 }
-            }
-            currentEditPosition = -1;
+                currentEditPosition = -1;
+                break;
         }
     }
 
@@ -174,6 +183,89 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
+        menu.findItem(R.id.menu_share_all).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                shareAll();
+                return true;
+            }
+        });
         return true;
     }
+
+    private void shareAll() {
+        String content = project.toJson().toString();
+        Intent intent = new Intent(MainActivity.this, GoogleDriveCreateFileActivity.class);
+        intent.putExtra("content", content);
+        MainActivity.this.startActivity(intent);
+    }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (mClient == null) {
+            // Create the API client and bind it to an instance variable.
+            // We use this instance as the callback for connection and connection
+            // failures.
+            // Since no account name is passed, the user is prompted to choose.
+            mClient = new GoogleApiClient.Builder(this)
+                    .addApi(Drive.API)
+                    .addScope(Drive.SCOPE_FILE)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .build();
+        }
+        // Connect the client. Once connected, the camera is launched.
+        mClient.connect();
+    }
+
+    @Override
+    protected void onPause() {
+        if (mClient != null) {
+            mClient.disconnect();
+        }
+        super.onPause();
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult result) {
+        // Called whenever the API client fails to connect.
+        Log.i(TAG, "GoogleApiClient connection failed: " + result.toString());
+        if (!result.hasResolution()) {
+            // show the localized error dialog.
+            GoogleApiAvailability.getInstance().getErrorDialog(this, result.getErrorCode(), 0).show();
+            return;
+        }
+        // The failure has a resolution. Resolve it.
+        // Called typically when the app is not yet authorized, and an
+        // authorization
+        // dialog is displayed to the user.
+        try {
+            result.startResolutionForResult(this, MainActivity.LOGIN_GOOGLE_DRIVE_REQUEST);
+        } catch (IntentSender.SendIntentException e) {
+            Log.e(TAG, "Exception while starting resolution activity", e);
+        }
+    }
+
+    @Override
+    public void onConnected(Bundle connectionHint) {
+        Log.i(TAG, "API client connected.");
+
+        /*
+        if (mBitmapToSave == null) {
+            // This activity has no UI of its own. Just start the camera.
+            startActivityForResult(new Intent(MediaStore.ACTION_IMAGE_CAPTURE),
+                    REQUEST_CODE_CAPTURE_IMAGE);
+            return;
+        }
+        saveFileToDrive();
+        */
+    }
+
+    @Override
+    public void onConnectionSuspended(int cause) {
+        //Log.i(TAG, "GoogleApiClient connection suspended");
+    }
+
 }

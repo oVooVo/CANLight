@@ -12,10 +12,10 @@ import java.util.Iterator;
 /**
  * Created by pascal on 07.10.16.
  */
-public class ImportCache {
+public class ImportPatternCache {
 
 
-    static private HashMap<String, Importer.SearchResult[]> searchResultCache = new HashMap<>();
+    static private HashMap<String, PatternImporter.SearchResult[]> searchResultCache = new HashMap<>();
     static private HashMap<String, String> patternCache = new HashMap<>();
     public static boolean isPatternCached(String url) {
         return patternCache.containsKey(url);
@@ -23,7 +23,7 @@ public class ImportCache {
     public static boolean isSearchCached(String key) {
         return searchResultCache.containsKey(key);
     }
-    public static Importer.SearchResult[] searchResults(String key) {
+    public static PatternImporter.SearchResult[] searchResults(String key) {
         return searchResultCache.get(key);
     }
     public static String pattern(String url) {
@@ -32,7 +32,7 @@ public class ImportCache {
     public static void putPattern(String url, String pattern) {
         patternCache.put(url, pattern);
     }
-    public static void putSearchResults(String key, Importer.SearchResult[] searchResults) {
+    public static void putSearchResults(String key, PatternImporter.SearchResult[] searchResults) {
         searchResultCache.put(key, searchResults);
     }
     public static void load() {
@@ -48,19 +48,19 @@ public class ImportCache {
         searchResultCache.clear();
     }
 
-    private static JSONArray toJsonArray(Importer.SearchResult[] srs) {
+    private static JSONArray toJsonArray(PatternImporter.SearchResult[] srs) {
         JSONArray array = new JSONArray();
-        for (Importer.SearchResult sr : srs) {
+        for (PatternImporter.SearchResult sr : srs) {
             array.put(sr.toJson());
         }
         return array;
     }
 
-    private static Importer.SearchResult[] fromJsonArray(JSONArray array) {
-        Importer.SearchResult[] srs = new Importer.SearchResult[array.length()];
+    private static PatternImporter.SearchResult[] fromJsonArray(JSONArray array) {
+        PatternImporter.SearchResult[] srs = new PatternImporter.SearchResult[array.length()];
         try {
             for (int i = 0; i < array.length(); ++i) {
-                srs[i] = new Importer.SearchResult(array.getJSONObject(i));
+                srs[i] = new PatternImporter.SearchResult(array.getJSONObject(i));
             }
         } catch (JSONException e) {
             throw new AssertionFailedError();

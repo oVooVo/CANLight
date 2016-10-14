@@ -33,13 +33,15 @@ public class SettingsActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, intent);
 
         // Check if result comes from the correct activity
-        if (requestCode == MainActivity.LOGIN_SPOTIFY_REQUEST) {
-            AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, intent);
-            AuthenticationResponse.Type result = MySpotify.onLoginResponse(response);
-            if (AuthenticationResponse.Type.ERROR.equals(result)) {
-                Toast.makeText(this, "Unable to authorize", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, "Authorized successfully", Toast.LENGTH_SHORT).show();
-            }
+        switch (requestCode) {
+            case MainActivity.LOGIN_SPOTIFY_REQUEST:
+                AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, intent);
+                AuthenticationResponse.Type result = MySpotify.onLoginResponse(response);
+                if (AuthenticationResponse.Type.ERROR.equals(result)) {
+                    Toast.makeText(this, "Unable to authorize", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "Authorized successfully", Toast.LENGTH_SHORT).show();
+                }
+                break;
         }
     }}

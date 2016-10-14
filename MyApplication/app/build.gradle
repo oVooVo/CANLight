@@ -31,11 +31,24 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:24.2.1'
-    compile 'com.google.android.gms:play-services-appindexing:8.1.0'
     compile 'org.jetbrains:annotations-java5:15.0'
     compile 'org.apache.directory.studio:org.apache.commons.io:2.4'
+
+    //floating button
     compile 'com.android.support:design:24.2.1'
-    compile 'com.android.support:support-v4:24.2.1'
+
+    // google drive
+    //compile 'com.google.android.gms:play-services:9.6.1'
+    compile 'com.google.android.gms:play-services-drive:9.6.1'
+
+    // spotify
     compile 'com.spotify.sdk:spotify-auth-beta23-noconnect-2.20b:@aar'
     compile 'com.github.kaaes:spotify-web-api-android:0.4.1'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
 }
