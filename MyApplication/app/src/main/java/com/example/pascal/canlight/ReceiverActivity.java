@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.drive.Drive;
@@ -34,8 +35,18 @@ public class ReceiverActivity extends GoogleDriveActivity {
     final private ResultCallback<DriveApi.DriveIdResult> idCallback = new ResultCallback<DriveApi.DriveIdResult>() {
         @Override
         public void onResult(DriveApi.DriveIdResult result) {
-            new RetrieveDriveFileContentsAsyncTask(ReceiverActivity.this)
-                    .execute(result.getDriveId());
+            final DriveId id = result.getDriveId();
+            if (id != null) {
+                new RetrieveDriveFileContentsAsyncTask(ReceiverActivity.this)
+                        .execute(result.getDriveId());
+            } else {
+                Toast.makeText(ReceiverActivity.this,
+                        "Cannot get drive id. Do you have access rights?",
+                        Toast.LENGTH_LONG)
+                        .show();
+                setResult(RESULT_CANCELED);
+                finish();
+            }
         }
     };
 
@@ -79,20 +90,22 @@ public class ReceiverActivity extends GoogleDriveActivity {
             super.onPostExecute(result);
             if (result == null) {
                 showMessage("Error while reading from the file");
-                return;
-            }
-            final Project project = new Project();
-            try {
-                project.fromJson(new JSONObject(result));
-            } catch (JSONException e) {
-                throw new AssertionFailedError();
-            }
+                setResult(RESULT_CANCELED);
+                finish();
+            } else {
+                final Project project = new Project();
+                try {
+                    project.fromJson(new JSONObject(result));
+                } catch (JSONException e) {
+                    throw new AssertionFailedError();
+                }
 
-            Intent intent = new Intent(ReceiverActivity.this, ImportExportActivity.class);
-            intent.putExtra("ImportedProject", project);
-            intent.putExtra("project", getIntent().getParcelableExtra("project"));
-            intent.putExtra("export", false);
-            ReceiverActivity.this.startActivityForResult(intent, IMPORT_REQUEST);
+                Intent intent = new Intent(ReceiverActivity.this, ImportExportActivity.class);
+                intent.putExtra("ImportedProject", project);
+                intent.putExtra("project", getIntent().getParcelableExtra("project"));
+                intent.putExtra("export", false);
+                ReceiverActivity.this.startActivityForResult(intent, IMPORT_REQUEST);
+            }
         }
     }
 

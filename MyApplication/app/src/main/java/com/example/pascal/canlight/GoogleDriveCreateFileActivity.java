@@ -40,8 +40,7 @@ public class GoogleDriveCreateFileActivity extends GoogleDriveActivity {
 
         final MetadataChangeSet meta = new MetadataChangeSet.Builder()
                 .setTitle("New file")
-                .setMimeType("application/json")
-                .setStarred(true).build();
+                .setMimeType("application/json").build();
 
         Drive.DriveApi.newDriveContents(getGoogleApiClient()).setResultCallback(new ResultCallback<DriveApi.DriveContentsResult>() {
             @Override
