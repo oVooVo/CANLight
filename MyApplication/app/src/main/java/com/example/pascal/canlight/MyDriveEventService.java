@@ -7,7 +7,7 @@ import com.google.android.gms.drive.events.DriveEventService;
 
 /**
  * Created by pascal on 14.10.16.
- */
+ *//*
 public class MyDriveEventService extends DriveEventService {
 
     private static final String TAG = "MyDriveEventService";
@@ -19,3 +19,4 @@ public class MyDriveEventService extends DriveEventService {
     }
 
 }
+*/

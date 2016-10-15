@@ -33,7 +33,6 @@ public abstract class GoogleDriveApiClientAsyncTask<Params, Progress, Result>
 
     @Override
     protected final Result doInBackground(Params... params) {
-        Log.d("TAG", "in background");
         final CountDownLatch latch = new CountDownLatch(1);
         mClient.registerConnectionCallbacks(new ConnectionCallbacks() {
             @Override

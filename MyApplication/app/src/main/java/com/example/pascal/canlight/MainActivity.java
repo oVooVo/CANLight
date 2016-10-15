@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
@@ -14,11 +15,15 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -27,7 +32,11 @@ import com.google.android.gms.drive.Drive;
 
 import junit.framework.AssertionFailedError;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.List;
 
+//TODO remove implements..
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
 
@@ -36,11 +45,28 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public static final int IMPORT_PATTERN_PREVIEW_REQUEST = 3;
     public static final int LOGIN_SPOTIFY_REQUEST = 4;
     public static final int LOGIN_GOOGLE_DRIVE_REQUEST = 5;
+    public static final int RETURN_IMPORT_REQUEST = 6;
     private static final String TAG = "GDRIVE";
     private GoogleApiClient mClient;
 
+    private class SongListArrayAdapter extends ArrayAdapter<Song> {
+
+        public SongListArrayAdapter(List<Song> songs) {
+            super(MainActivity.this, android.R.layout.simple_list_item_1, songs);
+            setNotifyOnChange(true);
+        }
+
+        public View getView(int position, View convertView, ViewGroup parent) {
+            View view = super.getView(position, convertView, parent);
+            TextView textView = (TextView) view.findViewById(android.R.id.text1);
+            textView.setText(getItem(position).getName());
+            return view;
+        }
+    }
+    private SongListArrayAdapter songListAdapter;
+
     int currentEditPosition = -1;
-    private Project project;
+    private Project mProject;
 
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo info) {
         super.onCreateContextMenu(menu, v, info);
@@ -53,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         menu.findItem(R.id.menu_delete_song).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                project.remove(acmi.position);
+                mProject.removeSong(acmi.position);
                 return true;
             }
         });
@@ -69,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private void editSongName(int position, boolean itemIsNew) {
         final EditText editName = new SpotifySpinner(this);
         editName.setMaxLines(1);
-        editName.setText(project.getSong(position).getName());
+        editName.setText(mProject.getSong(position).getName());
         editName.selectAll();
 
         // show keyboard
@@ -94,14 +120,14 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                         new OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         final String newName = editName.getText().toString();
-                        project.renameItem(fPosition, newName);
+                        mProject.renameSong(fPosition, newName);
                     }
                 });
                 setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.rename_dialog_cancel),
                         new OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         if (fItemIsNew) {
-                            project.remove(fPosition);
+                            mProject.removeSong(fPosition);
                         }
                     }
                 });
@@ -109,47 +135,56 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }.show();
     }
 
+    void setProject(final Project project) {
+        mProject = project;
+        songListAdapter = new SongListArrayAdapter(project.getSongs());
+        project.setOnSongListChangedListener(new Project.OnSongListChangedListener() {
+            @Override
+            public void onSongListChanged() {
+                songListAdapter.notifyDataSetChanged();
+            }
+        });
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                final int position = project.addSong(getString(R.string.default_song_name));
+                editSongName(position, true);
+            }
+        });
+        ListView listView = (ListView) findViewById(R.id.listView);
+        listView.setAdapter(songListAdapter);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                final int position = project.addItem();
-                editSongName(position, true);
-            }
-        });
-
-        project = new Project(getApplicationContext());
-        project.load();
+        mProject = new Project();
+        mProject.load(getApplicationContext());
         ImportPatternCache.load();
-
         ListView listView = (ListView) findViewById(R.id.listView);
-        listView.setAdapter(project.itemAdapter());
-
         registerForContextMenu(listView);
-
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
                 openEditMode(position);
             }
         });
+        setProject(mProject);
     }
 
     @Override
     protected void onStop() {
-        project.save();
+        mProject.save(getApplicationContext());
         ImportPatternCache.save();
         super.onStop();
     }
 
     private void openEditMode(int position) {
         Intent intent = new Intent(MainActivity.this, EditActivity.class);
-        intent.putExtra("song", project.getSong(position));
+        intent.putExtra("song", mProject.getSong(position));
         if (currentEditPosition >= 0) throw new AssertionFailedError();
         currentEditPosition = position;
         MainActivity.this.startActivityForResult(intent, PATTERN_REQUEST);
@@ -164,11 +199,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                     if (data.getExtras() != null && data.getExtras().containsKey("song")) {
                         // if EditActivity was not read-only.
                         Song song = data.getExtras().getParcelable("song");
-                        project.setSong(currentEditPosition, song);
+                        mProject.setSong(currentEditPosition, song);
                     }
                 }
                 currentEditPosition = -1;
                 break;
+            case RETURN_IMPORT_REQUEST:
+                if (resultCode == RESULT_OK) {
+                    Project project = data.getParcelableExtra("MergedProject");
+                    setProject(project);
+                }
         }
     }
 
@@ -186,18 +226,27 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         menu.findItem(R.id.menu_share_all).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                shareAll();
+                startExport();
                 return true;
             }
         });
         return true;
     }
 
-    private void shareAll() {
-        String content = project.toJson().toString();
-        Intent intent = new Intent(MainActivity.this, GoogleDriveCreateFileActivity.class);
-        intent.putExtra("content", content);
-        MainActivity.this.startActivity(intent);
+    private void startExport() {
+        Intent intent = new Intent(MainActivity.this, ImportExportActivity.class);
+        intent.putExtra("project", mProject);
+        intent.putExtra("export", true);
+        startActivity(intent);
+    }
+
+
+    private void startImport(String id) {
+        Intent intent = new Intent(MainActivity.this, ReceiverActivity.class);
+        intent.putExtra("project", mProject);
+        intent.putExtra("export", false);
+        intent.putExtra("id", id);
+        startActivityForResult(intent, RETURN_IMPORT_REQUEST);
     }
 
 
@@ -218,6 +267,34 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }
         // Connect the client. Once connected, the camera is launched.
         mClient.connect();
+
+        if (handleImportIntent(getIntent())) {
+            setIntent(new Intent());
+        }
+    }
+
+    private boolean handleImportIntent(Intent intent) {
+        final Uri uri = intent.getData();
+        if (uri != null) {
+            if (uri.getPathSegments().size() < 2) {
+                Toast.makeText(getApplicationContext(), "Could not get link", Toast.LENGTH_SHORT).show();
+            } else {
+                try {
+                    final String id = URLDecoder.decode(uri.getPathSegments().get(1), "utf-8");
+                    startImport(id);
+                    return true;
+                } catch (UnsupportedEncodingException e) {
+                    throw new AssertionFailedError();
+                }
+            }
+        }
+        return false;
+    }
+
+    protected void onNewIntent(Intent intent) {
+        // manifest: android:launchMode= "singleInstance"
+        super.onNewIntent(intent);
+        handleImportIntent(intent);
     }
 
     @Override

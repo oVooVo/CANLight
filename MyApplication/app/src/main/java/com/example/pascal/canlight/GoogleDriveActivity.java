@@ -31,7 +31,6 @@ public class GoogleDriveActivity extends Activity implements
     @Override
     protected void onResume() {
         super.onResume();
-        Log.d(LOG_TAG, "on Resume" + (mGoogleApiClient != null));
         if (mGoogleApiClient == null) {
             mGoogleApiClient = new GoogleApiClient.Builder(this)
                     .addApi(Drive.API)

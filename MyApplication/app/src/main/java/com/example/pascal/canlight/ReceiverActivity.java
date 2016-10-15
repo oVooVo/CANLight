@@ -1,10 +1,9 @@
 package com.example.pascal.canlight;
 
 import android.content.Context;
-import android.net.Uri;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.drive.Drive;
@@ -15,13 +14,16 @@ import com.google.android.gms.drive.DriveId;
 
 import junit.framework.AssertionFailedError;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 
 public class ReceiverActivity extends GoogleDriveActivity {
+
+    private static final int IMPORT_REQUEST = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,7 +34,6 @@ public class ReceiverActivity extends GoogleDriveActivity {
     final private ResultCallback<DriveApi.DriveIdResult> idCallback = new ResultCallback<DriveApi.DriveIdResult>() {
         @Override
         public void onResult(DriveApi.DriveIdResult result) {
-            Log.d(LOG_TAG, "on result exec " + (result.getDriveId() == null));
             new RetrieveDriveFileContentsAsyncTask(ReceiverActivity.this)
                     .execute(result.getDriveId());
         }
@@ -52,6 +53,7 @@ public class ReceiverActivity extends GoogleDriveActivity {
             DriveApi.DriveContentsResult driveContentsResult =
                     file.open(getGoogleApiClient(), DriveFile.MODE_READ_ONLY, null).await();
             if (!driveContentsResult.getStatus().isSuccess()) {
+                Log.w(LOG_TAG, "dive contents result no success");
                 return null;
             }
             DriveContents driveContents = driveContentsResult.getDriveContents();
@@ -79,31 +81,40 @@ public class ReceiverActivity extends GoogleDriveActivity {
                 showMessage("Error while reading from the file");
                 return;
             }
-            showMessage("File contents: " + result);
+            final Project project = new Project();
+            try {
+                project.fromJson(new JSONObject(result));
+            } catch (JSONException e) {
+                throw new AssertionFailedError();
+            }
+
+            Intent intent = new Intent(ReceiverActivity.this, ImportExportActivity.class);
+            intent.putExtra("ImportedProject", project);
+            intent.putExtra("project", getIntent().getParcelableExtra("project"));
+            intent.putExtra("export", false);
+            ReceiverActivity.this.startActivityForResult(intent, IMPORT_REQUEST);
+        }
+    }
+
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case IMPORT_REQUEST:
+                if (resultCode == RESULT_OK) {
+                    Intent intent = new Intent();
+                    intent.putExtra("MergedProject", data.getParcelableExtra("MergedProject"));
+                    setResult(RESULT_OK, intent);
+                } else {
+                    setResult(RESULT_CANCELED);
+                }
+                finish();
         }
     }
 
     @Override
     public void onConnected(Bundle connectionHint) {
         super.onConnected(connectionHint);
-
-
-        final Uri uri = getIntent().getData();
-        if (uri == null || uri.getPathSegments().size() < 2) {
-            Toast.makeText(getApplicationContext(), "Could not get link", Toast.LENGTH_SHORT).show();
-            finish();
-        } else {
-            String id;
-            try {
-                id = URLDecoder.decode(uri.getPathSegments().get(1), "utf-8");
-            } catch (UnsupportedEncodingException e) {
-                throw new AssertionFailedError();
-            }
-
-            Log.d(LOG_TAG, "Drive id: " + id);
-            Drive.DriveApi.fetchDriveId(getGoogleApiClient(), id)
+        final String id = getIntent().getStringExtra("id");
+        Drive.DriveApi.fetchDriveId(getGoogleApiClient(), id)
                     .setResultCallback(idCallback);
-        }
-
     }
 }

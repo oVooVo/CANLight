@@ -47,6 +47,8 @@
     <string name="rename_dialog_cancel">Cancel</string>
     <string name="menu_share_all">Share</string>
     <string name="pref_loggin_google_drive_key">pref_loggin_google_drive</string>
+    <string name="menu_import_title">Import</string>
+    <string name="menu_export_title">Export</string>
 
     <plurals name="numberOfRemovedLines">
         <item quantity="one">Removed %d line</item>

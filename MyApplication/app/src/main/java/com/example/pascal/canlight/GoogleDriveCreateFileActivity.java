@@ -25,6 +25,7 @@ import java.net.URLEncoder;
 
 public class GoogleDriveCreateFileActivity extends GoogleDriveActivity {
     private String content;
+    private static final int CREATE_CHOOSER_REQUEST = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +57,7 @@ public class GoogleDriveCreateFileActivity extends GoogleDriveActivity {
                 }
 
                 // Create an empty file on root folder.
-                Drive.DriveApi.getAppFolder(getGoogleApiClient())
+                Drive.DriveApi.getRootFolder(getGoogleApiClient())
                         .createFile(getGoogleApiClient(), meta, contents)
                         .setResultCallback(fileCallback);
             }
@@ -65,12 +66,28 @@ public class GoogleDriveCreateFileActivity extends GoogleDriveActivity {
 
     }
 
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case CREATE_CHOOSER_REQUEST:
+                if (resultCode == RESULT_OK) {
+                    setResult(RESULT_OK);
+                } else {
+                    // this means the user canceled the dialog.
+                    setResult(RESULT_OK);
+                }
+                finish();
+                break;
+        }
+    }
+
     final private ResultCallback<DriveFolder.DriveFileResult> fileCallback = new
             ResultCallback<DriveFolder.DriveFileResult>() {
                 @Override
                 public void onResult(DriveFolder.DriveFileResult result) {
                     if (!result.getStatus().isSuccess()) {
                         showMessage("Error while trying to create the file");
+                        setResult(RESULT_CANCELED);
+                        finish();
                         return;
                     }
                     final DriveId id = result.getDriveFile().getDriveId();
@@ -91,9 +108,9 @@ public class GoogleDriveCreateFileActivity extends GoogleDriveActivity {
                                     throw new AssertionFailedError();
                                 }
                                 shareIdIntent.putExtra(Intent.EXTRA_TEXT, "http://canlight.com/rcv_shr/" + id);
-                                startActivity(Intent.createChooser(shareIdIntent, "Share CANLight collection"));
+                                Intent intent = Intent.createChooser(shareIdIntent, "Share CANLight collection");
+                                startActivityForResult(intent, CREATE_CHOOSER_REQUEST);
                             }
-                            finish();
                         }
                     });
                 }

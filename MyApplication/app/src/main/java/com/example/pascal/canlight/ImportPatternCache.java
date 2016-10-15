@@ -36,13 +36,11 @@ public class ImportPatternCache {
         searchResultCache.put(key, searchResults);
     }
     public static void load() {
-
-
-
     }
+
     public static void save() {
-
     }
+
     public static void clear() {
         patternCache.clear();
         searchResultCache.clear();

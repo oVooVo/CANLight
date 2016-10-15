@@ -21,11 +21,20 @@
 
         <activity
             android:name=".MainActivity"
+            android:launchMode= "singleInstance"
             android:configChanges="orientation|screenSize">
             <intent-filter android:label="@string/app_name">
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:host="canlight.com"
+                    android:pathPrefix="/rcv_shr/"
+                    android:scheme="http" />
             </intent-filter>
         </activity>
         <activity android:name=".EditActivity" />
@@ -43,22 +52,10 @@
             android:name="com.spotify.sdk.android.authentication.LoginActivity"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
         <activity android:name=".GoogleDriveBaseActivity" />
-        <activity android:name=".ReceiverActivity">
-            <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data
-                    android:host="canlight.com"
-                    android:pathPrefix="/rcv_shr/"
-                    android:scheme="http" />
-            </intent-filter>
-        </activity>
+        <activity android:name=".ReceiverActivity"/>
         <activity android:name=".GoogleDriveCreateFileActivity" />
         <activity android:name=".GoogleDriveActivity" />
-        <activity android:name=".ImportExportActivity"></activity>
+        <activity android:name=".ImportExportActivity"/>
     </application>
 
 </manifest>

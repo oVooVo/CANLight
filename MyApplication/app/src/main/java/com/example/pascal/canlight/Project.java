@@ -1,10 +1,18 @@
 package com.example.pascal.canlight;
 
 import android.content.Context;
+import android.nfc.Tag;
+import android.os.Parcel;
+import android.os.Parcelable;
+import android.util.Log;
+import android.widget.Toast;
+
+import com.google.android.gms.drive.realtime.internal.event.ParcelableEventList;
 
 import junit.framework.AssertionFailedError;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.ReaderInputStream;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -13,36 +21,57 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by pascal on 02.10.16.
  */
-public class Project {
-    private ArrayList<Song> songs;
-    private Song.SongAdapter songsAdapter;
-    private Context context;
+public class Project implements Parcelable {
+    final private List<Song> songs;
 
-    public Project(Context context) {
+    public Project() {
         songs = new ArrayList<>();
-        this.context = context;
-        songsAdapter = new Song.SongAdapter(context, android.R.layout.simple_list_item_1, songs);
     }
 
-    public Song.SongAdapter itemAdapter() {
-        return songsAdapter;
+    public Project(Parcel in) {
+        this();
+        readFromParcel(in);
     }
 
-    public int addItem() {
-        Song song = new Song(getDefaultItemName());
+    public List<Song> getSongs() {
+        return songs;
+    }
+
+    public int findSong(String name) {
+        for (int i = 0; i < songs.size(); ++i) {
+            if (songs.get(i).getName().equals(name)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public void addSong(Song song) {
         songs.add(song);
-        songsAdapter.notifyDataSetChanged();
+        songListChanged();
+    }
+
+    public int addSong(String name) {
+        Song song = new Song(name);
+        songs.add(song);
+        songListChanged();
         return songs.size() - 1;
     }
 
-    public boolean renameItem(int position, String newName) {
+    public boolean renameSong(int position, String newName) {
         songs.get(position).setName(newName);
-        songsAdapter.notifyDataSetChanged();
+        songListChanged();
         return true;
     }
 
@@ -50,44 +79,13 @@ public class Project {
         return songs.get(position);
     }
 
-    public void remove(int position) {
+    public void removeSong(int position) {
         songs.remove(position);
-        songsAdapter.notifyDataSetChanged();
-    }
-
-    public String getDefaultItemName() {
-        return context.getString(R.string.default_song_name);
-    }
-
-    public JSONObject toJson() {
-        JSONArray array = new JSONArray();
-        JSONObject object = new JSONObject();
-        try {
-            for (Song s : songs) {
-                array.put(s.toJson());
-            }
-            object.put("items", array);
-        } catch (JSONException e) {
-            throw new AssertionFailedError();
-        }
-        return object;
-    }
-
-    public void fromJson(JSONObject object) {
-        songs.clear();
-        try {
-            final JSONArray array = object.getJSONArray("items");
-            for (int i = 0; i < array.length(); ++i) {
-                Song s = Song.fromJson(array.getJSONObject(i));
-                songs.add(s);
-            }
-        } catch (JSONException e) {
-            throw new AssertionFailedError();
-        }
+        songListChanged();
     }
 
     private static final String FILENAME = "project";
-    public void save() {
+    public void save(Context context) {
         try {
             FileOutputStream fos = context.openFileOutput(FILENAME, Context.MODE_PRIVATE);
             final String data = toJson().toString();
@@ -97,7 +95,7 @@ public class Project {
         }
     }
 
-    public void load() {
+    public void load(Context context) {
         try {
             FileInputStream fis = context.openFileInput(FILENAME);
 
@@ -105,6 +103,7 @@ public class Project {
             try {
                 final String data = IOUtils.toString(fis);
                 o = new JSONObject(data);
+                songs.clear();
                 fromJson(o);
             } catch (Exception e) {
                 throw new AssertionFailedError();
@@ -116,5 +115,81 @@ public class Project {
 
     public void setSong(int currentEditPosition, Song song) {
         songs.set(currentEditPosition, song);
+        songListChanged();
     }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeTypedArray(songs.toArray(new Song[songs.size()]), flags);
+    }
+
+    public static final Parcelable.Creator<Project> CREATOR = new Parcelable.Creator<Project>() {
+        public Project createFromParcel(Parcel in) {
+            return new Project(in);
+        }
+        public Project[] newArray(int size) {
+            return new Project[size];
+        }
+    };
+
+    private void readFromParcel(Parcel in) {
+        // songs must be final!
+        songs.clear();
+        for (Song song : in.createTypedArray(Song.CREATOR)) {
+            songs.add(song);
+        }
+    }
+
+    public JSONObject toJson() {
+        boolean[] filter = new boolean[songs.size()];
+        Arrays.fill(filter, true);
+        return toJson(filter);
+    }
+
+    public JSONObject toJson(boolean[] filter) {
+        JSONArray array = new JSONArray();
+        JSONObject object = new JSONObject();
+        try {
+            for (int i = 0; i < songs.size(); ++i) {
+                if (filter[i]) {
+                    array.put(songs.get(i).toJson());
+                }
+            }
+            object.put("items", array);
+        } catch (JSONException e) {
+            throw new AssertionFailedError();
+        }
+        return object;
+    }
+
+    public void fromJson(JSONObject object) {
+        try {
+            final JSONArray array = object.getJSONArray("items");
+            for (int i = 0; i < array.length(); ++i) {
+                Song s = Song.fromJson(array.getJSONObject(i));
+                songs.add(s);
+            }
+        } catch (JSONException e) {
+            throw new AssertionFailedError();
+        }
+    }
+
+    public interface OnSongListChangedListener {
+        void onSongListChanged();
+    }
+    private OnSongListChangedListener onSongListChangedListener;
+    void setOnSongListChangedListener(OnSongListChangedListener l) {
+        onSongListChangedListener = l;
+    }
+    private void songListChanged() {
+        if (onSongListChangedListener != null) {
+            onSongListChangedListener.onSongListChanged();
+        }
+    }
+
 }
