@@ -4,4 +4,8 @@
         android:title="@string/menu_rename_song_title"/>
     <item android:id="@+id/menu_delete_song"
         android:title="@string/menu_delete_song_title"/>
+    <item android:id="@+id/menu_edit_song_group"
+        android:title="@string/menu_edit_song_group"/>
+    <item android:id="@+id/menu_rename_group"
+        android:title="@string/menu_rename_group_title"/>
 </menu>

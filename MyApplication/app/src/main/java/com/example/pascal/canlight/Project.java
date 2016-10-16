@@ -28,15 +28,16 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by pascal on 02.10.16.
  */
 public class Project implements Parcelable {
-    final private List<Song> songs;
+    final private List<Song> mSongs;
 
     public Project() {
-        songs = new ArrayList<>();
+        mSongs = new ArrayList<>();
     }
 
     public Project(Parcel in) {
@@ -45,12 +46,12 @@ public class Project implements Parcelable {
     }
 
     public List<Song> getSongs() {
-        return songs;
+        return mSongs;
     }
 
     public int findSong(String name) {
-        for (int i = 0; i < songs.size(); ++i) {
-            if (songs.get(i).getName().equals(name)) {
+        for (int i = 0; i < mSongs.size(); ++i) {
+            if (mSongs.get(i).getName().equals(name)) {
                 return i;
             }
         }
@@ -58,29 +59,37 @@ public class Project implements Parcelable {
     }
 
     public void addSong(Song song) {
-        songs.add(song);
+        mSongs.add(song);
         songListChanged();
     }
 
     public int addSong(String name) {
         Song song = new Song(name);
-        songs.add(song);
+        mSongs.add(song);
         songListChanged();
-        return songs.size() - 1;
+        return mSongs.size() - 1;
     }
 
     public boolean renameSong(int position, String newName) {
-        songs.get(position).setName(newName);
+        mSongs.get(position).setName(newName);
         songListChanged();
         return true;
     }
 
     public Song getSong(int position) {
-        return songs.get(position);
+        return mSongs.get(position);
+    }
+    public int getIndexOf(Song song) {
+        for (int i = 0; i < mSongs.size(); ++i) {
+            if (mSongs.get(i) == song) {
+                return i;
+            }
+        }
+        throw new AssertionFailedError();
     }
 
     public void removeSong(int position) {
-        songs.remove(position);
+        mSongs.remove(position);
         songListChanged();
     }
 
@@ -103,7 +112,7 @@ public class Project implements Parcelable {
             try {
                 final String data = IOUtils.toString(fis);
                 o = new JSONObject(data);
-                songs.clear();
+                mSongs.clear();
                 fromJson(o);
             } catch (Exception e) {
                 throw new AssertionFailedError();
@@ -114,7 +123,7 @@ public class Project implements Parcelable {
     }
 
     public void setSong(int currentEditPosition, Song song) {
-        songs.set(currentEditPosition, song);
+        mSongs.set(currentEditPosition, song);
         songListChanged();
     }
 
@@ -125,7 +134,7 @@ public class Project implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeTypedArray(songs.toArray(new Song[songs.size()]), flags);
+        dest.writeTypedArray(mSongs.toArray(new Song[mSongs.size()]), flags);
     }
 
     public static final Parcelable.Creator<Project> CREATOR = new Parcelable.Creator<Project>() {
@@ -139,14 +148,14 @@ public class Project implements Parcelable {
 
     private void readFromParcel(Parcel in) {
         // songs must be final!
-        songs.clear();
+        mSongs.clear();
         for (Song song : in.createTypedArray(Song.CREATOR)) {
-            songs.add(song);
+            mSongs.add(song);
         }
     }
 
     public JSONObject toJson() {
-        boolean[] filter = new boolean[songs.size()];
+        boolean[] filter = new boolean[mSongs.size()];
         Arrays.fill(filter, true);
         return toJson(filter);
     }
@@ -155,9 +164,9 @@ public class Project implements Parcelable {
         JSONArray array = new JSONArray();
         JSONObject object = new JSONObject();
         try {
-            for (int i = 0; i < songs.size(); ++i) {
+            for (int i = 0; i < mSongs.size(); ++i) {
                 if (filter[i]) {
-                    array.put(songs.get(i).toJson());
+                    array.put(mSongs.get(i).toJson());
                 }
             }
             object.put("items", array);
@@ -172,7 +181,7 @@ public class Project implements Parcelable {
             final JSONArray array = object.getJSONArray("items");
             for (int i = 0; i < array.length(); ++i) {
                 Song s = Song.fromJson(array.getJSONObject(i));
-                songs.add(s);
+                mSongs.add(s);
             }
         } catch (JSONException e) {
             throw new AssertionFailedError();
@@ -190,6 +199,17 @@ public class Project implements Parcelable {
         if (onSongListChangedListener != null) {
             onSongListChangedListener.onSongListChanged();
         }
+    }
+    
+    public void renameGroup(final String oldName, final String newName) {
+        for (Song song : mSongs) {
+            Set<String> groups = song.getGroups();
+            if (groups.remove(oldName)) {
+                groups.add(newName);
+                song.setGroups(groups);
+            }
+        }
+        songListChanged();
     }
 
 }

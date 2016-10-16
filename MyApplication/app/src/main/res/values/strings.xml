@@ -49,6 +49,8 @@
     <string name="pref_loggin_google_drive_key">pref_loggin_google_drive</string>
     <string name="menu_import_title">Import</string>
     <string name="menu_export_title">Export</string>
+    <string name="menu_edit_song_group">Edit Group</string>
+    <string name="menu_rename_group_title">Rename</string>
 
     <plurals name="numberOfRemovedLines">
         <item quantity="one">Removed %d line</item>

@@ -1,16 +1,20 @@
 package com.example.pascal.canlight;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.ContextMenu;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -20,11 +24,15 @@ import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.BaseExpandableListAdapter;
 import android.widget.EditText;
+import android.widget.ExpandableListView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -34,6 +42,10 @@ import junit.framework.AssertionFailedError;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 //TODO remove implements..
@@ -48,22 +60,33 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public static final int RETURN_IMPORT_REQUEST = 6;
     private static final String TAG = "GDRIVE";
     private GoogleApiClient mClient;
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    private GoogleApiClient client;
 
-    private class SongListArrayAdapter extends ArrayAdapter<Song> {
+    @Override
+    public void onStart() {
+        super.onStart();
 
-        public SongListArrayAdapter(List<Song> songs) {
-            super(MainActivity.this, android.R.layout.simple_list_item_1, songs);
-            setNotifyOnChange(true);
-        }
-
-        public View getView(int position, View convertView, ViewGroup parent) {
-            View view = super.getView(position, convertView, parent);
-            TextView textView = (TextView) view.findViewById(android.R.id.text1);
-            textView.setText(getItem(position).getName());
-            return view;
-        }
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client.connect();
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "Main Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://canlight.com/rcv_shr/"),
+                // TODO: Make sure this auto-generated app URL is correct.
+                Uri.parse("android-app://com.example.pascal.canlight/http/canlight.com/rcv_shr/")
+        );
+        AppIndex.AppIndexApi.start(client, viewAction);
     }
-    private SongListArrayAdapter songListAdapter;
+
+    private ExpandableSongListAdapter songListAdapter;
 
     int currentEditPosition = -1;
     private Project mProject;
@@ -73,26 +96,117 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.listview_context_menu, menu);
 
-        setTitle(R.string.app_name);
-        final AdapterView.AdapterContextMenuInfo acmi = (AdapterView.AdapterContextMenuInfo) info;
+        Log.d("MAINC", "onccm");
 
-        menu.findItem(R.id.menu_delete_song).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+        setTitle(R.string.app_name);
+        final ExpandableListView.ExpandableListContextMenuInfo acmi = (ExpandableListView.ExpandableListContextMenuInfo) info;
+
+        final int cpos = ExpandableListView.getPackedPositionChild(acmi.packedPosition);
+        final int gpos = ExpandableListView.getPackedPositionGroup(acmi.packedPosition);
+        final boolean isGroupContextMenu = cpos < 0;
+        final Song song = isGroupContextMenu ? null : (Song) songListAdapter.getChild(gpos, cpos);
+        final int projectIndex = isGroupContextMenu ? -1 : mProject.getIndexOf(song);
+
+        final MenuItem deleteSongItem = menu.findItem(R.id.menu_delete_song);
+        final MenuItem renameSongItem = menu.findItem(R.id.menu_rename_song);
+        final MenuItem editGroupItem = menu.findItem(R.id.menu_edit_song_group);
+        final MenuItem renameGroupItem = menu.findItem(R.id.menu_rename_group);
+        deleteSongItem.setVisible(!isGroupContextMenu);
+        deleteSongItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                mProject.removeSong(acmi.position);
+                mProject.removeSong(projectIndex);
                 return true;
             }
         });
-        menu.findItem(R.id.menu_rename_song).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+        renameSongItem.setVisible(!isGroupContextMenu);
+        renameSongItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                editSongName(acmi.position, false);
+                editSongName(projectIndex, false);
+                return true;
+            }
+        });
+        editGroupItem.setVisible(!isGroupContextMenu);
+        editGroupItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                editSongGroup(projectIndex);
+                return true;
+            }
+        });
+        renameGroupItem.setVisible(isGroupContextMenu);
+        renameGroupItem.setEnabled(gpos < songListAdapter.getGroupCount() - 1);
+        renameGroupItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                editGroupName(gpos);
                 return true;
             }
         });
     }
 
-    private void editSongName(int position, boolean itemIsNew) {
+    private void editGroupName(final int position) {
+        final EditText editName = new EditText(this);
+        editName.setText(TextUtils.join("\n", mProject.getSong(position).getGroups()));
+
+        new AlertDialog(this) {
+            {
+                final String oldGroupName = (String) songListAdapter.getGroup(position);
+                final View view = editName;
+                setView(view);
+
+                editName.setMaxLines(1);
+                editName.setText(oldGroupName);
+                editName.selectAll();
+
+                getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN
+                        | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+                setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.rename_dialog_ok),
+                        new OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                final String newGroupName = editName.getText().toString();
+                                mProject.renameGroup(oldGroupName, newGroupName);
+                            }
+                        });
+                setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.rename_dialog_cancel),
+                        new OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) { }
+                        });
+            }
+        }.show();
+    }
+
+    private void editSongGroup(final int position) {
+        final EditText editName = new EditText(this);
+        editName.setText(TextUtils.join("\n", mProject.getSong(position).getGroups()));
+
+        new AlertDialog(this) {
+            {
+                final View view = editName;
+                setView(view);
+                getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN
+                        | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+                setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.rename_dialog_ok),
+                        new OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                final String groupsEnc = editName.getText().toString();
+                                final String[] groups = groupsEnc.isEmpty()
+                                        ? new String[0]
+                                        : groupsEnc.split("\n");
+                                mProject.getSong(position).setGroups(new HashSet<>(Arrays.asList(groups)));
+                                songListAdapter.notifyDataSetChanged();
+                            }
+                        });
+                setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.rename_dialog_cancel),
+                        new OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) { }
+                        });
+            }
+        }.show();
+    }
+
+    private void editSongName(final int position, boolean itemIsNew) {
         final EditText editName = new SpotifySpinner(this);
         editName.setMaxLines(1);
         editName.setText(mProject.getSong(position).getName());
@@ -109,35 +223,34 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }, 100);
 
         final boolean fItemIsNew = itemIsNew;
-        final int fPosition = position;
         new AlertDialog(this) {
             {
                 final View view = editName;
                 setView(view);
                 getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN
-                | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+                        | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
                 setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.rename_dialog_ok),
                         new OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        final String newName = editName.getText().toString();
-                        mProject.renameSong(fPosition, newName);
-                    }
-                });
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                final String newName = editName.getText().toString();
+                                mProject.renameSong(position, newName);
+                            }
+                        });
                 setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.rename_dialog_cancel),
                         new OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        if (fItemIsNew) {
-                            mProject.removeSong(fPosition);
-                        }
-                    }
-                });
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                if (fItemIsNew) {
+                                    mProject.removeSong(position);
+                                }
+                            }
+                        });
             }
         }.show();
     }
 
     void setProject(final Project project) {
         mProject = project;
-        songListAdapter = new SongListArrayAdapter(project.getSongs());
+        songListAdapter = new ExpandableSongListAdapter(this, project);
         project.setOnSongListChangedListener(new Project.OnSongListChangedListener() {
             @Override
             public void onSongListChanged() {
@@ -152,7 +265,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 editSongName(position, true);
             }
         });
-        ListView listView = (ListView) findViewById(R.id.listView);
+        ExpandableListView listView = (ExpandableListView) findViewById(R.id.listView);
         listView.setAdapter(songListAdapter);
     }
 
@@ -173,6 +286,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         });
         setProject(mProject);
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
     @Override
@@ -180,6 +296,22 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mProject.save(getApplicationContext());
         ImportPatternCache.save();
         super.onStop();
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "Main Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://canlight.com/rcv_shr/"),
+                // TODO: Make sure this auto-generated app URL is correct.
+                Uri.parse("android-app://com.example.pascal.canlight/http/canlight.com/rcv_shr/")
+        );
+        AppIndex.AppIndexApi.end(client, viewAction);
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client.disconnect();
     }
 
     private void openEditMode(int position) {
