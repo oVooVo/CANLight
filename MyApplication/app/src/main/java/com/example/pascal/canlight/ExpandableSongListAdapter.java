@@ -21,12 +21,13 @@ public class ExpandableSongListAdapter extends BaseExpandableListAdapter {
     Project mProject;
     List<List<Song>> mSongs;
     List<String> mGroupNames;
+    int mNoGroupIndex = -1;
     Context mContext;
     boolean mCacheIsInvalid = true;
 
     private void update() {
         if (mCacheIsInvalid) {
-            Log.d("ExpSAdap", "UPDATE");
+            mNoGroupIndex = -1;
             mSongs.clear();
             mGroupNames.clear();
             List<Song> songsWithoutGroup = new ArrayList<>();
@@ -46,6 +47,7 @@ public class ExpandableSongListAdapter extends BaseExpandableListAdapter {
                 }
             }
             mSongs.add(songsWithoutGroup);
+            mNoGroupIndex = mGroupNames.size();
             mGroupNames.add("No Group");
         }
         mCacheIsInvalid = false;
@@ -73,7 +75,6 @@ public class ExpandableSongListAdapter extends BaseExpandableListAdapter {
     @Override
     public int getChildrenCount(int groupPosition) {
         update();
-        Log.d("ExpSAdap", "childcount[" + groupPosition + "]: " + mSongs.get(groupPosition).size());
         return mSongs.get(groupPosition).size();
     }
 
@@ -86,7 +87,6 @@ public class ExpandableSongListAdapter extends BaseExpandableListAdapter {
     @Override
     public Object getChild(int groupPosition, int childPosition) {
         update();
-        Log.d("ExpSAdap", groupPosition + ", " + mSongs.size() + ", " + childPosition + ", " + mGroupNames.toString());
         return mSongs.get(groupPosition).get(childPosition);
     }
 
@@ -147,6 +147,15 @@ public class ExpandableSongListAdapter extends BaseExpandableListAdapter {
 
         txtListChild.setText(childText);
         return convertView;
+    }
+
+    public List<String> getGroupNames() {
+        List<String> groupNames = new ArrayList<>();
+        groupNames.addAll(mGroupNames);
+        if (mNoGroupIndex >= 0) {
+            groupNames.remove(mNoGroupIndex);
+        }
+        return groupNames;
     }
 
     @Override

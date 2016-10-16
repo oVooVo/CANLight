@@ -4,8 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -21,6 +19,7 @@ public class GoogleDriveActivity extends Activity implements
     protected static final String LOG_TAG = "Google Drive";
     private GoogleApiClient mGoogleApiClient;
     private final int REQUEST_CODE_RESOLUTION = 1;
+    private boolean mFirstTry;
 
     /**
      * Called when activity gets visible. A connection to Drive services need to
@@ -70,6 +69,7 @@ public class GoogleDriveActivity extends Activity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mFirstTry = true;
         setContentView(R.layout.activity_google_drive);
     }
 
@@ -96,14 +96,19 @@ public class GoogleDriveActivity extends Activity implements
      */
     @Override
     public void onConnectionFailed(ConnectionResult result) {
-        Log.i(LOG_TAG, "GoogleApiClient connection failed: " + result.toString());
+        Log.i(LOG_TAG, "GoogleApiClient connection failed:! " + result.toString());
         if (!result.hasResolution()) {
             // show the localized error dialog.
             GoogleApiAvailability.getInstance().getErrorDialog(this, result.getErrorCode(), 0).show();
             return;
         }
         try {
-            result.startResolutionForResult(this, REQUEST_CODE_RESOLUTION);
+            if (mFirstTry) {
+                mFirstTry = false;
+                result.startResolutionForResult(this, REQUEST_CODE_RESOLUTION);
+            } else {
+                finish();
+            }
         } catch (IntentSender.SendIntentException e) {
             Log.e(LOG_TAG, "Exception while starting resolution activity", e);
         }

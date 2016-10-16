@@ -1,40 +1,29 @@
 package com.example.pascal.canlight;
 
 import android.app.AlertDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentSender;
-import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.ContextMenu;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.BaseExpandableListAdapter;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.drive.Drive;
 
@@ -42,15 +31,12 @@ import junit.framework.AssertionFailedError;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 //TODO remove implements..
-public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener {
+public class MainActivity extends AppCompatActivity {
 
     public static final int PATTERN_REQUEST = 0;
     public static final int IMPORT_PATTERN_REQUEST = 2;
@@ -96,15 +82,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.listview_context_menu, menu);
 
-        Log.d("MAINC", "onccm");
-
         setTitle(R.string.app_name);
         final ExpandableListView.ExpandableListContextMenuInfo acmi = (ExpandableListView.ExpandableListContextMenuInfo) info;
 
         final int cpos = ExpandableListView.getPackedPositionChild(acmi.packedPosition);
         final int gpos = ExpandableListView.getPackedPositionGroup(acmi.packedPosition);
-        final boolean isGroupContextMenu = cpos < 0;
-        final Song song = isGroupContextMenu ? null : (Song) songListAdapter.getChild(gpos, cpos);
+        final Song song = getSong(gpos, cpos);
+        final boolean isGroupContextMenu = song == null;
         final int projectIndex = isGroupContextMenu ? -1 : mProject.getIndexOf(song);
 
         final MenuItem deleteSongItem = menu.findItem(R.id.menu_delete_song);
@@ -136,39 +120,61 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
             }
         });
         renameGroupItem.setVisible(isGroupContextMenu);
-        renameGroupItem.setEnabled(gpos < songListAdapter.getGroupCount() - 1);
-        renameGroupItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                editGroupName(gpos);
-                return true;
-            }
-        });
+        if (gpos == songListAdapter.getGroupCount() - 1) {
+            renameGroupItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+                    getString("No Group", new OnStringDialogOk() {
+                        @Override
+                        public void onStringDialogOk(String result) {
+                            Set<String> groups = new HashSet<>();
+                            groups.add(result);
+                            for (Song song : mProject.getSongs()) {
+                                song.setGroups(groups);
+                            }
+                            songListAdapter.notifyDataSetChanged();
+                        }
+                    });
+                    return true;
+                }
+            });
+
+        } else {
+            renameGroupItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+                    editGroupName(gpos);
+                    return true;
+                }
+            });
+        }
     }
 
-    private void editGroupName(final int position) {
+    private interface OnStringDialogOk {
+        void onStringDialogOk(String result);
+    }
+
+    private void getString(final String defaultValue, final OnStringDialogOk onOk) {
         final EditText editName = new EditText(this);
-        editName.setText(TextUtils.join("\n", mProject.getSong(position).getGroups()));
+        editName.setText(defaultValue);
 
         new AlertDialog(this) {
             {
-                final String oldGroupName = (String) songListAdapter.getGroup(position);
                 final View view = editName;
                 setView(view);
 
                 editName.setMaxLines(1);
-                editName.setText(oldGroupName);
+                editName.setText(defaultValue);
                 editName.selectAll();
 
                 getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN
                         | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-                setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.rename_dialog_ok),
-                        new OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton) {
-                                final String newGroupName = editName.getText().toString();
-                                mProject.renameGroup(oldGroupName, newGroupName);
-                            }
-                        });
+                setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.rename_dialog_ok), new OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        onOk.onStringDialogOk(editName.getText().toString());
+                    }
+                });
                 setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.rename_dialog_cancel),
                         new OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) { }
@@ -177,24 +183,62 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         }.show();
     }
 
-    private void editSongGroup(final int position) {
-        final EditText editName = new EditText(this);
-        editName.setText(TextUtils.join("\n", mProject.getSong(position).getGroups()));
+    private void editGroupName(final int position) {
+        final String oldGroupName = (String) songListAdapter.getGroup(position);
+        getString(oldGroupName, new OnStringDialogOk() {
+            @Override
+            public void onStringDialogOk(String result) {
+                mProject.renameGroup(oldGroupName, result);
+            }
+        });
+    }
 
+    private Song getSong(int groupPosition, int childPosition) {
+        final boolean isGroupContextMenu = childPosition < 0;
+        return isGroupContextMenu ? null : (Song) songListAdapter.getChild(groupPosition, childPosition);
+    }
+
+    private void editSongGroup(final int position) {
+        final ListView listView = new ListView(this);
+        List<String> groups = songListAdapter.getGroupNames();
+        groups.add("New Group");
+        final ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_list_item_checked,
+                groups);
+        listView.setAdapter(adapter);
+        adapter.setNotifyOnChange(true);
+        listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+        final Song song = mProject.getSong(position);
+        for (int i = 0; i < songListAdapter.getGroupCount(); ++i) {
+            final String groupName = (String) songListAdapter.getGroup(i);
+            listView.setItemChecked(i, song.getGroups().contains(groupName));
+        }
         new AlertDialog(this) {
             {
-                final View view = editName;
-                setView(view);
+                setView(listView);
                 getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN
                         | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
                 setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.rename_dialog_ok),
                         new OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
-                                final String groupsEnc = editName.getText().toString();
-                                final String[] groups = groupsEnc.isEmpty()
-                                        ? new String[0]
-                                        : groupsEnc.split("\n");
-                                mProject.getSong(position).setGroups(new HashSet<>(Arrays.asList(groups)));
+                                final Set<String> groups = new HashSet<>();
+                                final int n = songListAdapter.getGroupCount();
+                                for (int i = 0; i < n - 1; ++i) {
+                                    if (listView.isItemChecked(i)) {
+                                        groups.add((String) songListAdapter.getGroup(i));
+                                    }
+                                }
+                                if (listView.isItemChecked(n - 1)) {
+                                    getString("Group name", new OnStringDialogOk() {
+                                        @Override
+                                        public void onStringDialogOk(String result) {
+                                            groups.add(result);
+                                            song.setGroups(groups);
+                                            songListAdapter.notifyDataSetChanged();
+                                        }
+                                    });
+                                }
+                                song.setGroups(groups);
                                 songListAdapter.notifyDataSetChanged();
                             }
                         });
@@ -277,12 +321,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mProject = new Project();
         mProject.load(getApplicationContext());
         ImportPatternCache.load();
-        ListView listView = (ListView) findViewById(R.id.listView);
+        ExpandableListView listView = (ExpandableListView) findViewById(R.id.listView);
+        listView.setClickable(true);
         registerForContextMenu(listView);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        listView.setOnChildClickListener( new ExpandableListView.OnChildClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> arg0, View arg1, int position, long arg3) {
-                openEditMode(position);
+            public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+                final Song song = getSong(groupPosition, childPosition);
+                final int projectIndex = song == null ? -1 : mProject.getIndexOf(song);
+                openEditMode(projectIndex);
+                return false;
             }
         });
         setProject(mProject);
@@ -385,21 +433,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     protected void onResume() {
         super.onResume();
-        if (mClient == null) {
-            // Create the API client and bind it to an instance variable.
-            // We use this instance as the callback for connection and connection
-            // failures.
-            // Since no account name is passed, the user is prompted to choose.
-            mClient = new GoogleApiClient.Builder(this)
-                    .addApi(Drive.API)
-                    .addScope(Drive.SCOPE_FILE)
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this)
-                    .build();
-        }
-        // Connect the client. Once connected, the camera is launched.
-        mClient.connect();
-
         if (handleImportIntent(getIntent())) {
             setIntent(new Intent());
         }
@@ -428,53 +461,4 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         super.onNewIntent(intent);
         handleImportIntent(intent);
     }
-
-    @Override
-    protected void onPause() {
-        if (mClient != null) {
-            mClient.disconnect();
-        }
-        super.onPause();
-    }
-
-    @Override
-    public void onConnectionFailed(ConnectionResult result) {
-        // Called whenever the API client fails to connect.
-        Log.i(TAG, "GoogleApiClient connection failed: " + result.toString());
-        if (!result.hasResolution()) {
-            // show the localized error dialog.
-            GoogleApiAvailability.getInstance().getErrorDialog(this, result.getErrorCode(), 0).show();
-            return;
-        }
-        // The failure has a resolution. Resolve it.
-        // Called typically when the app is not yet authorized, and an
-        // authorization
-        // dialog is displayed to the user.
-        try {
-            result.startResolutionForResult(this, MainActivity.LOGIN_GOOGLE_DRIVE_REQUEST);
-        } catch (IntentSender.SendIntentException e) {
-            Log.e(TAG, "Exception while starting resolution activity", e);
-        }
-    }
-
-    @Override
-    public void onConnected(Bundle connectionHint) {
-        Log.i(TAG, "API client connected.");
-
-        /*
-        if (mBitmapToSave == null) {
-            // This activity has no UI of its own. Just start the camera.
-            startActivityForResult(new Intent(MediaStore.ACTION_IMAGE_CAPTURE),
-                    REQUEST_CODE_CAPTURE_IMAGE);
-            return;
-        }
-        saveFileToDrive();
-        */
-    }
-
-    @Override
-    public void onConnectionSuspended(int cause) {
-        //Log.i(TAG, "GoogleApiClient connection suspended");
-    }
-
 }
