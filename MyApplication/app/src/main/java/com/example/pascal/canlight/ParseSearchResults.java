@@ -1,5 +1,7 @@
 package com.example.pascal.canlight;
 
+import android.util.Log;
+
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -77,7 +79,7 @@ public class ParseSearchResults {
         StringPart part;
         while ((part = getPart(html, offset, "<td", "</td>")) != null) {
             String currentPart = part.string();
-            if (currentPart.startsWith("<td><a onclick=\"window.trackCorrected('ARTIST')\"")) {
+            if (currentPart.matches("^<td[^<>]*><a onclick=\"window\\.trackCorrected\\('ARTIST'\\)\".*")) {
                 // we found an artist!
                 artist = parseArtist(part.string());
             } else if (currentPart.startsWith("<td class=\"search-version")) {
