@@ -1,9 +1,13 @@
 package com.example.pascal.canlight;
 
 import android.content.Context;
+import android.gesture.Gesture;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.os.Handler;
+import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.Spannable;
 import android.text.Spanned;
@@ -12,7 +16,12 @@ import android.text.TextWatcher;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.AttributeSet;
+import android.util.Log;
+import android.view.GestureDetector;
 import android.view.Gravity;
+import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
+import android.view.View;
 import android.widget.EditText;
 
 import java.util.ArrayList;
@@ -25,14 +34,21 @@ import java.util.regex.Pattern;
 public class ChordPatternEdit extends EditText {
 
     private Handler updateHighlightsHandler;
-    private boolean editLoopKillerFlag = true;
 
+    private boolean editLoopKillerFlag = true;
+    private final Paint paint;
+    private final GestureDetector mGestureDetector;
+    private boolean mIsEditable;
+    private boolean mAutoScrollIsActive = false;
 
     public ChordPatternEdit(final Context context, AttributeSet attrs) {
         super(context, attrs);
         setGravity(Gravity.LEFT | Gravity.TOP);
         setHorizontallyScrolling(true);
         setTypeface(Typeface.MONOSPACE);
+
+        paint = new Paint();
+        paint.setColor(Color.RED);
 
         addTextChangedListener(new TextWatcher() {
             @Override
@@ -52,11 +68,9 @@ public class ChordPatternEdit extends EditText {
                         updateHighlightsHandler.removeCallbacksAndMessages(null);
                     }
                     updateHighlightsHandler = new Handler();
-                    updateHighlightsHandler.postDelayed(new Runnable()
-                    {
+                    updateHighlightsHandler.postDelayed(new Runnable() {
                         @Override
-                        public void run()
-                        {
+                        public void run() {
                             editLoopKillerFlag = false;
                             updateHighlights();
                             editLoopKillerFlag = true;
@@ -73,6 +87,73 @@ public class ChordPatternEdit extends EditText {
                 //updateHighlights();
             }
         });
+
+        mGestureDetector = new GestureDetector(context, new GestureDetector.OnGestureListener() {
+            @Override
+            public boolean onDown(MotionEvent e) {
+                return false;
+            }
+
+            @Override
+            public void onShowPress(MotionEvent e) {
+
+            }
+
+            @Override
+            public boolean onSingleTapUp(MotionEvent e) {
+                return false;
+            }
+
+            @Override
+            public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+                if (mAutoScrollIsActive) {
+                    // use own fancy-red line implementation
+                    int y = getVerticalScroll();
+                    scrollTo(0, (int) (y + distanceY));
+                    return true;
+                } else {
+                    // use default implementation
+                    return false;
+                }
+            }
+
+            @Override
+            public void onLongPress(MotionEvent e) {
+
+            }
+
+            @Override
+            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                return false;
+            }
+        });
+    }
+
+    public void setIsEditable(boolean isEditable) {
+        mIsEditable = isEditable;
+        setFocusable(isEditable);
+        setFocusableInTouchMode(isEditable);
+        if (isEditable) {
+            setAutoScrollIsActive(false);
+        }
+    }
+
+    public void setAutoScrollIsActive(boolean isActive) {
+        mAutoScrollIsActive = isActive;
+    }
+
+    public void onSizeChanged(int w, int h, int oldW, int oldH) {
+        mVerticalScroll = scrollStart();
+        super.onSizeChanged(w, h, oldW, oldH);
+    }
+
+    public boolean onTouchEvent(MotionEvent event) {
+        // GestureDetector.onTouchEvent shall always be called regardless mAutoScrollIsActive's value.
+        if (mAutoScrollIsActive & mGestureDetector.onTouchEvent(event)) {
+            return true;
+        } else {
+            return super.onTouchEvent(event);
+        }
     }
 
     private static final Pattern HEADLINE_PATTERN = Pattern.compile(
@@ -212,4 +293,41 @@ public class ChordPatternEdit extends EditText {
         setText(TextUtils.join("\n", newLines));
         return removedLines;
     }
+
+    private int mLinePosY = 0;
+
+    public int scrollStart() {
+        return -computeVerticalScrollExtent() / 2;
+    }
+
+    public int scrollEnds() {
+        return computeVerticalScrollRange() - computeVerticalScrollExtent() / 2;
+    }
+
+    public int getVerticalScroll() {
+        return mVerticalScroll;
+    }
+
+    private int mVerticalScroll = 0;
+    public void scrollTo(int x, int y) {
+        if (mAutoScrollIsActive) {
+            mVerticalScroll = Math.max(scrollStart(), Math.min(scrollEnds(), y));
+            y = Math.max(0, Math.min(computeVerticalScrollRange() - computeVerticalScrollExtent(), y));
+            mLinePosY = mVerticalScroll + getHeight() / 2;
+            super.scrollTo(x, y);
+            invalidate();
+        } else {
+            mVerticalScroll = scrollStart();
+            super.scrollTo(x, y);
+        }
+    }
+
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        if (mAutoScrollIsActive) {
+            canvas.drawLine(0, mLinePosY, canvas.getWidth(), mLinePosY, paint);
+        }
+    }
+
+
 }

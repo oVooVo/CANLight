@@ -32,7 +32,7 @@ public class EditActivity extends AppCompatActivity {
         setContentView(R.layout.activity_edit);
         currentSong = getIntent().getParcelableExtra("song");
 
-        final EditText editText = (EditText) findViewById(R.id.editText);
+        final ChordPatternEdit editText = (ChordPatternEdit) findViewById(R.id.editText);
         autoScroller = new AutoScroller(editText) {
             public void stopAutoScroll() {
                 super.stopAutoScroll();
@@ -205,8 +205,7 @@ public class EditActivity extends AppCompatActivity {
         optionsMenu.findItem(R.id.menu_add_empty_lines_before_chords).setVisible(!ro);
 
         final ChordPatternEdit editText = (ChordPatternEdit) findViewById(R.id.editText);
-        editText.setFocusableInTouchMode(!ro);
-        editText.setFocusable(!ro);
+        editText.setIsEditable(!ro);
         autoScroller.stopAutoScroll();
         if (ro) {
             editText.setTextSize((float) currentSong.getPatternTextSize());

@@ -1,59 +1,60 @@
 package com.example.pascal.canlight;
 
 import android.os.Handler;
-import android.widget.TextView;
 
 /**
  * Created by pascal on 06.10.16.
  */
 public class AutoScroller {
-    private final TextView textView;
-    double scrollBuffer = 0;
+    private final ChordPatternEdit textView;
+    double mScrollBuffer = 0;
     double scrollRate = 2;
-    boolean active = false;
-    final Handler handler;
+    boolean mActive = false;
+    final Handler mHandler;
+    static final double FACTOR = 2.0;
 
-    public AutoScroller(TextView view) {
+    public AutoScroller(final ChordPatternEdit view) {
         textView = view;
-        handler = new Handler();
+        mHandler = new Handler();
         new Runnable() {
             @Override
             public void run() {
-                if (active) {
-                    final double actualScrollRate = scrollRate * textView.getTextSize() / 18.0;
-                    scrollBy(actualScrollRate);
-                    if (!textView.canScrollVertically(1)) {
+                if (mActive) {
+                    double actualScrollRate = (scrollRate / FACTOR) * textView.getTextSize() / 18.0;
+                    actualScrollRate += mScrollBuffer;
+                    final int actualScrollRateInteger = (int) actualScrollRate;
+                    mScrollBuffer = actualScrollRate - actualScrollRateInteger;
+                    int y = view.getVerticalScroll();
+                    if (view.scrollEnds() <= y) {
                         stopAutoScroll();
+                    } else {
+                        y += actualScrollRateInteger;
+                        view.scrollTo(view.getScrollX(), y);
                     }
                 }
-                handler.postDelayed(this, 50);
+                mHandler.postDelayed(this, (int) (50 / FACTOR));
             }
         }.run();
     }
 
 
     public void startAutoScroll() {
-        active = true;
+        mActive = true;
+        textView.setAutoScrollIsActive(true);
     }
 
     public void stopAutoScroll() {
-        active = false;
-        scrollBuffer = 0;
+        mActive = false;
+        mScrollBuffer = 0;
+        textView.setAutoScrollIsActive(false);
     }
 
     public void setAutoScrollRate(double dy) {
         scrollRate = dy;
     }
 
-    void scrollBy(double y) {
-        scrollBuffer += y;
-        int integer = (int) scrollBuffer;
-        scrollBuffer -= integer;
-        textView.scrollBy(0, integer);
-    }
-
     public boolean isPlaying() {
-        return active;
+        return mActive;
     }
-
 }
+
