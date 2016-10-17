@@ -1,27 +1,20 @@
 package com.example.pascal.canlight;
 
 import android.content.Context;
-import android.gesture.Gesture;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.os.Handler;
-import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.Spannable;
 import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.text.method.ScrollingMovementMethod;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.AttributeSet;
-import android.util.Log;
-import android.view.GestureDetector;
 import android.view.Gravity;
 import android.view.MotionEvent;
-import android.view.ScaleGestureDetector;
-import android.view.View;
 import android.widget.EditText;
 
 import java.util.ArrayList;
@@ -33,13 +26,9 @@ import java.util.regex.Pattern;
  */
 public class ChordPatternEdit extends EditText {
 
-    private Handler updateHighlightsHandler;
-
-    private boolean editLoopKillerFlag = true;
-    private final Paint paint;
-    private final GestureDetector mGestureDetector;
+    private Handler mUpdateHighlightsHandler;
+    private boolean mEditLoopKillerFlag = true;
     private boolean mIsEditable;
-    private boolean mAutoScrollIsActive = false;
 
     public ChordPatternEdit(final Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -47,8 +36,7 @@ public class ChordPatternEdit extends EditText {
         setHorizontallyScrolling(true);
         setTypeface(Typeface.MONOSPACE);
 
-        paint = new Paint();
-        paint.setColor(Color.RED);
+        setMovementMethod(ScrollingMovementMethod.getInstance());
 
         addTextChangedListener(new TextWatcher() {
             @Override
@@ -63,68 +51,26 @@ public class ChordPatternEdit extends EditText {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (editLoopKillerFlag) {
-                    if (updateHighlightsHandler != null) {
-                        updateHighlightsHandler.removeCallbacksAndMessages(null);
+                if (mEditLoopKillerFlag) {
+                    if (mUpdateHighlightsHandler != null) {
+                        mUpdateHighlightsHandler.removeCallbacksAndMessages(null);
                     }
-                    updateHighlightsHandler = new Handler();
-                    updateHighlightsHandler.postDelayed(new Runnable() {
+                    mUpdateHighlightsHandler = new Handler();
+                    mUpdateHighlightsHandler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            editLoopKillerFlag = false;
+                            mEditLoopKillerFlag = false;
                             updateHighlights();
-                            editLoopKillerFlag = true;
+                            mEditLoopKillerFlag = true;
 
                         }
                     }, 1000);
                 }
-
-
             }
 
             @Override
             public void afterTextChanged(Editable s) {
                 //updateHighlights();
-            }
-        });
-
-        mGestureDetector = new GestureDetector(context, new GestureDetector.OnGestureListener() {
-            @Override
-            public boolean onDown(MotionEvent e) {
-                return false;
-            }
-
-            @Override
-            public void onShowPress(MotionEvent e) {
-
-            }
-
-            @Override
-            public boolean onSingleTapUp(MotionEvent e) {
-                return false;
-            }
-
-            @Override
-            public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-                if (mAutoScrollIsActive) {
-                    // use own fancy-red line implementation
-                    int y = getVerticalScroll();
-                    scrollTo(0, (int) (y + distanceY));
-                    return true;
-                } else {
-                    // use default implementation
-                    return false;
-                }
-            }
-
-            @Override
-            public void onLongPress(MotionEvent e) {
-
-            }
-
-            @Override
-            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-                return false;
             }
         });
     }
@@ -133,31 +79,10 @@ public class ChordPatternEdit extends EditText {
         mIsEditable = isEditable;
         setFocusable(isEditable);
         setFocusableInTouchMode(isEditable);
-        if (isEditable) {
-            setAutoScrollIsActive(false);
-        }
-    }
-
-    public void setAutoScrollIsActive(boolean isActive) {
-        mAutoScrollIsActive = isActive;
-    }
-
-    public void onSizeChanged(int w, int h, int oldW, int oldH) {
-        mVerticalScroll = scrollStart();
-        super.onSizeChanged(w, h, oldW, oldH);
-    }
-
-    public boolean onTouchEvent(MotionEvent event) {
-        // GestureDetector.onTouchEvent shall always be called regardless mAutoScrollIsActive's value.
-        if (mAutoScrollIsActive & mGestureDetector.onTouchEvent(event)) {
-            return true;
-        } else {
-            return super.onTouchEvent(event);
-        }
     }
 
     private static final Pattern HEADLINE_PATTERN = Pattern.compile(
-            "^\\W*(pre|post)?\\W*(verse|chorus|bridge|intro|outro)(\\W|[0-9]|_)*\\W*$",
+            "^\\W*(pre|post)?\\W*(verse|chorus|bridge|intro|outro)(\\W|[0-9_IVX])*\\W*$",
             Pattern.CASE_INSENSITIVE);
 
     private void updateHighlights() {
@@ -193,23 +118,21 @@ public class ChordPatternEdit extends EditText {
 
 
     static final Pattern CAN_REMOVE_FIRST_CHARACTER_PATTERN = Pattern.compile("^\\s(" + Chord.CHORD_SPLIT_PATTERN + ").*", Pattern.DOTALL);
-    public void transpose(int transpose)
-    {
+
+    public void transpose(int transpose) {
         String text = getText().toString();
         int i = 0;
         for (String line : text.split("\n", -1)) {
             Chord.Line cLine = Chord.parseLine(line);
-            for (String token : cLine.tokens)
-            {
+            for (String token : cLine.tokens) {
                 int additional = 0;
                 Chord chord = Chord.chordFromString(token);
-                if (chord.isValid() && cLine.isChordLine)
-                {
+                if (chord.isValid() && cLine.isChordLine) {
                     chord.transpose(transpose);
                     String c = chord.toString();
                     final String before = i >= 0 ? text.substring(0, i) : "";
                     final int endIndex = i + token.length();
-                    String after =  endIndex < text.length() ? text.substring(endIndex) : "";
+                    String after = endIndex < text.length() ? text.substring(endIndex) : "";
                     additional = c.length() - token.length();
 
                     // expand c to match length of token (if token is longer than c)
@@ -294,40 +217,16 @@ public class ChordPatternEdit extends EditText {
         return removedLines;
     }
 
-    private int mLinePosY = 0;
-
-    public int scrollStart() {
-        return -computeVerticalScrollExtent() / 2;
-    }
-
-    public int scrollEnds() {
-        return computeVerticalScrollRange() - computeVerticalScrollExtent() / 2;
-    }
-
-    public int getVerticalScroll() {
-        return mVerticalScroll;
-    }
-
-    private int mVerticalScroll = 0;
     public void scrollTo(int x, int y) {
-        if (mAutoScrollIsActive) {
-            mVerticalScroll = Math.max(scrollStart(), Math.min(scrollEnds(), y));
-            y = Math.max(0, Math.min(computeVerticalScrollRange() - computeVerticalScrollExtent(), y));
-            mLinePosY = mVerticalScroll + getHeight() / 2;
-            super.scrollTo(x, y);
-            invalidate();
+        // ignore all scroll attempts.
+    }
+
+    public boolean onTouchEvent(MotionEvent event) {
+        if (mIsEditable) {
+            return super.onTouchEvent(event);
         } else {
-            mVerticalScroll = scrollStart();
-            super.scrollTo(x, y);
+            //Ignore touches
+            return true;
         }
     }
-
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        if (mAutoScrollIsActive) {
-            canvas.drawLine(0, mLinePosY, canvas.getWidth(), mLinePosY, paint);
-        }
-    }
-
-
 }

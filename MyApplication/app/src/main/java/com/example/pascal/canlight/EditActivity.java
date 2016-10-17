@@ -6,8 +6,10 @@ import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 /**
@@ -18,8 +20,6 @@ public class EditActivity extends AppCompatActivity {
     private Song currentSong;
     private MenuItem autoScrollPlayPauseMenuItem;
     private Menu optionsMenu;
-    AutoScroller autoScroller;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,12 +33,7 @@ public class EditActivity extends AppCompatActivity {
         currentSong = getIntent().getParcelableExtra("song");
 
         final ChordPatternEdit editText = (ChordPatternEdit) findViewById(R.id.editText);
-        autoScroller = new AutoScroller(editText) {
-            public void stopAutoScroll() {
-                super.stopAutoScroll();
-                updateAutoScrollStartPauseMenuItem(false);
-            }
-        };
+
         editText.setText(currentSong.getPattern());
         editText.setTextSize((float) currentSong.getPatternTextSize());
         editText.setFocusable(false);
@@ -53,6 +48,14 @@ public class EditActivity extends AppCompatActivity {
         if (currentSong.getPatternIsUninitialized()) {
             importPattern();
         }
+
+        ((AutoScrollView) findViewById(R.id.autoScrollView))
+                .setOnAutoScrollStoppedListener(new AutoScrollView.OnAutoScrollStoppedListener() {
+                    @Override
+                    public void onAutoScrollStopped() {
+                        updateAutoScrollStartPauseMenuItem(false);
+                    }
+                });
     }
 
     public boolean onOptionsItemSelected(MenuItem item){
@@ -132,12 +135,13 @@ public class EditActivity extends AppCompatActivity {
         menu.findItem(R.id.menu_auto_scroll_start_pause).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                if (autoScroller.isPlaying()) {
-                    autoScroller.stopAutoScroll();
+                AutoScrollView autoScroller = (AutoScrollView) findViewById(R.id.autoScrollView);
+                if (autoScroller.isActive()) {
+                    autoScroller.endAutoScroll();
                 } else {
                     autoScroller.startAutoScroll();
                 }
-                updateAutoScrollStartPauseMenuItem(autoScroller.isPlaying());
+                updateAutoScrollStartPauseMenuItem(autoScroller.isActive());
                 return true;
             }
         });
@@ -157,7 +161,6 @@ public class EditActivity extends AppCompatActivity {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 new SliderDialog.ExpSliderDialog(2, 30, 3, EditActivity.this) {
-
                     @Override
                     void onValueChanged(double value) {
                         setTextSize(value);
@@ -166,6 +169,21 @@ public class EditActivity extends AppCompatActivity {
                 return true;
             }
         });
+        menu.findItem(R.id.menu_toogle_player_visibility).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                /*
+                RelativeLayout layout = (RelativeLayout) findViewById(R.id.playerLayout);
+                if (layout.getVisibility() == View.INVISIBLE) {
+                    layout.setVisibility(View.VISIBLE);
+                } else {
+                    layout.setVisibility(View.INVISIBLE);
+                }
+                */
+                return true;
+            }
+        });
+
 
         setReadOnly(true);
         return true;
@@ -189,14 +207,17 @@ public class EditActivity extends AppCompatActivity {
 
     private void setScrollRate(double rate) {
         currentSong.setScrollRate(rate);
-        autoScroller.setAutoScrollRate(rate);
+        AutoScrollView autoScroller = (AutoScrollView) findViewById(R.id.autoScrollView);
+        autoScroller.setScrollRate(rate);
     }
 
     public void setReadOnly(boolean ro) {
+        AutoScrollView autoScroller = (AutoScrollView) findViewById(R.id.autoScrollView);
         optionsMenu.findItem(R.id.menu_edit_pattern).setVisible(ro);
         optionsMenu.findItem(R.id.menu_auto_scroll_start_pause).setVisible(ro);
         optionsMenu.findItem(R.id.menu_auto_scroll_speed).setVisible(ro);
         optionsMenu.findItem(R.id.menu_scale_pattern).setVisible(ro);
+        optionsMenu.findItem(R.id.menu_toogle_player_visibility).setVisible(ro);
         optionsMenu.findItem(R.id.menu_view_pattern).setVisible(!ro);
         optionsMenu.findItem(R.id.menu_transpose_up).setVisible(!ro);
         optionsMenu.findItem(R.id.menu_transpose_down).setVisible(!ro);
@@ -206,7 +227,7 @@ public class EditActivity extends AppCompatActivity {
 
         final ChordPatternEdit editText = (ChordPatternEdit) findViewById(R.id.editText);
         editText.setIsEditable(!ro);
-        autoScroller.stopAutoScroll();
+        autoScroller.endAutoScroll();
         if (ro) {
             editText.setTextSize((float) currentSong.getPatternTextSize());
         } else {

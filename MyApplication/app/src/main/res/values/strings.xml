@@ -51,6 +51,7 @@
     <string name="menu_export_title">Export</string>
     <string name="menu_edit_song_group">Edit Group</string>
     <string name="menu_rename_group_title">Rename</string>
+    <string name="menu_toogle_player_visibility_title">Player</string>
 
     <plurals name="numberOfRemovedLines">
         <item quantity="one">Removed %d line</item>

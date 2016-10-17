@@ -99,7 +99,16 @@ public class MainActivity extends AppCompatActivity {
         deleteSongItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                mProject.removeSong(projectIndex);
+                new AlertDialog.Builder(MainActivity.this)
+                        .setMessage("Do you really want to delete \""
+                                + mProject.getSong(projectIndex).getName()
+                                + "\" from all groups?")
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                                mProject.removeSong(projectIndex);
+                            }})
+                        .setNegativeButton(android.R.string.no, null).show();
                 return true;
             }
         });

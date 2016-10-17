@@ -83,7 +83,7 @@ public class SpotifySpinner extends AutoCompleteTextView {
         adapter.notifyDataSetChanged();
 
         if (handler != null) {
-            handler.removeCallbacksAndMessages(null);
+        //    handler.removeCallbacksAndMessages(null);
         }
         handler = new Handler();
         handler.postDelayed(new Runnable()

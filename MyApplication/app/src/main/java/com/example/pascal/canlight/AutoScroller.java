@@ -5,6 +5,7 @@ import android.os.Handler;
 /**
  * Created by pascal on 06.10.16.
  */
+/*
 public class AutoScroller {
     private final ChordPatternEdit textView;
     double mScrollBuffer = 0;
@@ -58,3 +59,4 @@ public class AutoScroller {
     }
 }
 
+*/

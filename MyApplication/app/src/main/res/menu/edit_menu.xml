@@ -38,4 +38,8 @@
     <item android:id="@+id/menu_scale_pattern"
         android:title="@string/menu_scale_text_title"
         compat:showAsAction="never" />
+    <item android:id="@+id/menu_toogle_player_visibility"
+        android:title="@string/menu_toogle_player_visibility_title"
+        compat:showAsAction="never" />
+
 </menu>
