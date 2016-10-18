@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Handler;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.widget.ScrollView;
@@ -19,13 +18,12 @@ public class AutoScrollView extends ScrollView {
 
     private boolean mAutoScrollIsActive = false;
     private Handler mHandler;
-    private double mScrollRate = 10;
+    private double mScrollRate;
     private TextView textView;
     private static final double FACTOR = 2.0;
-    private double mScrollBuffer = 0.0;
     private final Paint mPaint;
-    private int mLinePosY = 0;
-    private int mVerticalScroll = 0;
+    private double mLinePosY = 0;
+    private double mVerticalScroll = 0;
     private final GestureDetector mGestureDetector;
     private OnAutoScrollStoppedListener mOnAutoScrollStoppedListener;
 
@@ -62,12 +60,8 @@ public class AutoScrollView extends ScrollView {
             @Override
             public void run() {
                 if (mAutoScrollIsActive) {
-                    mScrollBuffer = 0;
                     double actualScrollRate = (mScrollRate / FACTOR) * textView.getTextSize() / 18.0;
-                    actualScrollRate += mScrollBuffer;
-                    final int actualScrollRateInteger = (int) actualScrollRate;
-                    mScrollBuffer = actualScrollRate - actualScrollRateInteger;
-                    if (!scrollBy(actualScrollRateInteger)) {
+                    if (!scrollBy(actualScrollRate)) {
                         endAutoScroll();
                     }
                 }
@@ -111,42 +105,41 @@ public class AutoScrollView extends ScrollView {
         mScrollRate = rate;
     }
 
-    private boolean scrollBy(int dy) {
-        final int max = scrollEnds();
+    private boolean scrollBy(double dy) {
+        final double max = scrollEnds();
         mVerticalScroll += dy;
         if (mVerticalScroll >= max) {
             mVerticalScroll = max;
         }
-        scrollTo(0, mVerticalScroll);
+        scrollTo(mVerticalScroll);
         return mVerticalScroll < max;
     }
 
-    private int scrollStart() {
-        return -computeVerticalScrollExtent() / 2;
+    private double scrollStart() {
+        return -computeVerticalScrollExtent() / 2.0;
     }
 
-    private int scrollEnds() {
-        return computeVerticalScrollRange() - computeVerticalScrollExtent() / 2;
+    private double scrollEnds() {
+        return computeVerticalScrollRange() - computeVerticalScrollExtent() / 2.0;
     }
 
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         if (mAutoScrollIsActive) {
-            canvas.drawLine(0, mLinePosY, canvas.getWidth(), mLinePosY, mPaint);
+            canvas.drawLine(0, (int) mLinePosY, canvas.getWidth(), (int) mLinePosY, mPaint);
         }
     }
 
-    public void scrollTo(int x, int y) {
+    public void scrollTo(double y) {
         if (mAutoScrollIsActive) {
             mVerticalScroll = Math.max(scrollStart(), Math.min(scrollEnds(), y));
             y = Math.max(0, Math.min(computeVerticalScrollRange() - computeVerticalScrollExtent(), y));
-            mLinePosY = mVerticalScroll + getHeight() / 2;
-            super.scrollTo(0, y);
-            //Log.d("scroll", "scroll to " + mVerticalScroll);
+            mLinePosY = mVerticalScroll + getHeight() / 2.0;
+            super.scrollTo(0, (int) y);
             invalidate();
         } else {
             mVerticalScroll = scrollStart();
-            super.scrollTo(0, y);
+            super.scrollTo(0, (int) y);
         }
     }
 

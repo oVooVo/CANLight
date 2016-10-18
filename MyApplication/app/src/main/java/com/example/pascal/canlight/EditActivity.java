@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -172,14 +173,12 @@ public class EditActivity extends AppCompatActivity {
         menu.findItem(R.id.menu_toogle_player_visibility).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                /*
                 RelativeLayout layout = (RelativeLayout) findViewById(R.id.playerLayout);
-                if (layout.getVisibility() == View.INVISIBLE) {
-                    layout.setVisibility(View.VISIBLE);
+                if (layout.getVisibility() == View.VISIBLE) {
+                    layout.setVisibility(View.GONE);
                 } else {
-                    layout.setVisibility(View.INVISIBLE);
+                    layout.setVisibility(View.VISIBLE);
                 }
-                */
                 return true;
             }
         });
