@@ -57,8 +57,9 @@
     <string name="spotify_logged_out">Spotify: Logged out</string>
     <string name="spotify_login_fail">Spotify: Failed to log in.</string>
     <string name="spotify_connection_message">Spotify Message:</string>
-    <string name="spotify_playback_error">Spotify Playback Error:</string>
+    <string name="spotify_playback_error">Spotify: no song found</string>
     <string name="play_pause_button_content_description">Play/Pause</string>
+    <string name="spotify_no_song_error">Spotify: no song</string>
 
     <plurals name="numberOfRemovedLines">
         <item quantity="one">Removed %d line</item>

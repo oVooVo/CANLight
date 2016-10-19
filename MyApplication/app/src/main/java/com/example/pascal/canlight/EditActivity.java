@@ -4,7 +4,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -16,39 +15,26 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.Toast;
 
 import com.spotify.sdk.android.authentication.AuthenticationClient;
-import com.spotify.sdk.android.authentication.AuthenticationRequest;
 import com.spotify.sdk.android.authentication.AuthenticationResponse;
 import com.spotify.sdk.android.player.Config;
-import com.spotify.sdk.android.player.ConnectionStateCallback;
-import com.spotify.sdk.android.player.Error;
-import com.spotify.sdk.android.player.Player;
-import com.spotify.sdk.android.player.PlayerEvent;
 import com.spotify.sdk.android.player.Spotify;
 import com.spotify.sdk.android.player.SpotifyPlayer;
-
-import java.util.Timer;
-import java.util.TimerTask;
 
 /**
  * Created by pascal on 02.10.16.
  */
-public class EditActivity extends AppCompatActivity
-        implements ConnectionStateCallback, Player.NotificationCallback {
+public class EditActivity extends AppCompatActivity {
 
     private Song mCurrentSong;
     private MenuItem mAutoScrollPlayPauseMenuItem;
     private Menu mOptionsMenu;
-
-    static private Player mPlayer;
-    private boolean mUpdateSeekBar = true;
-    private static final String CLIENT_ID = "8874e81dddd441fb8854482e4aafc634";
-    private static final String REDIRECT_URI = "canlight-spotify://callback";
+    private Player mPlayer;
+    private static boolean mShowPlayer = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,88 +76,19 @@ public class EditActivity extends AppCompatActivity
             initializeTrackId(mCurrentSong);
         }
 
-        findViewById(R.id.playerPlayPauseButton).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mPlayer != null) {
-                    if (mPlayer.getPlaybackState().isPlaying) {
-                        mPlayer.pause(null);
-                    } else {
-                        mPlayer.resume(null);
-                    }
-                }
-            }
-        });
+        findViewById(R.id.playerLayout).inflate(this, R.layout.player_layout, (ViewGroup) findViewById(R.id.playerLayout));
 
-        final SeekBar playerSeekBar = (SeekBar) findViewById(R.id.playerSeekBar);
-        new Timer().scheduleAtFixedRate(new TimerTask() {
-            @Override
-            public void run() {
-                if (mPlayer != null && mPlayer.getPlaybackState() != null) {
-                    final long ms = (int) mPlayer.getPlaybackState().positionMs;
-
-                    // int is enough. 2147483647 milliseconds is about 24 days.
-                    if (mUpdateSeekBar) {
-                        playerSeekBar.setProgress((int) ms);
-                    }
-                }
-                if (mPlayer != null && mPlayer.getMetadata() != null && mPlayer.getMetadata().currentTrack != null) {
-                    playerSeekBar.setMax((int) mPlayer.getMetadata().currentTrack.durationMs);
-                }
-            }
-        }, 0, 20);
-
-        playerSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                mUpdateSeekBar = false;
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                if (mPlayer != null) {
-                    mPlayer.seekToPosition(null, seekBar.getProgress());
-                }
-                mUpdateSeekBar = true;
-            }
-        });
-
-        if (mPlayer != null) {
-            // if mPlayer is null, it will be initialized onLoggedIn().
-            initPlayer();
-        } else {
-            // the layout will be enabled onLoggedIn()
-            setPlayerEnabled(false);
-        }
-        setPlayPauseButtonIcon(true);
+        mPlayer = new Player(this,
+                (Button) findViewById(R.id.playPauseButton),
+                (SeekBar) findViewById(R.id.playerSeekBar));
     }
 
-    void initPlayer() {
-        final SeekBar playerSeekBar = (SeekBar) findViewById(R.id.playerSeekBar);
-        mPlayer.playUri(new Player.OperationCallback() {
-            @Override
-            public void onSuccess() {
-                mPlayer.pause(null);
-            }
-
-            @Override
-            public void onError(Error error) {
-                playerSeekBar.setMax(0);
-            }
-        }, "spotify:track:" + mCurrentSong.getSpotifyTrackId(), 0, 0);
-    }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (mPlayer != null) {
-            mPlayer.pause(null);
-        }
+        mPlayer.pause();
+        mPlayer.deinit();
     }
 
     public boolean onOptionsItemSelected(MenuItem item){
@@ -317,9 +234,6 @@ public class EditActivity extends AppCompatActivity
                             @Override
                             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                                 setSpotifyTrack(editName.getId(position), editName.getDisplayName(position));
-                                if (mPlayer != null) {
-                                    initPlayer();
-                                }
                                 d.cancel();
                             }
                         });
@@ -330,12 +244,13 @@ public class EditActivity extends AppCompatActivity
         });
 
         setReadOnly(true);
-        setPlayerVisibility(false);
+        setPlayerVisibility(mShowPlayer);
         return true;
     }
 
     private void setSpotifyTrack(String id, String displayName) {
         mCurrentSong.setSpotifyTrack(id, displayName);
+        mPlayer.init(id);
     }
 
     private void setPlayerVisibility(boolean isVisible) {
@@ -344,14 +259,17 @@ public class EditActivity extends AppCompatActivity
 
         layout.setLayoutParams(params);
         if (isVisible) {
+            mShowPlayer = true;
             layout.setVisibility(View.VISIBLE);
             mOptionsMenu.findItem(R.id.menu_config_player).setVisible(true);
             params.height = 140;
-            spotifyConnectRequest();
+            mPlayer.init(mCurrentSong.getSpotifyTrackId());
         } else {
+            mShowPlayer = false;
             layout.setVisibility(View.INVISIBLE);
             mOptionsMenu.findItem(R.id.menu_config_player).setVisible(false);
             params.height = 0;
+            mPlayer.pause();
         }
         layout.setLayoutParams(params);
     }
@@ -423,13 +341,11 @@ public class EditActivity extends AppCompatActivity
             case MainActivity.LOGIN_SPOTIFY_REQUEST:
                 AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, data);
                 if (response.getType() == AuthenticationResponse.Type.TOKEN) {
-                    Config playerConfig = new Config(this, response.getAccessToken(), CLIENT_ID);
+                    Config playerConfig = new Config(this, response.getAccessToken(), Player.CLIENT_ID);
                     Spotify.getPlayer(playerConfig, this, new SpotifyPlayer.InitializationObserver() {
                         @Override
                         public void onInitialized(SpotifyPlayer spotifyPlayer) {
-                            mPlayer = spotifyPlayer;
-                            mPlayer.addConnectionStateCallback(EditActivity.this);
-                            mPlayer.addNotificationCallback(EditActivity.this);
+                            mPlayer.onInitialized(spotifyPlayer);
                         }
 
                         @Override
@@ -442,25 +358,9 @@ public class EditActivity extends AppCompatActivity
         }
     }
 
-    private void setPlayerEnabled(boolean isEnabled) {
-        findViewById(R.id.playerSeekBar).setEnabled(isEnabled);
-        findViewById(R.id.playerPlayPauseButton).setEnabled(isEnabled);
-    }
-
     @Override
     public void onBackPressed() {
         returnToMain();
-    }
-
-    private void spotifyConnectRequest() {
-        if (mPlayer == null) {
-            AuthenticationRequest.Builder builder = new AuthenticationRequest.Builder(CLIENT_ID,
-                    AuthenticationResponse.Type.TOKEN, REDIRECT_URI);
-            builder.setScopes(new String[]{"user-read-private", "streaming"});
-            AuthenticationRequest request = builder.build();
-
-            AuthenticationClient.openLoginActivity(this, MainActivity.LOGIN_SPOTIFY_REQUEST, request);
-        }
     }
 
     private void returnToMain() {
@@ -476,53 +376,4 @@ public class EditActivity extends AppCompatActivity
         SpotifySpinner.findTrack(song);
     }
 
-    @Override
-    public void onLoggedIn() {
-        Toast.makeText(this, R.string.spotify_logged_in, Toast.LENGTH_SHORT).show();
-        initPlayer();
-        setPlayerEnabled(true);
-    }
-
-    @Override
-    public void onLoggedOut() {
-        Toast.makeText(this, R.string.spotify_logged_out, Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onLoginFailed(int i) {
-        Toast.makeText(this, R.string.spotify_login_fail, Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onTemporaryError() {
-
-    }
-
-    @Override
-    public void onConnectionMessage(String s) {
-        Toast.makeText(this, getString(R.string.spotify_connection_message) + s, Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onPlaybackEvent(PlayerEvent playerEvent) {
-        if (PlayerEvent.kSpPlaybackNotifyPause.equals(playerEvent)) {
-            setPlayPauseButtonIcon(true);
-        } else if (PlayerEvent.kSpPlaybackNotifyPlay.equals(playerEvent)) {
-            setPlayPauseButtonIcon(false);
-        }
-    }
-
-    private void setPlayPauseButtonIcon(boolean playIcon) {
-        Button playPauseButton = (Button) findViewById(R.id.playerPlayPauseButton);
-        if (playIcon) {
-            playPauseButton.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.ic_media_play, 0, 0, 0);
-        } else {
-            playPauseButton.setCompoundDrawablesWithIntrinsicBounds(android.R.drawable.ic_media_pause, 0, 0, 0);
-        }
-    }
-
-    @Override
-    public void onPlaybackError(Error error) {
-        Toast.makeText(this, getString(R.string.spotify_playback_error) + error, Toast.LENGTH_SHORT).show();
-    }
 }

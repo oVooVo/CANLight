@@ -301,8 +301,10 @@ public class MainActivity extends AppCompatActivity {
                 final AlertDialog d = this;
                 editName.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        mProject.getSong(position).setSpotifyTrack(editName.getId(position), editName.getDisplayName(position));
+                    public void onItemClick(AdapterView<?> parent, View view, int itemPosition, long id) {
+                        final String displayName = editName.getDisplayName(itemPosition);
+                        mProject.renameSong(position, displayName);
+                        mProject.getSong(position).setSpotifyTrack(editName.getId(itemPosition), displayName);
                         d.cancel();
                     }
                 });
