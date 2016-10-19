@@ -3,6 +3,7 @@ package com.example.pascal.canlight;
 import android.content.Context;
 import android.os.Handler;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Filter;
@@ -22,11 +23,15 @@ import retrofit.client.Response;
  */
 public class SpotifySpinner extends AutoCompleteTextView {
 
+    private static int requestId = 0;
+    private Handler mHandler;
+    private List<String> mIds;
+    private List<String> mDisplayNames;
     private static class Adapter extends ArrayAdapter<String> {
-        List<String> items;
+        List<String> mItems;
         public Adapter(Context context, List<String> items) {
             super(context, android.R.layout.simple_list_item_1, items);
-            this.items = items;
+            mItems = items;
         }
 
         public Filter getFilter() {
@@ -36,15 +41,15 @@ public class SpotifySpinner extends AutoCompleteTextView {
         class NullFilter extends Filter {
             protected Filter.FilterResults performFiltering(CharSequence constraint) {
                 final FilterResults results = new FilterResults();
-                results.values = items;
+                results.values = mItems;
                 return results;
             }
 
             protected void publishResults(CharSequence constraint, Filter.FilterResults results) {
                 //noinspection unchecked
-                items.clear();
+                mItems.clear();
                 for (Object item : (List) results.values) {
-                    items.add((String) item);
+                    mItems.add((String) item);
                 }
                 if (results.count > 0) {
                     notifyDataSetChanged();
@@ -58,53 +63,85 @@ public class SpotifySpinner extends AutoCompleteTextView {
             super.notifyDataSetChanged();
             setNotifyOnChange(false);
         }
-
     }
 
-    private final Adapter adapter;
+    private final Adapter mAdapter;
     public SpotifySpinner(Context context) {
         super(context);
-        adapter = new Adapter(context, new ArrayList<String>());
-        setAdapter(adapter);
+
+        // we need two dedicated lists for the displayNames
+        // since onItemClick will trigger a new search which immediately clear the list
+        // then we want to have the result of the (previous) search.
+        mDisplayNames = new ArrayList<>();
+        mIds = new ArrayList<>();
+        mAdapter = new Adapter(context, new ArrayList<String>());
+        setAdapter(mAdapter);
         setMaxLines(1);
         setSingleLine(true);
     }
 
-    private static int requestId = 0;
-    private Handler handler;
+    public static void findTrack(final Song song) {
+        MySpotify.getSpotifyService().searchTracks(song.getName(), new Callback<TracksPager>() {
+            @Override
+            public void success(TracksPager tracksPager, Response response) {
+                if (!tracksPager.tracks.items.isEmpty()) {
+                    final Track track = tracksPager.tracks.items.get(0);
+                    song.setSpotifyTrack(track.id, getTrackDisplayName(track));
+                }
+            }
+
+            @Override
+            public void failure(RetrofitError error) {
+
+            }
+        });
+    }
+
+    public static String getTrackDisplayName(Track track) {
+        if (track == null) {
+            return "";
+        } else {
+            List<String> artists = new ArrayList<>(track.artists.size());
+            for (ArtistSimple a : track.artists) {
+                artists.add(a.name);
+            }
+            return track.name + " - " + TextUtils.join(", ", artists);
+        }
+    }
+
     protected void onTextChanged(CharSequence text, int start, int lengthBefore, int lengthAfter) {
-        if (adapter == null) {
+        if (mAdapter == null) {
             return;
         }
-
         final String key = text.toString() + "*";
+        mAdapter.clear();
+        mAdapter.notifyDataSetChanged();
 
-        adapter.clear();
-        adapter.notifyDataSetChanged();
-
-        if (handler != null) {
-            handler.removeCallbacksAndMessages(null);
+        if (mHandler != null) {
+            mHandler.removeCallbacksAndMessages(null);
         }
-        handler = new Handler();
-        handler.postDelayed(new Runnable()
+        mHandler = new Handler();
+        mHandler.postDelayed(new Runnable()
         {
             @Override
             public void run()
             {
+
                 requestId++;
                 final int currentRequestId = requestId;
                 MySpotify.getSpotifyService().searchTracks(key, new Callback<TracksPager>() {
                     @Override
                     public void success(TracksPager tracksPager, Response response) {
                         if (currentRequestId == requestId) {
+                            mIds.clear();
+                            mDisplayNames.clear();
                             for (Track t : tracksPager.tracks.items) {
-                                List<String> artists = new ArrayList<>(t.artists.size());
-                                for (ArtistSimple a : t.artists) {
-                                    artists.add(a.name);
-                                }
-                                adapter.add(t.name + " - " + TextUtils.join(", ", artists));
+                                final String trackName = getTrackDisplayName(t);
+                                mDisplayNames.add(trackName);
+                                mIds.add(t.id);
+                                mAdapter.add(trackName);
                             }
-                            adapter.notifyDataSetChanged();
+                            mAdapter.notifyDataSetChanged();
                         }
                     }
 
@@ -115,6 +152,13 @@ public class SpotifySpinner extends AutoCompleteTextView {
                 });
             }
         }, 300);
+    }
 
+    String getId(int position) {
+        return mIds.get(position);
+    }
+
+    String getDisplayName(int position) {
+        return mDisplayNames.get(position);
     }
 }

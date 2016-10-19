@@ -52,6 +52,13 @@
     <string name="menu_edit_song_group">Edit Group</string>
     <string name="menu_rename_group_title">Rename</string>
     <string name="menu_toogle_player_visibility_title">Player</string>
+    <string name="menu_config_player_title">Config Player</string>
+    <string name="spotify_logged_in">Spotify: Logged in</string>
+    <string name="spotify_logged_out">Spotify: Logged out</string>
+    <string name="spotify_login_fail">Spotify: Failed to log in.</string>
+    <string name="spotify_connection_message">Spotify Message:</string>
+    <string name="spotify_playback_error">Spotify Playback Error:</string>
+    <string name="play_pause_button_content_description">Play/Pause</string>
 
     <plurals name="numberOfRemovedLines">
         <item quantity="one">Removed %d line</item>

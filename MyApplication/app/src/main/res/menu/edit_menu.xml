@@ -40,6 +40,9 @@
         compat:showAsAction="never" />
     <item android:id="@+id/menu_toogle_player_visibility"
         android:title="@string/menu_toogle_player_visibility_title"
-        compat:showAsAction="never" />
+        compat:showAsAction="never"/>
+    <item android:id="@+id/menu_config_player"
+        android:title="@string/menu_config_player_title"
+        compat:showAsAction="never"/>
 
 </menu>

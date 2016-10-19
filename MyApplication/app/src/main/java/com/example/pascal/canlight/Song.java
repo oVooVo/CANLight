@@ -1,25 +1,14 @@
 package com.example.pascal.canlight;
 
-import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.text.TextUtils;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.TextView;
-
-import com.google.gson.JsonArray;
-
 import junit.framework.AssertionFailedError;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -34,6 +23,8 @@ public class Song implements Parcelable {
     private double scrollRate = 2;
     private boolean uninitalizedPattern;
     private Set<String> mGroups;
+    private String mSpotifyTrackDisplayName;
+    private String mSpotifyTrackId;
     public static final double DEFAULT_PATTERN_TEXT_SIZE = 18;
     private double patternTextSize = DEFAULT_PATTERN_TEXT_SIZE;
 
@@ -52,6 +43,8 @@ public class Song implements Parcelable {
         List<String> groups = new ArrayList<>();
         in.readStringList(groups);
         mGroups = new HashSet<>(groups);
+        mSpotifyTrackId = in.readString();
+        mSpotifyTrackDisplayName = in.readString();
     }
 
     public Set<String> getGroups() {
@@ -94,25 +87,32 @@ public class Song implements Parcelable {
         double patternTextSize = song.getPatternTextSize();
         double scrollRate = song.getScrollRate();
         Set<String> groups = new HashSet<>();
+        String spotifyTrackId = song.getSpotifyTrackId();
+        String spotifyTrackDisplayName = song.getSpotifyTrackDisplayName();
 
         try { name = o.getString("name"); } catch (JSONException e) {
             throw new AssertionFailedError();
         }
-        try { pattern = o.getString("pattern"); } catch (JSONException e) {} // ignore. its okay.
-        try { scrollRate = o.getDouble("scrollRate"); } catch (JSONException e) {} // ignore. its okay.
-        try { patternTextSize = o.getDouble("patternTextSize"); } catch (JSONException e) {} // ignore. its okay.
+        try { pattern = o.getString("pattern"); } catch (JSONException e) {} // ignore. it's okay.
+        try { scrollRate = o.getDouble("scrollRate"); } catch (JSONException e) {} // ignore. it's okay.
+        try { patternTextSize = o.getDouble("patternTextSize"); } catch (JSONException e) {} // ignore. it's okay.
         try {
             final JSONArray groupArray = o.getJSONArray("groups");
             for (int i = 0; i < groupArray.length(); ++i) {
                 groups.add(groupArray.getString(i));
             }
-        } catch (JSONException e) {} // ignore. its okay.
+        } catch (JSONException e) {} // ignore. it's okay.
+        try {
+            spotifyTrackId = o.getString("SpotifyTrackId");
+            spotifyTrackDisplayName = o.getString("SpotifyTrackDisplayName");
+        } catch (JSONException e) {} // ignore. it's okay.
 
         song.setPattern(pattern);
         song.setScrollRate(scrollRate);
         song.setName(name);
         song.setPatternTextSize(patternTextSize);
         song.setGroups(groups);
+        song.setSpotifyTrack(spotifyTrackId, spotifyTrackDisplayName);
         return song;
     }
 
@@ -128,6 +128,8 @@ public class Song implements Parcelable {
                 groupArray.put(groupName);
             }
             o.put("groups", groupArray);
+            o.put("SpotifyTrackDisplayName", getSpotifyTrackDisplayName());
+            o.put("SpotifyTrackId", getSpotifyTrackId());
         } catch (JSONException e) {
             throw new AssertionFailedError();
         }
@@ -151,6 +153,8 @@ public class Song implements Parcelable {
         dest.writeInt(uninitalizedPattern ? 1 : 0);
         dest.writeDouble(patternTextSize);
         dest.writeStringList(new ArrayList<>(mGroups));
+        dest.writeString(mSpotifyTrackId);
+        dest.writeString(mSpotifyTrackDisplayName);
     }
 
     // this is used to regenerate your object. All Parcelables must have a CREATOR that implements these two methods
@@ -163,18 +167,6 @@ public class Song implements Parcelable {
         }
     };
 
-    public static class SongAdapter extends ArrayAdapter<Song> {
-        SongAdapter(Context context, int res, List<Song> list) {
-            super(context, res, list);
-        }
-        public View getView(int position, View convertView, ViewGroup parent) {
-            View view = super.getView(position, convertView, parent);
-            TextView textView = (TextView) view.findViewById(android.R.id.text1);
-            textView.setText(getItem(position).getName());
-            return view;
-        }
-    }
-
     public void setPatternTextSize(double s) {
         patternTextSize = s;
     }
@@ -182,4 +174,18 @@ public class Song implements Parcelable {
     public double getPatternTextSize() {
         return patternTextSize;
     }
+
+    public void setSpotifyTrack(String id, String displayName) {
+        mSpotifyTrackId = id;
+        mSpotifyTrackDisplayName = displayName;
+    }
+
+    public String getSpotifyTrackId() {
+        return mSpotifyTrackId;
+    }
+
+    public String getSpotifyTrackDisplayName() {
+        return mSpotifyTrackDisplayName;
+    }
+
 }

@@ -16,6 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ExpandableListView;
@@ -260,7 +261,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void editSongName(final int position, boolean itemIsNew) {
-        final EditText editName = new SpotifySpinner(this);
+        final SpotifySpinner editName = new SpotifySpinner(this);
         editName.setMaxLines(1);
         editName.setText(mProject.getSong(position).getName());
         editName.selectAll();
@@ -297,6 +298,14 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             }
                         });
+                final AlertDialog d = this;
+                editName.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        mProject.getSong(position).setSpotifyTrack(editName.getId(position), editName.getDisplayName(position));
+                        d.cancel();
+                    }
+                });
             }
         }.show();
     }
