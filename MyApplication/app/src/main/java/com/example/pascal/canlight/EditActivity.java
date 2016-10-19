@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.spotify.sdk.android.authentication.AuthenticationClient;
@@ -76,11 +77,16 @@ public class EditActivity extends AppCompatActivity {
             initializeTrackId(mCurrentSong);
         }
 
-        findViewById(R.id.playerLayout).inflate(this, R.layout.player_layout, (ViewGroup) findViewById(R.id.playerLayout));
+        View.inflate(this, R.layout.player_layout, (ViewGroup) findViewById(R.id.playerLayout));
 
         mPlayer = new Player(this,
                 (Button) findViewById(R.id.playPauseButton),
-                (SeekBar) findViewById(R.id.playerSeekBar));
+                (Button) findViewById(R.id.gotoButton),
+                (SeekBar) findViewById(R.id.playerSeekBar),
+                (TextView) findViewById(R.id.label_remaining_timeLabel),
+                (TextView) findViewById(R.id.label_elapsed_timeLabel),
+                (TextView) findViewById(R.id.songNameLabel));
+        findViewById(R.id.songNameLabel).setSelected(true);
     }
 
 
@@ -262,7 +268,7 @@ public class EditActivity extends AppCompatActivity {
             mShowPlayer = true;
             layout.setVisibility(View.VISIBLE);
             mOptionsMenu.findItem(R.id.menu_config_player).setVisible(true);
-            params.height = 140;
+            params.height = 180;
             mPlayer.init(mCurrentSong.getSpotifyTrackId());
         } else {
             mShowPlayer = false;

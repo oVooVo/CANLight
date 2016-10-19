@@ -1,23 +1,24 @@
 package com.example.pascal.canlight;
 
 import android.app.Activity;
-import android.util.Log;
+import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.spotify.sdk.android.authentication.AuthenticationClient;
 import com.spotify.sdk.android.authentication.AuthenticationRequest;
 import com.spotify.sdk.android.authentication.AuthenticationResponse;
 import com.spotify.sdk.android.player.ConnectionStateCallback;
+import com.spotify.sdk.android.player.Metadata;
 import com.spotify.sdk.android.player.Player.NotificationCallback;
 import com.spotify.sdk.android.player.Error;
 import com.spotify.sdk.android.player.PlayerEvent;
 import com.spotify.sdk.android.player.SpotifyPlayer;
 
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.Locale;
 
 /**
  * Created by pascal on 19.10.16.
@@ -26,19 +27,32 @@ public class Player
         implements ConnectionStateCallback, NotificationCallback {
     private Activity mActivity;
     private Button mPlayPauseButton;
+    private Button mGotoButton;
+    private TextView mRemainingTimeLabel;
+    private TextView mElapsedTimeLabel;
+    private TextView mSongNameLabel;
     private SeekBar mSeekBar;
     private boolean mUpdateSeekBar = true;
     private String mId;
+    private int mLastSeekPosition = 0;
 
+    private Handler mHandler;
     private static com.spotify.sdk.android.player.Player mPlayer;
 
     public static final String CLIENT_ID = "8874e81dddd441fb8854482e4aafc634";
     private static final String REDIRECT_URI = "canlight-spotify://callback";
 
-    Player(Activity activity, Button playPauseButton, SeekBar seekBar) {
+    Player(Activity activity, Button playPauseButton, Button gotoButton, SeekBar seekBar,
+           TextView remainingTimeLabel, TextView elapsedTimeLabel, TextView songNameLabel) {
         mActivity = activity;
         setPlayPauseButton(playPauseButton);
+        setGotoButton(gotoButton);
         setSeekBar(seekBar);
+        mRemainingTimeLabel = remainingTimeLabel;
+        mElapsedTimeLabel = elapsedTimeLabel;
+        mSongNameLabel = songNameLabel;
+        updateTimeLabels(0);
+        updateSongNameLabel();
 
         setPlayerEnabled(false);
         setPlayPauseButtonIcon(true);
@@ -50,8 +64,67 @@ public class Player
     }
 
     public void deinit() {
-        mPlayer.removeConnectionStateCallback(this);
-        mPlayer.removeNotificationCallback(this);
+        if (mPlayer != null) {
+            mPlayer.removeConnectionStateCallback(this);
+            mPlayer.removeNotificationCallback(this);
+        }
+        mHandler.removeCallbacksAndMessages(null);
+    }
+
+    private void setGotoButton(Button button) {
+        mGotoButton = button;
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mPlayer != null) {
+                    mPlayer.seekToPosition(null, mLastSeekPosition);
+                    mSeekBar.setProgress(mLastSeekPosition);
+                    updateTimeLabels(mLastSeekPosition);
+                }
+            }
+        });
+    }
+
+    private String formatTime(long ms) {
+        boolean isNegative = false;
+        if (ms < 0) {
+            isNegative = true;
+            ms = -ms;
+        }
+        long sec = ms / 1000;
+        long min = sec / 60;
+        sec %= 60;
+        ms %= 1000;
+
+        if (isNegative) {
+            min = -min;
+        }
+
+        // ms / 100 is correct enough.
+        return String.format(Locale.getDefault(), "%2d:%02d.%03d", min, sec, ms);
+    }
+
+    private void updateTimeLabels(long position) {
+        long remaining = 0;
+        if (mPlayer != null
+                && mPlayer.getMetadata() != null
+                && mPlayer.getMetadata().currentTrack != null) {
+            long duration = mPlayer.getMetadata().currentTrack.durationMs;
+            remaining = duration - position;
+        }
+        mElapsedTimeLabel.setText(formatTime(position));
+        mRemainingTimeLabel.setText(formatTime(-remaining));
+    }
+
+    private void updateSongNameLabel() {
+        String songName = "No Song";
+        if (mPlayer != null
+                && mPlayer.getMetadata() != null
+                && mPlayer.getMetadata().currentTrack != null) {
+            Metadata.Track track = mPlayer.getMetadata().currentTrack;
+            songName = track.name + " - " + track.artistName + " (" + track.albumName + ")";
+        }
+        mSongNameLabel.setText(songName);
     }
 
     private void setPlayPauseButton(Button button) {
@@ -72,7 +145,14 @@ public class Player
 
     private void setSeekBar(SeekBar seekBar) {
         mSeekBar = seekBar;
-        new Timer().scheduleAtFixedRate(new TimerTask() {
+
+        if (mHandler != null) {
+            mHandler.removeCallbacksAndMessages(null);
+        } else {
+            mHandler = new Handler();
+        }
+
+        new Runnable() {
             @Override
             public void run() {
                 if (mPlayer != null && mPlayer.getPlaybackState() != null) {
@@ -81,13 +161,15 @@ public class Player
                     // int is enough. 2147483647 milliseconds is about 24 days.
                     if (mUpdateSeekBar && mPlayer.getPlaybackState().isPlaying) {
                         mSeekBar.setProgress((int) ms);
+                        updateTimeLabels(mPlayer.getPlaybackState().positionMs);
                     }
                 }
                 if (mPlayer != null && mPlayer.getMetadata() != null && mPlayer.getMetadata().currentTrack != null) {
                     mSeekBar.setMax((int) mPlayer.getMetadata().currentTrack.durationMs);
                 }
+                mHandler.postDelayed(this, 20);
             }
-        }, 0, 20);
+        }.run();
 
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -101,8 +183,9 @@ public class Player
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+                mLastSeekPosition = seekBar.getProgress();
                 if (mPlayer != null) {
-                    mPlayer.seekToPosition(null, seekBar.getProgress());
+                    mPlayer.seekToPosition(null, mLastSeekPosition);
                 }
                 mUpdateSeekBar = true;
             }
@@ -112,7 +195,6 @@ public class Player
     public void init(String id) {
         mId = id;
         if (mPlayer != null) {
-            setPlayerEnabled(true);
             mPlayer.playUri(new com.spotify.sdk.android.player.Player.OperationCallback() {
                 @Override
                 public void onSuccess() {
@@ -151,6 +233,10 @@ public class Player
     private void setPlayerEnabled(boolean isEnabled) {
         mSeekBar.setEnabled(isEnabled);
         mPlayPauseButton.setEnabled(isEnabled);
+        mGotoButton.setEnabled(isEnabled);
+        mRemainingTimeLabel.setEnabled(isEnabled);
+        mElapsedTimeLabel.setEnabled(isEnabled);
+        mSongNameLabel.setEnabled(isEnabled);
     }
 
     @Override
@@ -182,11 +268,22 @@ public class Player
 
     @Override
     public void onPlaybackEvent(PlayerEvent playerEvent) {
-
         if (PlayerEvent.kSpPlaybackNotifyPause.equals(playerEvent)) {
             setPlayPauseButtonIcon(true);
         } else if (PlayerEvent.kSpPlaybackNotifyPlay.equals(playerEvent)) {
             setPlayPauseButtonIcon(false);
+        } else if (PlayerEvent.kSpPlaybackNotifyMetadataChanged.equals(playerEvent)){
+            if (mPlayer != null
+                    && mPlayer.getMetadata() != null
+                    && mPlayer.getPlaybackState() != null
+                    && mPlayer.getMetadata().currentTrack != null) {
+                setPlayerEnabled(true);
+                updateTimeLabels(mPlayer.getPlaybackState().positionMs);
+            } else {
+                setPlayerEnabled(false);
+                updateTimeLabels(0);
+            }
+            updateSongNameLabel();
         }
     }
 

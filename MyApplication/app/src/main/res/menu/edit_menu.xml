@@ -26,21 +26,23 @@
 
     <item android:id="@+id/menu_edit_pattern"
         android:title="@string/menu_edit_pattern_title"
-        compat:showAsAction="never" />
+        android:icon="@drawable/ic_edit"
+        compat:showAsAction="ifRoom" />
 
     <item android:id="@+id/menu_auto_scroll_start_pause"
         android:title="@string/menu_auto_scroll_start_title"
         android:icon="@android:drawable/ic_media_play"
         compat:showAsAction="ifRoom" />
+    <item android:id="@+id/menu_toogle_player_visibility"
+        android:icon="@drawable/ic_speaker"
+        android:title="@string/menu_toogle_player_visibility_title"
+        compat:showAsAction="ifRoom"/>
     <item android:id="@+id/menu_auto_scroll_speed"
         android:title="@string/menu_speed_auto_scroll_title"
         compat:showAsAction="never" />
     <item android:id="@+id/menu_scale_pattern"
         android:title="@string/menu_scale_text_title"
         compat:showAsAction="never" />
-    <item android:id="@+id/menu_toogle_player_visibility"
-        android:title="@string/menu_toogle_player_visibility_title"
-        compat:showAsAction="never"/>
     <item android:id="@+id/menu_config_player"
         android:title="@string/menu_config_player_title"
         compat:showAsAction="never"/>

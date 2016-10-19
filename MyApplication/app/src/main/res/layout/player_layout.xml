@@ -1,40 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/buttonGotoLast"
-        android:drawableStart="@android:drawable/ic_menu_revert"
-        android:layout_gravity="center_horizontal"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
-
     <SeekBar
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/playerSeekBar"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignBottom="@+id/buttonGotoLast"
-        android:layout_toLeftOf="@+id/playPauseButton"
-        android:layout_toStartOf="@+id/playPauseButton" />
+        android:id="@+id/playerSeekBar"/>
 
-    <Button
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/playPauseButton"
-        android:text=""
-        android:minHeight="50dp"
-        android:minWidth="50dp"
-        android:contentDescription="@string/play_pause_button_content_description"
-        android:layout_alignBottom="@+id/buttonGotoLast"
-        android:layout_toLeftOf="@+id/buttonGotoLast"
-        android:layout_toStartOf="@+id/buttonGotoLast">
-    </Button>
+        android:layout_gravity="center">
 
-</RelativeLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text=""
+            android:id="@+id/label_elapsed_timeLabel"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:singleLine="true"
+            android:layout_gravity="top|center" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/songNameLabel"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text=""
+            android:singleLine="true"
+            android:ellipsize="marquee"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:scrollHorizontally="true"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_weight="1" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text=""
+            android:id="@+id/label_remaining_timeLabel"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:singleLine="true"
+            android:layout_gravity="top|center" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/playPauseButton"
+            android:text=""
+            android:minHeight="50dp"
+            android:minWidth="50dp"
+            android:contentDescription="@string/play_pause_button_content_description"/>
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/gotoButton"
+            android:background="@android:drawable/ic_menu_revert"
+            android:minHeight="50dp"
+            android:minWidth="50dp"/>
+    </LinearLayout>
+
+</LinearLayout>

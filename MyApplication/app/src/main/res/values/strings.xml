@@ -60,6 +60,7 @@
     <string name="spotify_playback_error">Spotify: no song found</string>
     <string name="play_pause_button_content_description">Play/Pause</string>
     <string name="spotify_no_song_error">Spotify: no song</string>
+    <string name="goto_last_content_description">Go to last seek</string>
 
     <plurals name="numberOfRemovedLines">
         <item quantity="one">Removed %d line</item>
