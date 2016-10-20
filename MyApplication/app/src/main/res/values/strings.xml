@@ -6,7 +6,8 @@
     <string name="menu_transpose_down_title">Transpose Down</string>
     <string name="menu_import_pattern_title">Import</string>
     <string name="menu_edit_pattern_title">Edit</string>
-    <string name="menu_view_pattern_title">View</string>
+    <string name="menu_view_pattern_title">Apply changes</string>
+    <string name="menu_view_cancel_edit_title">Discard changes</string>
     <string name="menu_auto_scroll_pause_title">Start</string>
     <string name="menu_auto_scroll_start_title">Pause</string>
     <string name="menu_speed_auto_scroll_title">Speed</string>

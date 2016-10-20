@@ -20,7 +20,7 @@ import retrofit.client.Response;
  * Created by pascal on 09.10.16.
  */
 public class MySpotify {
-    public static final String CLIENT_ID = "8874e81dddd441fb8854482e4aafc634";
+    public static String CLIENT_ID;
     public static final String REDIRECT_URL = "canlight-spotify://callback";
     private static SpotifyApi spotifyApi = null;
 
@@ -35,8 +35,8 @@ public class MySpotify {
         return getSpotifyApi().getService();
     }
 
-
     public static void loginRequest(Activity activity) {
+        CLIENT_ID = activity.getString(R.string.spotify_client_id);
         // Request code will be used to verify if result comes from the login activity. Can be set to any integer.
         AuthenticationRequest.Builder builder =
                 new AuthenticationRequest.Builder(MySpotify.CLIENT_ID,

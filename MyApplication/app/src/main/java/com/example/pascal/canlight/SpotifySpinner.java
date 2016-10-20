@@ -3,10 +3,13 @@ package com.example.pascal.canlight;
 import android.content.Context;
 import android.os.Handler;
 import android.text.TextUtils;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Filter;
+
+import com.spotify.sdk.android.player.Spotify;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +29,7 @@ public class SpotifySpinner extends AutoCompleteTextView {
     private static int requestId = 0;
     private Handler mHandler;
     private List<String> mIds;
-    private List<String> mDisplayNames;
+    private List<String> mLabels;
     private static class Adapter extends ArrayAdapter<String> {
         List<String> mItems;
         public Adapter(Context context, List<String> items) {
@@ -64,17 +67,24 @@ public class SpotifySpinner extends AutoCompleteTextView {
             setNotifyOnChange(false);
         }
     }
+    private Adapter mAdapter;
 
-    private final Adapter mAdapter;
+    public SpotifySpinner(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        init();
+    }
     public SpotifySpinner(Context context) {
         super(context);
+        init();
+    }
 
+    private void init() {
         // we need two dedicated lists for the displayNames
         // since onItemClick will trigger a new search which immediately clear the list
         // then we want to have the result of the (previous) search.
-        mDisplayNames = new ArrayList<>();
+        mLabels = new ArrayList<>();
         mIds = new ArrayList<>();
-        mAdapter = new Adapter(context, new ArrayList<String>());
+        mAdapter = new Adapter(getContext(), new ArrayList<String>());
         setAdapter(mAdapter);
         setMaxLines(1);
         setSingleLine(true);
@@ -86,7 +96,7 @@ public class SpotifySpinner extends AutoCompleteTextView {
             public void success(TracksPager tracksPager, Response response) {
                 if (!tracksPager.tracks.items.isEmpty()) {
                     final Track track = tracksPager.tracks.items.get(0);
-                    song.setSpotifyTrack(track.id, getTrackDisplayName(track));
+                    song.setTrack(GetSongDialog.SERVICES[0], track.id, getTrackLabel(track));
                 }
             }
 
@@ -97,7 +107,7 @@ public class SpotifySpinner extends AutoCompleteTextView {
         });
     }
 
-    public static String getTrackDisplayName(Track track) {
+    public static String getTrackLabel(Track track) {
         if (track == null) {
             return "";
         } else {
@@ -134,10 +144,10 @@ public class SpotifySpinner extends AutoCompleteTextView {
                     public void success(TracksPager tracksPager, Response response) {
                         if (currentRequestId == requestId) {
                             mIds.clear();
-                            mDisplayNames.clear();
+                            mLabels.clear();
                             for (Track t : tracksPager.tracks.items) {
-                                final String trackName = getTrackDisplayName(t);
-                                mDisplayNames.add(trackName);
+                                final String trackName = getTrackLabel(t);
+                                mLabels.add(trackName);
                                 mIds.add(t.id);
                                 mAdapter.add(trackName);
                             }
@@ -154,11 +164,15 @@ public class SpotifySpinner extends AutoCompleteTextView {
         }, 300);
     }
 
-    String getId(int position) {
+    public String getId(int position) {
         return mIds.get(position);
     }
 
-    String getDisplayName(int position) {
-        return mDisplayNames.get(position);
+    public String getLabel(int position) {
+        return mLabels.get(position);
+    }
+
+    public String getService() {
+        return GetSongDialog.SERVICES[0];
     }
 }

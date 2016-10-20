@@ -3,6 +3,8 @@ package com.example.pascal.canlight;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.hardware.usb.UsbDeviceConnection;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -23,11 +25,6 @@ import android.widget.ExpandableListView;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.drive.Drive;
-
 import junit.framework.AssertionFailedError;
 
 import java.io.UnsupportedEncodingException;
@@ -45,32 +42,17 @@ public class MainActivity extends AppCompatActivity {
     public static final int LOGIN_SPOTIFY_REQUEST = 4;
     public static final int LOGIN_GOOGLE_DRIVE_REQUEST = 5;
     public static final int RETURN_IMPORT_REQUEST = 6;
-    private static final String TAG = "GDRIVE";
-    private GoogleApiClient mClient;
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
-    private GoogleApiClient client;
+    public static final int GET_TRACK_REQUEST = 7;
 
     @Override
     public void onStart() {
         super.onStart();
 
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client.connect();
-        Action viewAction = Action.newAction(
-                Action.TYPE_VIEW, // TODO: choose an action type.
-                "Main Page", // TODO: Define a title for the content shown.
-                // TODO: If you have web page content that matches this app activity's content,
-                // make sure this auto-generated web page URL is correct.
-                // Otherwise, set the URL to null.
-                Uri.parse("http://canlight.com/rcv_shr/"),
-                // TODO: Make sure this auto-generated app URL is correct.
-                Uri.parse("android-app://com.example.pascal.canlight/http/canlight.com/rcv_shr/")
-        );
-        AppIndex.AppIndexApi.start(client, viewAction);
+        if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_MIDI)) {
+            Log.d("MIDI", "hasMidi");
+        } else {
+            Log.d("MIDI", "hasMidi!");
+        }
     }
 
     private ExpandableSongListAdapter songListAdapter;
@@ -302,9 +284,9 @@ public class MainActivity extends AppCompatActivity {
                 editName.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int itemPosition, long id) {
-                        final String displayName = editName.getDisplayName(itemPosition);
-                        mProject.renameSong(position, displayName);
-                        mProject.getSong(position).setSpotifyTrack(editName.getId(itemPosition), displayName);
+                        final String label = editName.getLabel(itemPosition);
+                        mProject.renameSong(position, label);
+                        mProject.getSong(position).setTrack(editName.getService(), editName.getId(itemPosition), label);
                         d.cancel();
                     }
                 });
@@ -354,9 +336,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         setProject(mProject);
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
     @Override
@@ -364,22 +343,6 @@ public class MainActivity extends AppCompatActivity {
         mProject.save(getApplicationContext());
         ImportPatternCache.save();
         super.onStop();
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        Action viewAction = Action.newAction(
-                Action.TYPE_VIEW, // TODO: choose an action type.
-                "Main Page", // TODO: Define a title for the content shown.
-                // TODO: If you have web page content that matches this app activity's content,
-                // make sure this auto-generated web page URL is correct.
-                // Otherwise, set the URL to null.
-                Uri.parse("http://canlight.com/rcv_shr/"),
-                // TODO: Make sure this auto-generated app URL is correct.
-                Uri.parse("android-app://com.example.pascal.canlight/http/canlight.com/rcv_shr/")
-        );
-        AppIndex.AppIndexApi.end(client, viewAction);
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client.disconnect();
     }
 
     private void openEditMode(int position) {

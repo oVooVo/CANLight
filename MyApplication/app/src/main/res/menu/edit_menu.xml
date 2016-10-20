@@ -6,6 +6,10 @@
         android:title="@string/menu_view_pattern_title"
         android:icon="@drawable/ic_apply"
         compat:showAsAction="ifRoom" />
+    <item android:id="@+id/menu_cancel_edit"
+        android:title="@string/menu_view_cancel_edit_title"
+        android:icon="@drawable/ic_discard"
+        compat:showAsAction="ifRoom" />
     <item android:id="@+id/menu_transpose_up"
         android:title="@string/menu_transpose_up_title"
         android:icon="@android:drawable/arrow_up_float"

@@ -54,8 +54,6 @@
             android:name="com.spotify.sdk.android.authentication.LoginActivity"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
 
-        <activity android:name=".GoogleDriveBaseActivity" />
-
         <activity android:name=".ReceiverActivity"/>
 
         <activity android:name=".GoogleDriveCreateFileActivity" />
@@ -63,6 +61,10 @@
         <activity android:name=".GoogleDriveActivity" />
 
         <activity android:name=".ImportExportActivity"/>
+
+        <activity android:name=".GetSongDialog"/>
+
+
 
         <meta-data
             android:name="com.google.android.gms.version"

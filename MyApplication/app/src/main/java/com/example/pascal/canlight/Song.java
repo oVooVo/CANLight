@@ -23,8 +23,9 @@ public class Song implements Parcelable {
     private double scrollRate = 2;
     private boolean uninitalizedPattern;
     private Set<String> mGroups;
-    private String mSpotifyTrackDisplayName;
-    private String mSpotifyTrackId;
+    private String mTrackLabel;
+    private String mTrackId;
+    private String mTrackService;
     public static final double DEFAULT_PATTERN_TEXT_SIZE = 18;
     private double patternTextSize = DEFAULT_PATTERN_TEXT_SIZE;
 
@@ -43,8 +44,9 @@ public class Song implements Parcelable {
         List<String> groups = new ArrayList<>();
         in.readStringList(groups);
         mGroups = new HashSet<>(groups);
-        mSpotifyTrackId = in.readString();
-        mSpotifyTrackDisplayName = in.readString();
+        mTrackService = in.readString();
+        mTrackId = in.readString();
+        mTrackLabel = in.readString();
     }
 
     public Set<String> getGroups() {
@@ -87,8 +89,9 @@ public class Song implements Parcelable {
         double patternTextSize = song.getPatternTextSize();
         double scrollRate = song.getScrollRate();
         Set<String> groups = new HashSet<>();
-        String spotifyTrackId = song.getSpotifyTrackId();
-        String spotifyTrackDisplayName = song.getSpotifyTrackDisplayName();
+        String trackId = song.getTrackId();
+        String trackLabel = song.getTrackLabel();
+        String trackService = song.getTrackService();
 
         try { name = o.getString("name"); } catch (JSONException e) {
             throw new AssertionFailedError();
@@ -103,8 +106,9 @@ public class Song implements Parcelable {
             }
         } catch (JSONException e) {} // ignore. it's okay.
         try {
-            spotifyTrackId = o.getString("SpotifyTrackId");
-            spotifyTrackDisplayName = o.getString("SpotifyTrackDisplayName");
+            trackService = o.getString("TrackService");
+            trackId = o.getString("TrackId");
+            trackLabel = o.getString("TrackLabel");
         } catch (JSONException e) {} // ignore. it's okay.
 
         song.setPattern(pattern);
@@ -112,7 +116,7 @@ public class Song implements Parcelable {
         song.setName(name);
         song.setPatternTextSize(patternTextSize);
         song.setGroups(groups);
-        song.setSpotifyTrack(spotifyTrackId, spotifyTrackDisplayName);
+        song.setTrack(trackService, trackId, trackLabel);
         return song;
     }
 
@@ -128,8 +132,9 @@ public class Song implements Parcelable {
                 groupArray.put(groupName);
             }
             o.put("groups", groupArray);
-            o.put("SpotifyTrackDisplayName", getSpotifyTrackDisplayName());
-            o.put("SpotifyTrackId", getSpotifyTrackId());
+            o.put("TrackService", getTrackService());
+            o.put("TrackId", getTrackId());
+            o.put("TrackLabel", getTrackLabel());
         } catch (JSONException e) {
             throw new AssertionFailedError();
         }
@@ -153,8 +158,9 @@ public class Song implements Parcelable {
         dest.writeInt(uninitalizedPattern ? 1 : 0);
         dest.writeDouble(patternTextSize);
         dest.writeStringList(new ArrayList<>(mGroups));
-        dest.writeString(mSpotifyTrackId);
-        dest.writeString(mSpotifyTrackDisplayName);
+        dest.writeString(mTrackService);
+        dest.writeString(mTrackId);
+        dest.writeString(mTrackLabel);
     }
 
     // this is used to regenerate your object. All Parcelables must have a CREATOR that implements these two methods
@@ -175,17 +181,22 @@ public class Song implements Parcelable {
         return patternTextSize;
     }
 
-    public void setSpotifyTrack(String id, String displayName) {
-        mSpotifyTrackId = id;
-        mSpotifyTrackDisplayName = displayName;
+    public void setTrack(String service, String id, String label) {
+        mTrackId = id;
+        mTrackLabel = label;
+        mTrackService = service;
     }
 
-    public String getSpotifyTrackId() {
-        return mSpotifyTrackId;
+    public String getTrackId() {
+        return mTrackId;
     }
 
-    public String getSpotifyTrackDisplayName() {
-        return mSpotifyTrackDisplayName;
+    public String getTrackLabel() {
+        return mTrackLabel;
+    }
+
+    public String getTrackService() {
+        return mTrackService;
     }
 
 }

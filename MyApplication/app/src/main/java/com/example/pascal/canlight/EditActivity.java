@@ -26,6 +26,8 @@ import com.spotify.sdk.android.player.Config;
 import com.spotify.sdk.android.player.Spotify;
 import com.spotify.sdk.android.player.SpotifyPlayer;
 
+import junit.framework.AssertionFailedError;
+
 /**
  * Created by pascal on 02.10.16.
  */
@@ -73,7 +75,7 @@ public class EditActivity extends AppCompatActivity {
                     }
                 });
 
-        if (mCurrentSong.getSpotifyTrackId() == null || mCurrentSong.getSpotifyTrackId().isEmpty()) {
+        if (mCurrentSong.getTrackId() == null || mCurrentSong.getTrackId().isEmpty()) {
             initializeTrackId(mCurrentSong);
         }
 
@@ -166,6 +168,16 @@ public class EditActivity extends AppCompatActivity {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 setReadOnly(true);
+                mCurrentSong.setPattern(((EditText) findViewById(R.id.editText)).getText().toString());
+                return true;
+            }
+        });
+
+        menu.findItem(R.id.menu_cancel_edit).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                setReadOnly(true);
+                ((EditText) findViewById(R.id.editText)).setText(mCurrentSong.getPattern());
                 return true;
             }
         });
@@ -219,32 +231,11 @@ public class EditActivity extends AppCompatActivity {
         menu.findItem(R.id.menu_config_player).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                new AlertDialog(EditActivity.this) {
-                    {
-                        final SpotifySpinner editName = new SpotifySpinner(getContext());
-                        editName.setMaxLines(1);
-                        editName.setText(mCurrentSong.getSpotifyTrackDisplayName());
-                        editName.selectAll();
-                        editName.requestFocus();
-                        setView(editName);
-                        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN
-                                | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-                        setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.rename_dialog_cancel), new OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                // do nothing.
-                            }
-                        });
-                        final AlertDialog d = this;
-                        editName.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                            @Override
-                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                setSpotifyTrack(editName.getId(position), editName.getDisplayName(position));
-                                d.cancel();
-                            }
-                        });
-                    }
-                }.show();
+                Intent intent = new Intent(EditActivity.this, GetSongDialog.class);
+                intent.putExtra("label", mCurrentSong.getTrackLabel());
+                intent.putExtra("service", "youtube"); //TODO
+                EditActivity.this.startActivityForResult(intent, MainActivity.GET_TRACK_REQUEST);
+
                 return true;
             }
         });
@@ -254,9 +245,13 @@ public class EditActivity extends AppCompatActivity {
         return true;
     }
 
-    private void setSpotifyTrack(String id, String displayName) {
-        mCurrentSong.setSpotifyTrack(id, displayName);
-        mPlayer.init(id);
+    private void setTrack(String service, String id, String label) {
+        mCurrentSong.setTrack(service, id, label);
+        if (GetSongDialog.SERVICES[0].equals(service)) {
+            mPlayer.init(id);
+        } else {
+            Toast.makeText(this, "No Youtube yet.", Toast.LENGTH_LONG).show();
+        }
     }
 
     private void setPlayerVisibility(boolean isVisible) {
@@ -269,7 +264,7 @@ public class EditActivity extends AppCompatActivity {
             layout.setVisibility(View.VISIBLE);
             mOptionsMenu.findItem(R.id.menu_config_player).setVisible(true);
             params.height = 180;
-            mPlayer.init(mCurrentSong.getSpotifyTrackId());
+            mPlayer.init(mCurrentSong.getTrackId());
         } else {
             mShowPlayer = false;
             layout.setVisibility(View.INVISIBLE);
@@ -310,6 +305,7 @@ public class EditActivity extends AppCompatActivity {
         mOptionsMenu.findItem(R.id.menu_scale_pattern).setVisible(ro);
         mOptionsMenu.findItem(R.id.menu_toogle_player_visibility).setVisible(ro);
         mOptionsMenu.findItem(R.id.menu_view_pattern).setVisible(!ro);
+        mOptionsMenu.findItem(R.id.menu_cancel_edit).setVisible(!ro);
         mOptionsMenu.findItem(R.id.menu_transpose_up).setVisible(!ro);
         mOptionsMenu.findItem(R.id.menu_transpose_down).setVisible(!ro);
         mOptionsMenu.findItem(R.id.menu_import_pattern).setVisible(!ro);
@@ -360,7 +356,17 @@ public class EditActivity extends AppCompatActivity {
                         }
                     });
                 }
-            break;
+                break;
+            case MainActivity.GET_TRACK_REQUEST:
+                if (resultCode == RESULT_OK) {
+                    final String id = data.getStringExtra("id");
+                    final String service = data.getStringExtra("service");
+                    final String label = data.getStringExtra("label");
+                    setTrack(service, id, label);
+                } else {
+                    // ignore.
+                }
+                break;
         }
     }
 

@@ -37,9 +37,9 @@ dependencies {
     //floating button
     compile 'com.android.support:design:24.2.1'
 
-    // google drive
-    //compile 'com.google.android.gms:play-services:9.6.1'
+    // google drive, youtube
     compile 'com.google.android.gms:play-services-drive:9.6.1'
+    compile 'com.google.apis:google-api-services-youtube:v3-rev178-1.22.0'
 
     // spotify
     compile 'com.spotify.sdk:spotify-auth-beta23-noconnect-2.20b:@aar'
@@ -49,8 +49,4 @@ dependencies {
 
 repositories {
     mavenCentral()
-}
-
-dependencies {
-compile 'com.google.android.gms:play-services-appindexing:9.6.1'
 }
