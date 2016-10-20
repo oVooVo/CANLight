@@ -1,12 +1,13 @@
-package com.example.pascal.canlight;
+package com.example.pascal.canlight.audioPlayer;
 
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.TextView;
+
+import com.example.pascal.canlight.MySpotify;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -22,7 +23,7 @@ import retrofit.client.Response;
 /**
  * Created by pascal on 20.10.16.
  */
-public class SpotifyTrackAdapter extends GetSongDialog.TrackAdapter {
+public class SpotifyTrackAdapter extends TrackAdapter {
     private final static String TAG = "SpotifyTrackAdapter";
     final List<String> mIds;
     final List<String> mLabels;

@@ -1,9 +1,10 @@
-package com.example.pascal.canlight;
+package com.example.pascal.canlight.googleDrive;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 
+import com.example.pascal.canlight.R;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveApi;

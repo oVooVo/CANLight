@@ -1,4 +1,4 @@
-package com.example.pascal.canlight;
+package com.example.pascal.canlight.chordPattern;
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
+
+import com.example.pascal.canlight.R;
 
 public class PatternPreviewActivity extends AppCompatActivity {
 

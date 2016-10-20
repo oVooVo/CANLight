@@ -1,4 +1,4 @@
-package com.example.pascal.canlight;
+package com.example.pascal.canlight.chordPattern;
 
 /**
  * Created by pascal on 05.10.16.

@@ -7,6 +7,8 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceGroup;
 
+import com.example.pascal.canlight.chordPattern.ImportPatternCache;
+
 public class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
     //@see http://stackoverflow.com/a/18807490/4248972
     @Override

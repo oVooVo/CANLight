@@ -1,4 +1,4 @@
-package com.example.pascal.canlight;
+package com.example.pascal.canlight.audioPlayer;
 
 import android.content.Context;
 import android.os.AsyncTask;
@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.example.pascal.canlight.R;
 import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubeThumbnailLoader;
 import com.google.android.youtube.player.YouTubeThumbnailView;
@@ -28,7 +29,7 @@ import java.util.Map;
 /**
  * Created by pascal on 20.10.16.
  */
-public class YouTubeTrackAdapter extends GetSongDialog.TrackAdapter {
+public class YouTubeTrackAdapter extends TrackAdapter {
     private final static String TAG = "YouTubeTrackAdapter";
 
     private final YouTube mYouTube;

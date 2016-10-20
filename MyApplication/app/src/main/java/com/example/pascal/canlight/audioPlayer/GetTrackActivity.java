@@ -1,19 +1,19 @@
-package com.example.pascal.canlight;
+package com.example.pascal.canlight.audioPlayer;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Spinner;
+
+import com.example.pascal.canlight.R;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,14 +21,14 @@ import java.util.Arrays;
 /**
  * Created by pascal on 20.10.16.
  */
-public class GetSongDialog extends AppCompatActivity {
-    private static final String TAG = "GetSongDialog";
+public class GetTrackActivity extends AppCompatActivity {
+    private static final String TAG = "GetTrackActivity";
     private int mCurrentService;
     private SpotifyTrackAdapter mSpotifyAdapter;
     private YouTubeTrackAdapter mYoutubeAdapter;
     private TrackAdapter mCurrentAdapter;
 
-    public final static String[] SERVICES = {"Spotify", "YouTube"}; //TODO move this to another place
+    public final static String[] SERVICES = {"Spotify", "YouTube"};
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -117,22 +117,5 @@ public class GetSongDialog extends AppCompatActivity {
         data.putExtra("label", label);
         setResult(RESULT_OK, data);
         finish();
-    }
-
-    //TODO move this to another place
-    public static abstract class TrackAdapter extends BaseAdapter {
-        abstract void search(String key);
-        abstract String getId(int position);
-        abstract String getLabel(int position);
-
-        @Override
-        public Object getItem(int position) {
-            return null;
-        }
-
-        @Override
-        public long getItemId(int position) {
-            return position;
-        }
     }
 }

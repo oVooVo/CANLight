@@ -1,4 +1,4 @@
-package com.example.pascal.canlight;
+package com.example.pascal.canlight.googleDrive;
 
 // Copyright 2013 Google Inc. All Rights Reserved.
 
@@ -11,7 +11,6 @@ import com.google.android.gms.drive.Drive;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 
 import java.util.concurrent.CountDownLatch;
 

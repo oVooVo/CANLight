@@ -1,10 +1,8 @@
-package com.example.pascal.canlight;
+package com.example.pascal.canlight.chordPattern;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -12,7 +10,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
@@ -20,13 +17,18 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.pascal.canlight.audioPlayer.GetTrackActivity;
+import com.example.pascal.canlight.audioPlayer.Player;
+import com.example.pascal.canlight.MainActivity;
+import com.example.pascal.canlight.R;
+import com.example.pascal.canlight.SliderDialog;
+import com.example.pascal.canlight.Song;
+import com.example.pascal.canlight.SpotifySpinner;
 import com.spotify.sdk.android.authentication.AuthenticationClient;
 import com.spotify.sdk.android.authentication.AuthenticationResponse;
 import com.spotify.sdk.android.player.Config;
 import com.spotify.sdk.android.player.Spotify;
 import com.spotify.sdk.android.player.SpotifyPlayer;
-
-import junit.framework.AssertionFailedError;
 
 /**
  * Created by pascal on 02.10.16.
@@ -201,7 +203,7 @@ public class EditActivity extends AppCompatActivity {
             public boolean onMenuItemClick(MenuItem item) {
                 new SliderDialog.ExpSliderDialog(0, 6, 1, EditActivity.this) {
                     @Override
-                    void onValueChanged(double value) {
+                    protected void onValueChanged(double value) {
                         setScrollRate(value);
                     }
                 }.setValue(mCurrentSong.getScrollRate());
@@ -213,7 +215,7 @@ public class EditActivity extends AppCompatActivity {
             public boolean onMenuItemClick(MenuItem item) {
                 new SliderDialog.ExpSliderDialog(2, 30, 3, EditActivity.this) {
                     @Override
-                    void onValueChanged(double value) {
+                    protected void onValueChanged(double value) {
                         setTextSize(value);
                     }
                 }.setValue(mCurrentSong.getPatternTextSize());
@@ -231,7 +233,7 @@ public class EditActivity extends AppCompatActivity {
         menu.findItem(R.id.menu_config_player).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                Intent intent = new Intent(EditActivity.this, GetSongDialog.class);
+                Intent intent = new Intent(EditActivity.this, GetTrackActivity.class);
                 intent.putExtra("label", mCurrentSong.getTrackLabel());
                 intent.putExtra("service", "youtube"); //TODO
                 EditActivity.this.startActivityForResult(intent, MainActivity.GET_TRACK_REQUEST);
@@ -247,7 +249,7 @@ public class EditActivity extends AppCompatActivity {
 
     private void setTrack(String service, String id, String label) {
         mCurrentSong.setTrack(service, id, label);
-        if (GetSongDialog.SERVICES[0].equals(service)) {
+        if (GetTrackActivity.SERVICES[0].equals(service)) {
             mPlayer.init(id);
         } else {
             Toast.makeText(this, "No Youtube yet.", Toast.LENGTH_LONG).show();

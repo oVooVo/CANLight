@@ -39,14 +39,14 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".EditActivity"
+        <activity android:name=".chordPattern.EditActivity"
             android:configChanges="orientation|screenSize"/>
 
         <activity
-            android:name=".ImportPatternActivity"
+            android:name=".chordPattern.ImportPatternActivity"
             android:configChanges="orientation|screenSize" />
 
-        <activity android:name=".PatternPreviewActivity" />
+        <activity android:name=".chordPattern.PatternPreviewActivity" />
 
         <activity android:name=".SettingsActivity" />
 
@@ -56,13 +56,13 @@
 
         <activity android:name=".ReceiverActivity"/>
 
-        <activity android:name=".GoogleDriveCreateFileActivity" />
+        <activity android:name=".googleDrive.GoogleDriveCreateFileActivity" />
 
-        <activity android:name=".GoogleDriveActivity" />
+        <activity android:name=".googleDrive.GoogleDriveActivity" />
 
         <activity android:name=".ImportExportActivity"/>
 
-        <activity android:name=".GetSongDialog"/>
+        <activity android:name=".audioPlayer.GetTrackActivity"/>
 
 
 

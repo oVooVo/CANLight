@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.example.pascal.canlight.googleDrive.GoogleDriveActivity;
+import com.example.pascal.canlight.googleDrive.GoogleDriveApiClientAsyncTask;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveApi;

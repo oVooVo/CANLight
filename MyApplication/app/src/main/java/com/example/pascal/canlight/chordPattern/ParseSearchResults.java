@@ -1,6 +1,4 @@
-package com.example.pascal.canlight;
-
-import android.util.Log;
+package com.example.pascal.canlight.chordPattern;
 
 import java.util.Arrays;
 import java.util.Iterator;

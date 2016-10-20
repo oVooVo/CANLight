@@ -4,12 +4,11 @@ import android.content.Context;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Filter;
 
-import com.spotify.sdk.android.player.Spotify;
+import com.example.pascal.canlight.audioPlayer.GetTrackActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -96,7 +95,7 @@ public class SpotifySpinner extends AutoCompleteTextView {
             public void success(TracksPager tracksPager, Response response) {
                 if (!tracksPager.tracks.items.isEmpty()) {
                     final Track track = tracksPager.tracks.items.get(0);
-                    song.setTrack(GetSongDialog.SERVICES[0], track.id, getTrackLabel(track));
+                    song.setTrack(GetTrackActivity.SERVICES[0], track.id, getTrackLabel(track));
                 }
             }
 
@@ -173,6 +172,6 @@ public class SpotifySpinner extends AutoCompleteTextView {
     }
 
     public String getService() {
-        return GetSongDialog.SERVICES[0];
+        return GetTrackActivity.SERVICES[0];
     }
 }

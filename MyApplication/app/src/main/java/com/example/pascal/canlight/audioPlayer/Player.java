@@ -1,4 +1,4 @@
-package com.example.pascal.canlight;
+package com.example.pascal.canlight.audioPlayer;
 
 import android.app.Activity;
 import android.os.Handler;
@@ -8,6 +8,8 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.pascal.canlight.MainActivity;
+import com.example.pascal.canlight.R;
 import com.spotify.sdk.android.authentication.AuthenticationClient;
 import com.spotify.sdk.android.authentication.AuthenticationRequest;
 import com.spotify.sdk.android.authentication.AuthenticationResponse;
@@ -42,7 +44,7 @@ public class Player
     public static final String CLIENT_ID = "8874e81dddd441fb8854482e4aafc634";
     private static final String REDIRECT_URI = "canlight-spotify://callback";
 
-    Player(Activity activity, Button playPauseButton, Button gotoButton, SeekBar seekBar,
+    public Player(Activity activity, Button playPauseButton, Button gotoButton, SeekBar seekBar,
            TextView remainingTimeLabel, TextView elapsedTimeLabel, TextView songNameLabel) {
         mActivity = activity;
         setPlayPauseButton(playPauseButton);

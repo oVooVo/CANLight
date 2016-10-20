@@ -1,9 +1,12 @@
-package com.example.pascal.canlight;
+package com.example.pascal.canlight.chordPattern;
 
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.widget.Toast;
+
+import com.example.pascal.canlight.DownloadWebpageTask;
+import com.example.pascal.canlight.R;
 
 import junit.framework.AssertionFailedError;
 

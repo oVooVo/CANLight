@@ -52,7 +52,7 @@ public abstract class SliderDialog {
 
     abstract double value(double linear01);
     abstract double fromValue(double value);
-    abstract void onValueChanged(double value);
+    protected abstract void onValueChanged(double value);
 
     public static abstract class ExpSliderDialog extends SliderDialog {
         private final double min, max, curvature;

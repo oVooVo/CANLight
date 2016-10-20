@@ -1,4 +1,4 @@
-package com.example.pascal.canlight;
+package com.example.pascal.canlight.chordPattern;
 
 import android.content.Context;
 import android.graphics.Color;

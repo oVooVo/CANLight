@@ -1,4 +1,4 @@
-package com.example.pascal.canlight;
+package com.example.pascal.canlight.chordPattern;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -10,6 +10,8 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.widget.ScrollView;
 import android.widget.TextView;
+
+import com.example.pascal.canlight.R;
 
 /**
  * Created by pascal on 17.10.16.
