@@ -13,9 +13,12 @@ import android.text.method.ScrollingMovementMethod;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
+import android.view.ViewParent;
 import android.widget.EditText;
+import android.widget.ScrollView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -217,12 +220,20 @@ public class ChordPatternEdit extends EditText {
         return removedLines;
     }
 
+    private boolean isInScrollView() {
+        return (getParent() instanceof ScrollView);
+    }
+
     public void scrollTo(int x, int y) {
-        // ignore all scroll attempts.
+        if (isInScrollView()) {
+            //ignore all scroll attempts.
+        } else {
+            super.scrollTo(x, y);
+        }
     }
 
     public boolean onTouchEvent(MotionEvent event) {
-        if (mIsEditable) {
+        if (mIsEditable || !isInScrollView()) {
             return super.onTouchEvent(event);
         } else {
             //Ignore touches
