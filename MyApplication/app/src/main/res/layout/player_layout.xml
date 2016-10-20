@@ -10,6 +10,7 @@
         android:id="@+id/playerSeekBar"/>
 
     <LinearLayout
+        android:id="@+id/linearLayout"
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -18,7 +19,6 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
             android:text=""
             android:id="@+id/label_elapsed_timeLabel"
             android:layout_marginLeft="10dp"
@@ -44,7 +44,6 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceSmall"
             android:text=""
             android:id="@+id/label_remaining_timeLabel"
             android:layout_marginLeft="10dp"

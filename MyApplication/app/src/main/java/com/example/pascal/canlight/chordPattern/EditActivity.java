@@ -19,16 +19,18 @@ import android.widget.Toast;
 
 import com.example.pascal.canlight.audioPlayer.GetTrackActivity;
 import com.example.pascal.canlight.audioPlayer.Player;
+import com.example.pascal.canlight.audioPlayer.PlayerView;
+import com.example.pascal.canlight.audioPlayer.SpotifyPlayer;
 import com.example.pascal.canlight.MainActivity;
 import com.example.pascal.canlight.R;
 import com.example.pascal.canlight.SliderDialog;
 import com.example.pascal.canlight.Song;
 import com.example.pascal.canlight.SpotifySpinner;
+import com.example.pascal.canlight.audioPlayer.YouTubePlayer;
 import com.spotify.sdk.android.authentication.AuthenticationClient;
 import com.spotify.sdk.android.authentication.AuthenticationResponse;
 import com.spotify.sdk.android.player.Config;
 import com.spotify.sdk.android.player.Spotify;
-import com.spotify.sdk.android.player.SpotifyPlayer;
 
 /**
  * Created by pascal on 02.10.16.
@@ -38,8 +40,10 @@ public class EditActivity extends AppCompatActivity {
     private Song mCurrentSong;
     private MenuItem mAutoScrollPlayPauseMenuItem;
     private Menu mOptionsMenu;
-    private Player mPlayer;
-    private static boolean mShowPlayer = false;
+    private SpotifyPlayer mSpotifyPlayer;
+    private YouTubePlayer mYouTubePlayer;
+    private Player mActivePlayer;
+    private boolean mShowPlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,24 +85,19 @@ public class EditActivity extends AppCompatActivity {
             initializeTrackId(mCurrentSong);
         }
 
-        View.inflate(this, R.layout.player_layout, (ViewGroup) findViewById(R.id.playerLayout));
+        mSpotifyPlayer = new SpotifyPlayer(this);
+        mYouTubePlayer = new YouTubePlayer(this);
 
-        mPlayer = new Player(this,
-                (Button) findViewById(R.id.playPauseButton),
-                (Button) findViewById(R.id.gotoButton),
-                (SeekBar) findViewById(R.id.playerSeekBar),
-                (TextView) findViewById(R.id.label_remaining_timeLabel),
-                (TextView) findViewById(R.id.label_elapsed_timeLabel),
-                (TextView) findViewById(R.id.songNameLabel));
-        findViewById(R.id.songNameLabel).setSelected(true);
     }
 
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mPlayer.pause();
-        mPlayer.deinit();
+        mYouTubePlayer.pause();
+        mSpotifyPlayer.pause();
+        mYouTubePlayer.deinit();
+        mSpotifyPlayer.deinit();
     }
 
     public boolean onOptionsItemSelected(MenuItem item){
@@ -225,8 +224,7 @@ public class EditActivity extends AppCompatActivity {
         menu.findItem(R.id.menu_toogle_player_visibility).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                RelativeLayout layout = (RelativeLayout) findViewById(R.id.playerLayout);
-                setPlayerVisibility(layout.getVisibility() != View.VISIBLE);
+                setPlayerVisibility(findViewById(R.id.player).getVisibility() != View.VISIBLE);
                 return true;
             }
         });
@@ -247,34 +245,40 @@ public class EditActivity extends AppCompatActivity {
         return true;
     }
 
-    private void setTrack(String service, String id, String label) {
+    private void setTrack(String service, String id, String label, long pos) {
         mCurrentSong.setTrack(service, id, label);
+        if (mActivePlayer != null) {
+            mActivePlayer.pause();
+        }
         if (GetTrackActivity.SERVICES[0].equals(service)) {
-            mPlayer.init(id);
+            mActivePlayer = mSpotifyPlayer;
+            mActivePlayer.init(id, 0);
         } else {
             Toast.makeText(this, "No Youtube yet.", Toast.LENGTH_LONG).show();
+        }
+
+        if (mActivePlayer != null) {
+            ((PlayerView) findViewById(R.id.player)).setPlayer(mActivePlayer);
+            mActivePlayer.seek(pos);
         }
     }
 
     private void setPlayerVisibility(boolean isVisible) {
-        RelativeLayout layout = (RelativeLayout) findViewById(R.id.playerLayout);
-        ViewGroup.LayoutParams params = layout.getLayoutParams();
-
-        layout.setLayoutParams(params);
+        View player = findViewById(R.id.player);
         if (isVisible) {
             mShowPlayer = true;
-            layout.setVisibility(View.VISIBLE);
-            mOptionsMenu.findItem(R.id.menu_config_player).setVisible(true);
-            params.height = 180;
-            mPlayer.init(mCurrentSong.getTrackId());
+            player.setVisibility(View.VISIBLE);
+            setTrack(mCurrentSong.getTrackService(),
+                    mCurrentSong.getTrackId(),
+                    mCurrentSong.getTrackLabel(),
+                    0);
         } else {
             mShowPlayer = false;
-            layout.setVisibility(View.INVISIBLE);
-            mOptionsMenu.findItem(R.id.menu_config_player).setVisible(false);
-            params.height = 0;
-            mPlayer.pause();
+            player.setVisibility(View.GONE);
+            if (mActivePlayer != null) {
+                mActivePlayer.pause();
+            }
         }
-        layout.setLayoutParams(params);
     }
 
     private void setTextSize(double s) {
@@ -345,11 +349,11 @@ public class EditActivity extends AppCompatActivity {
             case MainActivity.LOGIN_SPOTIFY_REQUEST:
                 AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, data);
                 if (response.getType() == AuthenticationResponse.Type.TOKEN) {
-                    Config playerConfig = new Config(this, response.getAccessToken(), Player.CLIENT_ID);
-                    Spotify.getPlayer(playerConfig, this, new SpotifyPlayer.InitializationObserver() {
+                    Config playerConfig = new Config(this, response.getAccessToken(), SpotifyPlayer.CLIENT_ID);
+                    Spotify.getPlayer(playerConfig, this, new com.spotify.sdk.android.player.SpotifyPlayer.InitializationObserver() {
                         @Override
-                        public void onInitialized(SpotifyPlayer spotifyPlayer) {
-                            mPlayer.onInitialized(spotifyPlayer);
+                        public void onInitialized(com.spotify.sdk.android.player.SpotifyPlayer spotifyPlayer) {
+                            mSpotifyPlayer.onInitialized(spotifyPlayer);
                         }
 
                         @Override
@@ -364,7 +368,7 @@ public class EditActivity extends AppCompatActivity {
                     final String id = data.getStringExtra("id");
                     final String service = data.getStringExtra("service");
                     final String label = data.getStringExtra("label");
-                    setTrack(service, id, label);
+                    setTrack(service, id, label, 0);
                 } else {
                     // ignore.
                 }
