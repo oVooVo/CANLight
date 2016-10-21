@@ -35,6 +35,7 @@ public class YouTubePlayer extends Player implements
                                                         boolean b) {
                         Log.i(TAG, "successfully initialized youtube player");
                         mPlayer = youTubePlayer;
+                        mPlayer.setPlayerStyle(com.google.android.youtube.player.YouTubePlayer.PlayerStyle.CHROMELESS);
                         mPlayer.setPlayerStateChangeListener(YouTubePlayer.this);
                         mPlayer.setPlaybackEventListener(YouTubePlayer.this);
                         mPlayer.loadVideo(mVideoId, 0);

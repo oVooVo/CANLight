@@ -20,7 +20,7 @@
     </com.example.pascal.canlight.chordPattern.AutoScrollView>
 
     <fragment
-        android:name="com.example.pascal.canlight.audioPlayer.PlayerView"
+        android:name="com.example.pascal.canlight.audioPlayer.PlayerFragment"
         android:id="@+id/player"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

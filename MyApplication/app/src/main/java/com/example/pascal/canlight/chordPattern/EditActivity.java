@@ -3,8 +3,6 @@ package com.example.pascal.canlight.chordPattern;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -16,7 +14,7 @@ import android.widget.Toast;
 
 import com.example.pascal.canlight.audioPlayer.GetTrackActivity;
 import com.example.pascal.canlight.audioPlayer.Player;
-import com.example.pascal.canlight.audioPlayer.PlayerView;
+import com.example.pascal.canlight.audioPlayer.PlayerFragment;
 import com.example.pascal.canlight.audioPlayer.SpotifyPlayer;
 import com.example.pascal.canlight.MainActivity;
 import com.example.pascal.canlight.R;
@@ -256,8 +254,8 @@ public class EditActivity extends AppCompatActivity {
             mActivePlayer = mSpotifyPlayer;
         } else if ("YouTube".equals(service)){
             if (mYouTubePlayer == null) {
-                PlayerView playerView = (PlayerView) getSupportFragmentManager().findFragmentById(R.id.player);
-                YouTubePlayerSupportFragment ytsf = (YouTubePlayerSupportFragment) playerView.getChildFragmentManager().findFragmentById(R.id.youtube_fragment);
+                PlayerFragment playerView = (PlayerFragment) getSupportFragmentManager().findFragmentById(R.id.player);
+                YouTubePlayerSupportFragment ytsf = playerView.getYouTubePlayerSupportFragment();
                 mYouTubePlayer = new YouTubePlayer(this, ytsf);
             }
             mYouTubePlayer.setLabel(mCurrentSong.getTrackLabel());
@@ -268,7 +266,8 @@ public class EditActivity extends AppCompatActivity {
         mActivePlayer.init(id, 0);
 
         if (mActivePlayer != null) {
-            ((PlayerView) getSupportFragmentManager().findFragmentById(R.id.player)).setPlayer(mActivePlayer);
+            PlayerFragment pf = (PlayerFragment) getSupportFragmentManager().findFragmentById(R.id.player);
+            pf.setPlayer(mActivePlayer);
             mActivePlayer.seek(pos);
         }
     }
@@ -278,12 +277,12 @@ public class EditActivity extends AppCompatActivity {
         View player = findViewById(R.id.player);
         if (isVisible) {
             mShowPlayer = true;
-            player.setVisibility(View.VISIBLE);
             Log.d(TAG, "show: " + mCurrentSong.getTrackId());
             setTrack(mCurrentSong.getTrackService(),
                     mCurrentSong.getTrackId(),
                     mCurrentSong.getTrackLabel(),
                     0);
+            player.setVisibility(View.VISIBLE);
         } else {
             mShowPlayer = false;
             player.setVisibility(View.GONE);
@@ -377,10 +376,10 @@ public class EditActivity extends AppCompatActivity {
                 break;
             case MainActivity.GET_TRACK_REQUEST:
                 if (resultCode == RESULT_OK) {
-                    final String id = data.getStringExtra("id");
                     final String service = data.getStringExtra("service");
+                    final String id = data.getStringExtra("id");
                     final String label = data.getStringExtra("label");
-                    setTrack(service, id, label, 0);
+                    mCurrentSong.setTrack(service, id, label);
                     setPlayerVisibility(true);
                 } else {
                     // ignore.
@@ -409,7 +408,8 @@ public class EditActivity extends AppCompatActivity {
                 @Override
                 public void onTrackFound(String service, String id, String label) {
                     if (mShowPlayer) {
-                        setTrack(service, id, label, 0);
+                        mCurrentSong.setTrack(service, id, label);
+                        setPlayerVisibility(true);
                     }
                 }
             });

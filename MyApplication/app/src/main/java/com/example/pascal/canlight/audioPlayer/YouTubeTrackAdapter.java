@@ -147,7 +147,8 @@ public class YouTubeTrackAdapter extends TrackAdapter {
                     mLoaders.put(youTubeThumbnailView, youTubeThumbnailLoader);
                     if (position < getCount()) {
                         // maybe the result list has already changed...
-                        setVideo(youTubeThumbnailView, mSearchResults.get(position).getId().getVideoId());
+                        final SearchResult r = mSearchResults.get(position);
+                        setVideo(youTubeThumbnailView, r.getId().getVideoId());
                     }
                 }
 
