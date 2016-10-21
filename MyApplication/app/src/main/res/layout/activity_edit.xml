@@ -19,13 +19,13 @@
             android:windowSoftInputMode="adjustPan"/>
     </com.example.pascal.canlight.chordPattern.AutoScrollView>
 
-    <com.example.pascal.canlight.audioPlayer.PlayerView
+    <fragment
+        android:name="com.example.pascal.canlight.audioPlayer.PlayerView"
         android:id="@+id/player"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
-        android:layout_weight="0">
-    </com.example.pascal.canlight.audioPlayer.PlayerView>
+        android:layout_weight="0"/>
 
 
 </LinearLayout>

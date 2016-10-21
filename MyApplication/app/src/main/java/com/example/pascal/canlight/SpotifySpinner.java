@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Filter;
@@ -24,7 +25,7 @@ import retrofit.client.Response;
  * Created by pascal on 10.10.16.
  */
 public class SpotifySpinner extends AutoCompleteTextView {
-
+    private static final String TAG = "SpotifySpinner";
     private static int requestId = 0;
     private Handler mHandler;
     private List<String> mIds;
@@ -89,13 +90,25 @@ public class SpotifySpinner extends AutoCompleteTextView {
         setSingleLine(true);
     }
 
-    public static void findTrack(final Song song) {
+    public interface OnTrackFoundListener {
+        void onTrackFound(String service, String id, String label);
+    }
+
+    public static void findTrack(final Song song, final OnTrackFoundListener l) {
+        Log.d(TAG, "find track: " + song.getName());
         MySpotify.getSpotifyService().searchTracks(song.getName(), new Callback<TracksPager>() {
             @Override
             public void success(TracksPager tracksPager, Response response) {
                 if (!tracksPager.tracks.items.isEmpty()) {
                     final Track track = tracksPager.tracks.items.get(0);
-                    song.setTrack(GetTrackActivity.SERVICES[0], track.id, getTrackLabel(track));
+                    song.setTrack(GetTrackActivity.SERVICES.get(0), track.id, getTrackLabel(track));
+                    Log.d(TAG, "set track: " + track.id);
+                    if (l != null) {
+                        l.onTrackFound(song.getTrackService(), song.getTrackId(), song.getTrackLabel());
+                    }
+                }
+                else {
+                    Log.d(TAG, "set track!");
                 }
             }
 
@@ -172,6 +185,6 @@ public class SpotifySpinner extends AutoCompleteTextView {
     }
 
     public String getService() {
-        return GetTrackActivity.SERVICES[0];
+        return GetTrackActivity.SERVICES.get(0);
     }
 }

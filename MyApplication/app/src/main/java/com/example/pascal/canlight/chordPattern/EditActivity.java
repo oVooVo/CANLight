@@ -3,18 +3,15 @@ package com.example.pascal.canlight.chordPattern;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.RelativeLayout;
-import android.widget.SeekBar;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.pascal.canlight.audioPlayer.GetTrackActivity;
@@ -27,15 +24,19 @@ import com.example.pascal.canlight.SliderDialog;
 import com.example.pascal.canlight.Song;
 import com.example.pascal.canlight.SpotifySpinner;
 import com.example.pascal.canlight.audioPlayer.YouTubePlayer;
+import com.google.android.youtube.player.YouTubePlayerSupportFragment;
 import com.spotify.sdk.android.authentication.AuthenticationClient;
 import com.spotify.sdk.android.authentication.AuthenticationResponse;
 import com.spotify.sdk.android.player.Config;
 import com.spotify.sdk.android.player.Spotify;
 
+import junit.framework.AssertionFailedError;
+
 /**
  * Created by pascal on 02.10.16.
  */
 public class EditActivity extends AppCompatActivity {
+    private static final String TAG = "EditActivity";
 
     private Song mCurrentSong;
     private MenuItem mAutoScrollPlayPauseMenuItem;
@@ -43,7 +44,7 @@ public class EditActivity extends AppCompatActivity {
     private SpotifyPlayer mSpotifyPlayer;
     private YouTubePlayer mYouTubePlayer;
     private Player mActivePlayer;
-    private boolean mShowPlayer;
+    private static boolean mShowPlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,13 +81,7 @@ public class EditActivity extends AppCompatActivity {
                         updateAutoScrollStartPauseMenuItem(false);
                     }
                 });
-
-        if (mCurrentSong.getTrackId() == null || mCurrentSong.getTrackId().isEmpty()) {
-            initializeTrackId(mCurrentSong);
-        }
-
-        mSpotifyPlayer = new SpotifyPlayer(this);
-        mYouTubePlayer = new YouTubePlayer(this);
+        initializeTrackId(mCurrentSong);
 
     }
 
@@ -94,10 +89,13 @@ public class EditActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mYouTubePlayer.pause();
-        mSpotifyPlayer.pause();
-        mYouTubePlayer.deinit();
-        mSpotifyPlayer.deinit();
+        if (mYouTubePlayer != null) {
+            mYouTubePlayer.deinit();
+        }
+        if (mSpotifyPlayer != null) {
+            mSpotifyPlayer.pause();
+            mSpotifyPlayer.deinit();
+        }
     }
 
     public boolean onOptionsItemSelected(MenuItem item){
@@ -233,9 +231,8 @@ public class EditActivity extends AppCompatActivity {
             public boolean onMenuItemClick(MenuItem item) {
                 Intent intent = new Intent(EditActivity.this, GetTrackActivity.class);
                 intent.putExtra("label", mCurrentSong.getTrackLabel());
-                intent.putExtra("service", "youtube"); //TODO
+                intent.putExtra("service", mCurrentSong.getTrackService());
                 EditActivity.this.startActivityForResult(intent, MainActivity.GET_TRACK_REQUEST);
-
                 return true;
             }
         });
@@ -246,28 +243,43 @@ public class EditActivity extends AppCompatActivity {
     }
 
     private void setTrack(String service, String id, String label, long pos) {
+        Log.d(TAG, "setTrack " + service + ", " + id + ", " + label + ", " + pos);
         mCurrentSong.setTrack(service, id, label);
+
         if (mActivePlayer != null) {
             mActivePlayer.pause();
         }
-        if (GetTrackActivity.SERVICES[0].equals(service)) {
+        if ("Spotify".equals(service)) {
+            if (mSpotifyPlayer == null) {
+                mSpotifyPlayer = new SpotifyPlayer(this);
+            }
             mActivePlayer = mSpotifyPlayer;
-            mActivePlayer.init(id, 0);
+        } else if ("YouTube".equals(service)){
+            if (mYouTubePlayer == null) {
+                PlayerView playerView = (PlayerView) getSupportFragmentManager().findFragmentById(R.id.player);
+                YouTubePlayerSupportFragment ytsf = (YouTubePlayerSupportFragment) playerView.getChildFragmentManager().findFragmentById(R.id.youtube_fragment);
+                mYouTubePlayer = new YouTubePlayer(this, ytsf);
+            }
+            mYouTubePlayer.setLabel(mCurrentSong.getTrackLabel());
+            mActivePlayer = mYouTubePlayer;
         } else {
-            Toast.makeText(this, "No Youtube yet.", Toast.LENGTH_LONG).show();
+            throw new AssertionFailedError();
         }
+        mActivePlayer.init(id, 0);
 
         if (mActivePlayer != null) {
-            ((PlayerView) findViewById(R.id.player)).setPlayer(mActivePlayer);
+            ((PlayerView) getSupportFragmentManager().findFragmentById(R.id.player)).setPlayer(mActivePlayer);
             mActivePlayer.seek(pos);
         }
     }
 
     private void setPlayerVisibility(boolean isVisible) {
+        Log.d(TAG, "Set Player visibilit: " + isVisible);
         View player = findViewById(R.id.player);
         if (isVisible) {
             mShowPlayer = true;
             player.setVisibility(View.VISIBLE);
+            Log.d(TAG, "show: " + mCurrentSong.getTrackId());
             setTrack(mCurrentSong.getTrackService(),
                     mCurrentSong.getTrackId(),
                     mCurrentSong.getTrackLabel(),
@@ -369,6 +381,7 @@ public class EditActivity extends AppCompatActivity {
                     final String service = data.getStringExtra("service");
                     final String label = data.getStringExtra("label");
                     setTrack(service, id, label, 0);
+                    setPlayerVisibility(true);
                 } else {
                     // ignore.
                 }
@@ -391,7 +404,16 @@ public class EditActivity extends AppCompatActivity {
     }
 
     private void initializeTrackId(Song song) {
-        SpotifySpinner.findTrack(song);
+        if (mCurrentSong.getTrackId() == null || mCurrentSong.getTrackId().isEmpty()) {
+            SpotifySpinner.findTrack(song, new SpotifySpinner.OnTrackFoundListener() {
+                @Override
+                public void onTrackFound(String service, String id, String label) {
+                    if (mShowPlayer) {
+                        setTrack(service, id, label, 0);
+                    }
+                }
+            });
+        }
     }
 
 }

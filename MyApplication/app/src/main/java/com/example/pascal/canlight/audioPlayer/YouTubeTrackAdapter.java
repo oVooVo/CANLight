@@ -145,7 +145,10 @@ public class YouTubeTrackAdapter extends TrackAdapter {
                 @Override
                 public void onInitializationSuccess(YouTubeThumbnailView youTubeThumbnailView, YouTubeThumbnailLoader youTubeThumbnailLoader) {
                     mLoaders.put(youTubeThumbnailView, youTubeThumbnailLoader);
-                    setVideo(youTubeThumbnailView, mSearchResults.get(position).getId().getVideoId());
+                    if (position < getCount()) {
+                        // maybe the result list has already changed...
+                        setVideo(youTubeThumbnailView, mSearchResults.get(position).getId().getVideoId());
+                    }
                 }
 
                 @Override

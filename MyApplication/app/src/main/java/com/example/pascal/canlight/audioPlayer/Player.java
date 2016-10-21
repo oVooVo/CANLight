@@ -1,5 +1,6 @@
 package com.example.pascal.canlight.audioPlayer;
 
+import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
 
@@ -26,10 +27,23 @@ public abstract class Player {
         void onCurrentPositionChange(long pos);
     }
 
-    OnTimeLabelsTextChangeListener mOnTimeLabelsTextChange;
-    OnSongChangeListener mOnSongChange;
-    OnPlayStateChangeListener mOnPlayStateChange;
-    OnCurrentPositionChangeListener mOnCurrentPositionChange;
+    private OnTimeLabelsTextChangeListener mOnTimeLabelsTextChange;
+    private OnSongChangeListener mOnSongChange;
+    private OnPlayStateChangeListener mOnPlayStateChange;
+    private OnCurrentPositionChangeListener mOnCurrentPositionChange;
+    private final Handler mHandler = new Handler();
+
+    public Player() {
+        new Runnable() {
+            @Override
+            public void run() {
+                final int ms = getCurrentPosition();
+                updateCurrentPosition(ms);
+                updateTimeLabels(ms);
+                mHandler.postDelayed(this, 20);
+            }
+        }.run();
+    }
 
     public void setOnTimeLabelsTextChangeListener(OnTimeLabelsTextChangeListener c)
     {
@@ -70,20 +84,22 @@ public abstract class Player {
         return String.format(Locale.getDefault(), "%2d:%02d.%01d", min, sec, ms / 100);
     }
 
-    protected void updateTimeLabels(long position, long durationMs) {
+    protected void updateTimeLabels(long position) {
         if (mOnTimeLabelsTextChange != null) {
+            final int duration = getDuration();
             mOnTimeLabelsTextChange.onTimeLabelsTextChange(
                     formatTime(position),
-                    formatTime(position - durationMs));
+                    formatTime(position - duration));
         }
     }
 
-    protected void updateSong(String label, long duration) {
+    protected void updateSong(String label) {
         if (mOnSongChange != null) {
             if (label == null) {
-                label = "No Song";
+                mOnSongChange.onSongChange("No Song", 0);
+            } else {
+                mOnSongChange.onSongChange(label, getDuration());
             }
-            mOnSongChange.onSongChange(label, duration);
         }
     }
 
@@ -104,5 +120,10 @@ public abstract class Player {
     public abstract void seekLastPosition();
     public abstract void seek(long pos);
     public abstract void init(String id, long position);
-    public abstract void deinit();
+    public abstract int getCurrentPosition();
+    public abstract int getDuration();
+
+    public void deinit() {
+        mHandler.removeCallbacksAndMessages(null);
+    }
 }

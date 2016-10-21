@@ -1,12 +1,13 @@
 package com.example.pascal.canlight.audioPlayer;
 
-import android.content.Context;
-import android.util.AttributeSet;
+import android.app.Activity;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -15,50 +16,39 @@ import com.example.pascal.canlight.R;
 /**
  * Created by pascal on 20.10.16.
  */
-public class PlayerView extends LinearLayout {
+public class PlayerView extends Fragment {
     private static final String TAG = "PlayerView";
 
     private boolean mSeekBarUpdatesEnabled = true;
 
-    public PlayerView(Context context) {
-        super(context);
-        init();
-
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedState) {
+        View view = inflater.inflate(R.layout.player_layout, container, false);
+        init(view);
+        return view;
     }
 
-    public PlayerView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init();
-    }
-
-    public PlayerView(Context context, AttributeSet attrs, int defStyle) {
-        super(context, attrs, defStyle);
-        init();
-    }
-
-    private void init() {
-        LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        inflater.inflate(R.layout.player_layout, this, true);
-        final TextView songLabel = (TextView) findViewById(R.id.songNameLabel);
+    private void init(View view) {
+        final TextView songLabel = (TextView) view.findViewById(R.id.songNameLabel);
         songLabel.setSelected(true);
 
-        final Button playPauseButton = (Button) findViewById(R.id.playPauseButton);
+        final Button playPauseButton = (Button) view.findViewById(R.id.playPauseButton);
         playPauseButton.setBackgroundResource(android.R.drawable.ic_media_play);
     }
 
     public void setPlayer(final Player player) {
-        final Button playPauseButton = (Button) findViewById(R.id.playPauseButton);
-        final TextView seekLastPositionButton = (TextView) findViewById(R.id.gotoButton);
-        final SeekBar seekBar = (SeekBar) findViewById(R.id.playerSeekBar);
-        final TextView songLabel = (TextView) findViewById(R.id.songNameLabel);
-        final TextView remainigLabel = (TextView) findViewById(R.id.label_remaining_timeLabel);
-        final TextView elapsedLabel = (TextView) findViewById(R.id.label_elapsed_timeLabel);
+        final Activity activity = getActivity();
+        final Button playPauseButton = (Button) activity.findViewById(R.id.playPauseButton);
+        final TextView seekLastPositionButton = (TextView) activity.findViewById(R.id.gotoButton);
+        final SeekBar seekBar = (SeekBar) activity.findViewById(R.id.playerSeekBar);
+        final TextView songLabel = (TextView) activity.findViewById(R.id.songNameLabel);
+        final TextView remainigLabel = (TextView) activity.findViewById(R.id.label_remaining_timeLabel);
+        final TextView elapsedLabel = (TextView) activity.findViewById(R.id.label_elapsed_timeLabel);
 
         player.setOnCurrentPositionChangeListener(new Player.OnCurrentPositionChangeListener() {
             @Override
             public void onCurrentPositionChange(long pos) {
                 if (mSeekBarUpdatesEnabled) {
-                    ((SeekBar) findViewById(R.id.playerSeekBar)).setProgress((int) pos);
+                    seekBar.setProgress((int) pos);
                 }
             }
         });
@@ -66,9 +56,9 @@ public class PlayerView extends LinearLayout {
             @Override
             public void onPlayStateChange(boolean isPlaying) {
                 if (isPlaying) {
-                    playPauseButton.setBackgroundResource(android.R.drawable.ic_media_play);
-                } else {
                     playPauseButton.setBackgroundResource(android.R.drawable.ic_media_pause);
+                } else {
+                    playPauseButton.setBackgroundResource(android.R.drawable.ic_media_play);
                 }
             }
         });
@@ -87,14 +77,14 @@ public class PlayerView extends LinearLayout {
             }
         });
 
-        playPauseButton.setOnClickListener(new OnClickListener() {
+        playPauseButton.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Log.d(TAG, "toggle play pause");
                 player.togglePlayPause();
             }
         });
-        seekLastPositionButton.setOnClickListener(new OnClickListener() {
+        seekLastPositionButton.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View v) {
                 player.seekLastPosition();
@@ -113,12 +103,9 @@ public class PlayerView extends LinearLayout {
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                player.seek(seekBar.getProgress());
+                player. seek(seekBar.getProgress());
                 mSeekBarUpdatesEnabled = true;
             }
         });
-
-
-
     }
 }

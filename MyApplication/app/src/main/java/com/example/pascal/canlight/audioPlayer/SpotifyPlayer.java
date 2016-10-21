@@ -1,7 +1,6 @@
 package com.example.pascal.canlight.audioPlayer;
 
 import android.app.Activity;
-import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -24,7 +23,6 @@ public class SpotifyPlayer extends Player
     private Activity mActivity;
     private String mId;
     private int mLastSeekPosition = 0;
-    private final Handler mHandler = new Handler();
     private static final String TAG = "SpotifyPlayer";
 
     private static com.spotify.sdk.android.player.Player mPlayer;
@@ -39,21 +37,6 @@ public class SpotifyPlayer extends Player
             mPlayer.addConnectionStateCallback(this);
             mPlayer.addNotificationCallback(this);
         }
-
-        new Runnable() {
-            @Override
-            public void run() {
-                if (mPlayer != null && mPlayer.getPlaybackState() != null) {
-                    // int is enough. 2147483647 milliseconds is about 24 days.
-                    if (mPlayer.getPlaybackState().isPlaying) {
-                        final long ms = (int) mPlayer.getPlaybackState().positionMs;
-                        updateCurrentPosition(ms);
-                        updateTimeLabels(ms);
-                    }
-                }
-                mHandler.postDelayed(this, 20);
-            }
-        }.run();
     }
 
     public void deinit() {
@@ -61,7 +44,7 @@ public class SpotifyPlayer extends Player
             mPlayer.removeConnectionStateCallback(this);
             mPlayer.removeNotificationCallback(this);
         }
-        mHandler.removeCallbacksAndMessages(null);
+        super.deinit();
     }
 
     public void togglePlayPause() {
@@ -85,15 +68,8 @@ public class SpotifyPlayer extends Player
         }
     }
 
-    private void updateTimeLabels(long position) {
-        if (mPlayer != null
-                && mPlayer.getMetadata() != null
-                && mPlayer.getMetadata().currentTrack != null) {
-            long duration = mPlayer.getMetadata().currentTrack.durationMs;
-            updateTimeLabels(position, duration);
-        } else {
-            updateTimeLabels(0, 0);
-        }
+    public void updateTimeLabels(long position) {
+        super.updateTimeLabels(position);
     }
 
     private void updateSong() {
@@ -101,10 +77,9 @@ public class SpotifyPlayer extends Player
                 && mPlayer.getMetadata() != null
                 && mPlayer.getMetadata().currentTrack != null) {
             final Metadata.Track track = mPlayer.getMetadata().currentTrack;
-            updateSong(track.name + " - " + track.artistName + " (" + track.albumName + ")",
-                    mPlayer.getMetadata().currentTrack.durationMs);
+            updateSong(track.name + " - " + track.artistName + " (" + track.albumName + ")");
         } else {
-            updateSong(null, 0);
+            updateSong(null);
         }
     }
 
@@ -123,14 +98,14 @@ public class SpotifyPlayer extends Player
                 @Override
                 public void onSuccess() {
                     mPlayer.pause(null);
-                    mPlayer.seekToPosition(null, (int) position);
+                    mPlayer.seekToPosition(null, (int) position); //todo apparently playUri has an argument for seek
                     Log.i(TAG, "Play: " + id);
                 }
 
                 @Override
                 public void onError(com.spotify.sdk.android.player.Error error) {
                     Log.w(TAG, "error: " + error.toString());
-                    updateSong(null, 0);
+                    updateSong(null);
                 }
             }, "spotify:track:" + mId, 0, 0);
         } else {
@@ -185,9 +160,9 @@ public class SpotifyPlayer extends Player
     @Override
     public void onPlaybackEvent(PlayerEvent playerEvent) {
         if (PlayerEvent.kSpPlaybackNotifyPause.equals(playerEvent)) {
-            updatePlayState(true);
-        } else if (PlayerEvent.kSpPlaybackNotifyPlay.equals(playerEvent)) {
             updatePlayState(false);
+        } else if (PlayerEvent.kSpPlaybackNotifyPlay.equals(playerEvent)) {
+            updatePlayState(true);
         } else if (PlayerEvent.kSpPlaybackNotifyMetadataChanged.equals(playerEvent)){
             if (mPlayer != null
                     && mPlayer.getMetadata() != null
@@ -213,6 +188,26 @@ public class SpotifyPlayer extends Player
     public void pause() {
         if (mPlayer != null) {
             mPlayer.pause(null);
+        }
+    }
+
+    public int getCurrentPosition() {
+        if (mPlayer != null && mPlayer.getPlaybackState() != null) {
+            // int is enough. 2147483647 milliseconds is about 24 days.
+            if (mPlayer.getPlaybackState().isPlaying) {
+                return (int) mPlayer.getPlaybackState().positionMs;
+            }
+        }
+        return 0;
+    }
+
+    public int getDuration() {
+        if (mPlayer != null
+                && mPlayer.getMetadata() != null
+                && mPlayer.getMetadata().currentTrack != null) {
+            return (int) mPlayer.getMetadata().currentTrack.durationMs;
+        } else {
+            return 0;
         }
     }
 }

@@ -17,6 +17,7 @@ import com.example.pascal.canlight.R;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Created by pascal on 20.10.16.
@@ -28,7 +29,7 @@ public class GetTrackActivity extends AppCompatActivity {
     private YouTubeTrackAdapter mYoutubeAdapter;
     private TrackAdapter mCurrentAdapter;
 
-    public final static String[] SERVICES = {"Spotify", "YouTube"};
+    public final static List<String> SERVICES = Arrays.asList("Spotify", "YouTube");
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -42,8 +43,8 @@ public class GetTrackActivity extends AppCompatActivity {
         // service spinner
         Spinner spinner = (Spinner) findViewById(R.id.switchServiceSpinner);
         spinner.setAdapter(new ArrayAdapter<>(this,
-                android.R.layout.simple_list_item_1, Arrays.asList(SERVICES)));
-        setService(0);
+                android.R.layout.simple_list_item_1, SERVICES));
+
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -60,7 +61,7 @@ public class GetTrackActivity extends AppCompatActivity {
         resultListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                finish( SERVICES[mCurrentService],
+                finish( SERVICES.get(mCurrentService),
                         mCurrentAdapter.getId(position),
                         mCurrentAdapter.getLabel(position) );
             }
@@ -88,10 +89,7 @@ public class GetTrackActivity extends AppCompatActivity {
 
 
         final String initialService = getIntent().getStringExtra("service");
-        setService(Arrays.asList(new ArrayList<String>(SERVICES.length), SERVICES).indexOf(initialService));
-
-        setService(0);
-
+        setService(SERVICES.indexOf(initialService));
     }
 
     protected void onDestroy() {
@@ -100,13 +98,15 @@ public class GetTrackActivity extends AppCompatActivity {
     }
 
     private void setService(int service) {
+        Spinner serviceSpinner = (Spinner) findViewById(R.id.switchServiceSpinner);
+        ListView resultListView = (ListView) findViewById(R.id.listViewResults);
         mCurrentService = service;
         if (service == 0) {
             mCurrentAdapter = mSpotifyAdapter;
         } else {
             mCurrentAdapter = mYoutubeAdapter;
         }
-        ListView resultListView = (ListView) findViewById(R.id.listViewResults);
+        serviceSpinner.setSelection(service);
         resultListView.setAdapter(mCurrentAdapter);
     }
 
