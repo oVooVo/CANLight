@@ -64,12 +64,7 @@ public class SpotifyPlayer extends Player
 
             // in case player is paused.
             updateCurrentPosition(mLastSeekPosition);
-            updateTimeLabels(mLastSeekPosition);
         }
-    }
-
-    public void updateTimeLabels(long position) {
-        super.updateTimeLabels(position);
     }
 
     private void updateSong() {
@@ -91,7 +86,7 @@ public class SpotifyPlayer extends Player
     }
 
     public void init(final String id, final long position) {
-        Log.d(TAG, "init " + id + ", " + position);
+        super.init();
         mId = id;
         if (mPlayer != null) {
             mPlayer.playUri(new com.spotify.sdk.android.player.Player.OperationCallback() {
@@ -168,9 +163,9 @@ public class SpotifyPlayer extends Player
                     && mPlayer.getMetadata() != null
                     && mPlayer.getPlaybackState() != null
                     && mPlayer.getMetadata().currentTrack != null) {
-                updateTimeLabels(mPlayer.getPlaybackState().positionMs);
+                updateCurrentPosition(mPlayer.getPlaybackState().positionMs);
             } else {
-                updateTimeLabels(0);
+                updateCurrentPosition(0);
             }
             updateSong();
         }
@@ -198,7 +193,7 @@ public class SpotifyPlayer extends Player
                 return (int) mPlayer.getPlaybackState().positionMs;
             }
         }
-        return 0;
+        return -1;
     }
 
     public int getDuration() {

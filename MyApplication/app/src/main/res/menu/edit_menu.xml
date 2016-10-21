@@ -38,7 +38,7 @@
         android:icon="@android:drawable/ic_media_play"
         compat:showAsAction="ifRoom" />
     <item android:id="@+id/menu_toogle_player_visibility"
-        android:icon="@drawable/ic_speaker"
+        android:icon="@drawable/ic_action_headphones"
         android:title="@string/menu_toogle_player_visibility_title"
         compat:showAsAction="ifRoom"/>
     <item android:id="@+id/menu_auto_scroll_speed"
@@ -50,5 +50,6 @@
     <item android:id="@+id/menu_config_player"
         android:title="@string/menu_config_player_title"
         compat:showAsAction="never"/>
+
 
 </menu>

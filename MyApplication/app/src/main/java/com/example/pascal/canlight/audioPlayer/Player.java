@@ -1,6 +1,8 @@
 package com.example.pascal.canlight.audioPlayer;
 
 import android.os.Handler;
+import android.support.annotation.CallSuper;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -8,15 +10,14 @@ import com.example.pascal.canlight.Project;
 import com.spotify.sdk.android.player.Metadata;
 
 import java.util.Locale;
+import java.util.StringTokenizer;
 
 /**
  * Created by pascal on 20.10.16.
  */
 public abstract class Player {
+    private static final String TAG = "Player";
 
-    interface OnTimeLabelsTextChangeListener {
-        void onTimeLabelsTextChange(String elapsed, String remaining);
-    }
     interface OnSongChangeListener {
         void onSongChange(String label, long duration);
     }
@@ -24,30 +25,16 @@ public abstract class Player {
         void onPlayStateChange(boolean isPlaying);
     }
     interface OnCurrentPositionChangeListener {
-        void onCurrentPositionChange(long pos);
+        void onCurrentPositionChange(long pos, String elapsed, String remaining);
     }
 
-    private OnTimeLabelsTextChangeListener mOnTimeLabelsTextChange;
     private OnSongChangeListener mOnSongChange;
     private OnPlayStateChangeListener mOnPlayStateChange;
     private OnCurrentPositionChangeListener mOnCurrentPositionChange;
-    private final Handler mHandler = new Handler();
+    private final Handler mHandler;
 
     public Player() {
-        new Runnable() {
-            @Override
-            public void run() {
-                final int ms = getCurrentPosition();
-                updateCurrentPosition(ms);
-                updateTimeLabels(ms);
-                mHandler.postDelayed(this, 20);
-            }
-        }.run();
-    }
-
-    public void setOnTimeLabelsTextChangeListener(OnTimeLabelsTextChangeListener c)
-    {
-        mOnTimeLabelsTextChange = c;
+        mHandler = new Handler();
     }
 
     public void setOnSongLabelChangeListener(OnSongChangeListener c)
@@ -84,15 +71,6 @@ public abstract class Player {
         return String.format(Locale.getDefault(), "%2d:%02d.%01d", min, sec, ms / 100);
     }
 
-    protected void updateTimeLabels(long position) {
-        if (mOnTimeLabelsTextChange != null) {
-            final int duration = getDuration();
-            mOnTimeLabelsTextChange.onTimeLabelsTextChange(
-                    formatTime(position),
-                    formatTime(position - duration));
-        }
-    }
-
     protected void updateSong(String label) {
         if (mOnSongChange != null) {
             if (label == null) {
@@ -111,7 +89,10 @@ public abstract class Player {
 
     protected void updateCurrentPosition(long pos) {
         if (mOnCurrentPositionChange != null) {
-            mOnCurrentPositionChange.onCurrentPositionChange(pos);
+            final int duration = getDuration();
+            mOnCurrentPositionChange.onCurrentPositionChange(pos,
+                    formatTime(pos),
+                    formatTime(pos - duration));
         }
     }
 
@@ -122,6 +103,19 @@ public abstract class Player {
     public abstract void init(String id, long position);
     public abstract int getCurrentPosition();
     public abstract int getDuration();
+
+    public void init() {
+        new Runnable() {
+            @Override
+            public void run() {
+                final int ms = getCurrentPosition();
+                if (ms >= 0) {
+                    updateCurrentPosition(ms);
+                }
+                mHandler.postDelayed(this, 20);
+            }
+        }.run();
+    }
 
     public void deinit() {
         mHandler.removeCallbacksAndMessages(null);

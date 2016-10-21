@@ -44,20 +44,14 @@ public class MainActivity extends AppCompatActivity {
     public static final int LOGIN_SPOTIFY_REQUEST = 4;
     public static final int LOGIN_GOOGLE_DRIVE_REQUEST = 5;
     public static final int RETURN_IMPORT_REQUEST = 6;
+    private ExpandableSongListAdapter songListAdapter;
+
     public static final int GET_TRACK_REQUEST = 7;
 
     @Override
     public void onStart() {
         super.onStart();
-
-        if (getPackageManager().hasSystemFeature(PackageManager.FEATURE_MIDI)) {
-            Log.d("MIDI", "hasMidi");
-        } else {
-            Log.d("MIDI", "hasMidi!");
-        }
     }
-
-    private ExpandableSongListAdapter songListAdapter;
 
     int currentEditPosition = -1;
     private Project mProject;

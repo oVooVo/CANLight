@@ -91,6 +91,7 @@ public class YouTubePlayer extends Player implements
 
     @Override
     public void init(String id, long position) {
+        super.init();
         mVideoId = id;
         if (mPlayer != null) {
             mPlayer.loadVideo(id, (int) position);
@@ -158,7 +159,7 @@ public class YouTubePlayer extends Player implements
         if (mPlayer != null) {
             return mPlayer.getCurrentTimeMillis();
         } else {
-            return 0;
+            return -1;
         }
     }
 

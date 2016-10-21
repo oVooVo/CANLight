@@ -95,20 +95,17 @@ public class SpotifySpinner extends AutoCompleteTextView {
     }
 
     public static void findTrack(final Song song, final OnTrackFoundListener l) {
-        Log.d(TAG, "find track: " + song.getName());
         MySpotify.getSpotifyService().searchTracks(song.getName(), new Callback<TracksPager>() {
             @Override
             public void success(TracksPager tracksPager, Response response) {
                 if (!tracksPager.tracks.items.isEmpty()) {
                     final Track track = tracksPager.tracks.items.get(0);
                     song.setTrack(GetTrackActivity.SERVICES.get(0), track.id, getTrackLabel(track));
-                    Log.d(TAG, "set track: " + track.id);
                     if (l != null) {
                         l.onTrackFound(song.getTrackService(), song.getTrackId(), song.getTrackLabel());
                     }
                 }
                 else {
-                    Log.d(TAG, "set track!");
                 }
             }
 

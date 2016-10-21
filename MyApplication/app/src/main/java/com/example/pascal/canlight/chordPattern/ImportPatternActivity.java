@@ -17,6 +17,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.pascal.canlight.IconArrayAdapter;
 import com.example.pascal.canlight.MainActivity;
 import com.example.pascal.canlight.R;
 
@@ -74,18 +75,14 @@ public class ImportPatternActivity extends AppCompatActivity {
 
         items = new ArrayList<>();
         urls = new ArrayList<>();
-        adapter = new ArrayAdapter<String>(this, R.layout.search_song_list_item, R.id.search_song_item_name, items) {
+        adapter = new IconArrayAdapter(this, items) {
             @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
-                View view = super.getView(position, convertView, parent);
-
-                ImageView imageView = (ImageView) view.findViewById(R.id.search_song_item_icon);
+            protected void setIcon(ImageView view, int position) {
                 if (ImportPatternCache.isPatternCached(urls.get(position))) {
-                    imageView.setImageResource(android.R.drawable.btn_star_big_on);
+                    view.setImageResource(R.drawable.ic_star);
                 } else {
-                    imageView.setImageResource(android.R.drawable.btn_star_big_off);
+                    view.setImageResource(0);
                 }
-                return view;
             }
         };
         ListView listView = (ListView) findViewById(R.id.importVersionsListView);

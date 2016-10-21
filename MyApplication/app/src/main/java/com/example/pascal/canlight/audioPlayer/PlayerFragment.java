@@ -72,14 +72,6 @@ public class PlayerFragment extends Fragment {
         final TextView remainigLabel = (TextView) activity.findViewById(R.id.label_remaining_timeLabel);
         final TextView elapsedLabel = (TextView) activity.findViewById(R.id.label_elapsed_timeLabel);
 
-        player.setOnCurrentPositionChangeListener(new Player.OnCurrentPositionChangeListener() {
-            @Override
-            public void onCurrentPositionChange(long pos) {
-                if (mSeekBarUpdatesEnabled) {
-                    seekBar.setProgress((int) pos);
-                }
-            }
-        });
         player.setOnPlayStateChangeListener(new Player.OnPlayStateChangeListener() {
             @Override
             public void onPlayStateChange(boolean isPlaying) {
@@ -97,9 +89,10 @@ public class PlayerFragment extends Fragment {
                 songLabel.setText(label);
             }
         });
-        player.setOnTimeLabelsTextChangeListener(new Player.OnTimeLabelsTextChangeListener() {
+        player.setOnCurrentPositionChangeListener(new Player.OnCurrentPositionChangeListener() {
             @Override
-            public void onTimeLabelsTextChange(String elapsed, String remaining) {
+            public void onCurrentPositionChange(long pos, String elapsed, String remaining) {
+                seekBar.setProgress((int) pos);
                 elapsedLabel.setText(elapsed);
                 remainigLabel.setText(remaining);
             }

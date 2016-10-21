@@ -66,7 +66,7 @@ public class ReceiverActivity extends GoogleDriveActivity {
             DriveApi.DriveContentsResult driveContentsResult =
                     file.open(getGoogleApiClient(), DriveFile.MODE_READ_ONLY, null).await();
             if (!driveContentsResult.getStatus().isSuccess()) {
-                Log.w(LOG_TAG, "dive contents result no success");
+                Log.w(LOG_TAG, "drive contents result no success");
                 return null;
             }
             DriveContents driveContents = driveContentsResult.getDriveContents();

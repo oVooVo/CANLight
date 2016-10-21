@@ -241,7 +241,6 @@ public class EditActivity extends AppCompatActivity {
     }
 
     private void setTrack(String service, String id, String label, long pos) {
-        Log.d(TAG, "setTrack " + service + ", " + id + ", " + label + ", " + pos);
         mCurrentSong.setTrack(service, id, label);
 
         if (mActivePlayer != null) {
@@ -252,6 +251,9 @@ public class EditActivity extends AppCompatActivity {
                 mSpotifyPlayer = new SpotifyPlayer(this);
             }
             mActivePlayer = mSpotifyPlayer;
+            if (mYouTubePlayer != null) {
+                mYouTubePlayer.deinit();
+            }
         } else if ("YouTube".equals(service)){
             if (mYouTubePlayer == null) {
                 PlayerFragment playerView = (PlayerFragment) getSupportFragmentManager().findFragmentById(R.id.player);
@@ -260,12 +262,18 @@ public class EditActivity extends AppCompatActivity {
             }
             mYouTubePlayer.setLabel(mCurrentSong.getTrackLabel());
             mActivePlayer = mYouTubePlayer;
+            if (mSpotifyPlayer != null) {
+                mSpotifyPlayer.deinit();
+            }
         } else {
-            throw new AssertionFailedError();
+            //ignore.
+            if (service != null && !service.isEmpty()) {
+                Log.w(TAG, "Ignoring unknown service: " + service);
+            }
         }
-        mActivePlayer.init(id, 0);
 
         if (mActivePlayer != null) {
+            mActivePlayer.init(id, 0);
             PlayerFragment pf = (PlayerFragment) getSupportFragmentManager().findFragmentById(R.id.player);
             pf.setPlayer(mActivePlayer);
             mActivePlayer.seek(pos);
@@ -273,11 +281,9 @@ public class EditActivity extends AppCompatActivity {
     }
 
     private void setPlayerVisibility(boolean isVisible) {
-        Log.d(TAG, "Set Player visibilit: " + isVisible);
         View player = findViewById(R.id.player);
         if (isVisible) {
             mShowPlayer = true;
-            Log.d(TAG, "show: " + mCurrentSong.getTrackId());
             setTrack(mCurrentSong.getTrackService(),
                     mCurrentSong.getTrackId(),
                     mCurrentSong.getTrackLabel(),

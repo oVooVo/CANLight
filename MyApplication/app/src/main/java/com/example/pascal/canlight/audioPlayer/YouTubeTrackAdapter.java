@@ -99,6 +99,7 @@ public class YouTubeTrackAdapter extends TrackAdapter {
                         mSearchResults.add(r);
                     }
                 }
+                onResultsArrived(mSearchResults);
                 notifyDataSetChanged();
             }
         }.execute(key, mContext.getString(R.string.google_developer_key));

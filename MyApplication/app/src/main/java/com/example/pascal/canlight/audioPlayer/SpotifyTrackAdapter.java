@@ -58,6 +58,7 @@ public class SpotifyTrackAdapter extends TrackAdapter {
                     mLabels.add(getTrackLabel(track));
                     mIds.add(track.id);
                 }
+                onResultsArrived(mIds);
                 notifyDataSetChanged();
             }
 
