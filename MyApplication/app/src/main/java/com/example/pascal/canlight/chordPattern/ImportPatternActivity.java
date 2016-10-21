@@ -3,6 +3,9 @@ package com.example.pascal.canlight.chordPattern;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.UnderlineSpan;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -75,14 +78,15 @@ public class ImportPatternActivity extends AppCompatActivity {
 
         items = new ArrayList<>();
         urls = new ArrayList<>();
-        adapter = new IconArrayAdapter(this, items) {
-            @Override
-            protected void setIcon(ImageView view, int position) {
+        adapter = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1, items) {
+            public View getView(int position, View convertView, ViewGroup parent) {
+                TextView tv = (TextView) super.getView(position, convertView, parent);
+                Spannable content = new SpannableString(items.get(position));
                 if (ImportPatternCache.isPatternCached(urls.get(position))) {
-                    view.setImageResource(R.drawable.ic_star);
-                } else {
-                    view.setImageResource(0);
+                    content.setSpan(new UnderlineSpan(), 0, content.length(), 0);
                 }
+                tv.setText(content);
+                return tv;
             }
         };
         ListView listView = (ListView) findViewById(R.id.importVersionsListView);

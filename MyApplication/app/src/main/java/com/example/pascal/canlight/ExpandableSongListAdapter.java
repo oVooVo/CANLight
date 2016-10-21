@@ -7,6 +7,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -17,13 +19,22 @@ import java.util.List;
  * Created by pascal on 16.10.16.
  */
 public class ExpandableSongListAdapter extends BaseExpandableListAdapter {
+    private static final String TAG = "ExpdblSngListAdptr";
 
-    Project mProject;
-    List<List<Song>> mSongs;
-    List<String> mGroupNames;
-    int mNoGroupIndex = -1;
-    Context mContext;
-    boolean mCacheIsInvalid = true;
+    private Project mProject;
+    private List<List<Song>> mSongs;
+    private List<String> mGroupNames;
+    private int mNoGroupIndex = -1;
+    private Context mContext;
+    private boolean mCacheIsInvalid = true;
+    private String mQuery;
+
+    public void filter(String query) {
+        mCacheIsInvalid = true;
+        mQuery = query;
+        update();
+        notifyDataSetChanged();
+    }
 
     private void update() {
         if (mCacheIsInvalid) {
@@ -32,23 +43,27 @@ public class ExpandableSongListAdapter extends BaseExpandableListAdapter {
             mGroupNames.clear();
             List<Song> songsWithoutGroup = new ArrayList<>();
             for (Song s : mProject.getSongs()) {
-                for (String groupName : s.getGroups()) {
-                    final int i = mGroupNames.indexOf(groupName);
-                    if (i < 0) {
-                        mGroupNames.add(groupName);
-                        mSongs.add(new LinkedList<Song>());
-                        mSongs.get(mSongs.size() - 1).add(s);
-                    } else {
-                        mSongs.get(i).add(s);
+                if (mQuery == null || s.getName().toLowerCase().contains(mQuery.toLowerCase())) {
+                    for (String groupName : s.getGroups()) {
+                        final int i = mGroupNames.indexOf(groupName);
+                        if (i < 0) {
+                            mGroupNames.add(groupName);
+                            mSongs.add(new LinkedList<Song>());
+                            mSongs.get(mSongs.size() - 1).add(s);
+                        } else {
+                            mSongs.get(i).add(s);
+                        }
+                    }
+                    if (s.getGroups().isEmpty()) {
+                        songsWithoutGroup.add(s);
                     }
                 }
-                if (s.getGroups().isEmpty()) {
-                    songsWithoutGroup.add(s);
-                }
             }
-            mSongs.add(songsWithoutGroup);
-            mNoGroupIndex = mGroupNames.size();
-            mGroupNames.add("No Group");
+            if (!songsWithoutGroup.isEmpty()) {
+                mSongs.add(songsWithoutGroup);
+                mNoGroupIndex = mGroupNames.size();
+                mGroupNames.add("No Group");
+            }
         }
         mCacheIsInvalid = false;
     }
