@@ -2,6 +2,7 @@ package com.example.pascal.canlight.chordPattern;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -240,9 +241,7 @@ public class EditActivity extends AppCompatActivity {
         return true;
     }
 
-    private void setTrack(String service, String id, String label, long pos) {
-        mCurrentSong.setTrack(service, id, label);
-
+    private void setTrack(String service, String id, long pos) {
         if (mActivePlayer != null) {
             mActivePlayer.pause();
         }
@@ -286,7 +285,6 @@ public class EditActivity extends AppCompatActivity {
             mShowPlayer = true;
             setTrack(mCurrentSong.getTrackService(),
                     mCurrentSong.getTrackId(),
-                    mCurrentSong.getTrackLabel(),
                     0);
             player.setVisibility(View.VISIBLE);
         } else {
@@ -386,7 +384,12 @@ public class EditActivity extends AppCompatActivity {
                     final String id = data.getStringExtra("id");
                     final String label = data.getStringExtra("label");
                     mCurrentSong.setTrack(service, id, label);
-                    setPlayerVisibility(true);
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            setPlayerVisibility(true);
+                        }
+                    }, 50);
                 } else {
                     // ignore.
                 }

@@ -30,6 +30,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+
+//TODO youtube video change is applied on exit/enter EditActivity
+
 /**
  * Created by pascal on 02.10.16.
  */

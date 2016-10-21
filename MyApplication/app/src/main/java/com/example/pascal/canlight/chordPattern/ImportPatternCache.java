@@ -1,11 +1,19 @@
 package com.example.pascal.canlight.chordPattern;
 
+import android.content.Context;
+import android.util.Log;
+
 import junit.framework.AssertionFailedError;
 
+import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -14,36 +22,62 @@ import java.util.Iterator;
  */
 public class ImportPatternCache {
 
+    private static final String TAG = "ImportPatternCache";
+    private static final String FILENAME = "ImportPatternCache";
 
-    static private HashMap<String, PatternImporter.SearchResult[]> searchResultCache = new HashMap<>();
-    static private HashMap<String, String> patternCache = new HashMap<>();
+    static private HashMap<String, PatternImporter.SearchResult[]> mSearchResultCache = new HashMap<>();
+    static private HashMap<String, String> mPatternCache = new HashMap<>();
+
     public static boolean isPatternCached(String url) {
-        return patternCache.containsKey(url);
+        return mPatternCache.containsKey(url);
     }
     public static boolean isSearchCached(String key) {
-        return searchResultCache.containsKey(key);
+        return mSearchResultCache.containsKey(key);
     }
     public static PatternImporter.SearchResult[] searchResults(String key) {
-        return searchResultCache.get(key);
+        return mSearchResultCache.get(key);
     }
     public static String pattern(String url) {
-        return patternCache.get(url);
+        return mPatternCache.get(url);
     }
     public static void putPattern(String url, String pattern) {
-        patternCache.put(url, pattern);
+        mPatternCache.put(url, pattern);
     }
     public static void putSearchResults(String key, PatternImporter.SearchResult[] searchResults) {
-        searchResultCache.put(key, searchResults);
+        mSearchResultCache.put(key, searchResults);
     }
-    public static void load() {
+    public static void load(Context context) {
+        try {
+            FileInputStream fis = context.openFileInput(FILENAME);
+
+            final JSONObject o;
+            try {
+                final String data = IOUtils.toString(fis);
+                o = new JSONObject(data);
+                mSearchResultCache.clear();
+                mPatternCache.clear();
+                fromJson(o);
+            } catch (Exception e) {
+                throw new AssertionFailedError();
+            }
+        } catch (FileNotFoundException e) {
+            // that's okay, no file to restore, maybe it's the first start.
+        }
     }
 
-    public static void save() {
+    public static void save(Context context) {
+        try {
+            FileOutputStream fos = context.openFileOutput(FILENAME, Context.MODE_PRIVATE);
+            final String data = toJson().toString();
+            fos.write(data.getBytes());
+        } catch (IOException e) {
+            throw new AssertionFailedError();
+        }
     }
 
     public static void clear() {
-        patternCache.clear();
-        searchResultCache.clear();
+        mPatternCache.clear();
+        mSearchResultCache.clear();
     }
 
     private static JSONArray toJsonArray(PatternImporter.SearchResult[] srs) {
@@ -67,16 +101,18 @@ public class ImportPatternCache {
     }
 
     private static JSONObject toJson() {
-        JSONObject patternsObject = new JSONObject(patternCache);
+        JSONObject patternsObject = new JSONObject(mPatternCache);
         JSONObject searchResultsObject = new JSONObject();
         try {
-            for (String key : searchResultCache.keySet()) {
-                searchResultsObject.put(key, toJsonArray(searchResultCache.get(key)));
+            for (String key : mSearchResultCache.keySet()) {
+                searchResultsObject.put(key, toJsonArray(mSearchResultCache.get(key)));
+            }
+            for (String key : mPatternCache.keySet()) {
+                patternsObject.put(key, mPatternCache.get(key));
             }
         } catch (JSONException e) {
             throw new AssertionFailedError();
         }
-
         JSONObject o = new JSONObject();
         try {
             o.put("patterns", patternsObject);
@@ -99,24 +135,24 @@ public class ImportPatternCache {
             searchResultObject = new JSONObject();
         }
 
-        patternCache.clear();
+        mPatternCache.clear();
         Iterator<?> urls = patternObject.keys();
         while (urls.hasNext()) {
             final String url = (String) urls.next();
             try {
-                patternCache.put(url, patternObject.getString(url));
+                mPatternCache.put(url, patternObject.getString(url));
             } catch (JSONException e) {
-                throw new AssertionFailedError();
+                //throw new AssertionFailedError();
             }
         }
 
-        searchResultCache.clear();
+        mSearchResultCache.clear();
         Iterator<?> keys = searchResultObject.keys();
         while (keys.hasNext()) {
             final String key = (String) keys.next();
             try {
-                JSONArray array = patternObject.getJSONArray(key);
-                searchResultCache.put(key, fromJsonArray(array));
+                JSONArray array = searchResultObject.getJSONArray(key);
+                mSearchResultCache.put(key, fromJsonArray(array));
             } catch (JSONException e) {
                 throw new AssertionFailedError();
             }
@@ -128,7 +164,7 @@ public class ImportPatternCache {
     }
 
     public static int numberOfItems() {
-        return patternCache.size() + searchResultCache.size();
+        return mPatternCache.size() + mSearchResultCache.size();
     }
 
 }

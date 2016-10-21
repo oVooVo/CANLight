@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
 
         mProject = new Project();
         mProject.load(getApplicationContext());
-        ImportPatternCache.load();
+        ImportPatternCache.load(getApplicationContext());
         ExpandableListView listView = (ExpandableListView) findViewById(R.id.listView);
         listView.setClickable(true);
         registerForContextMenu(listView);
@@ -366,7 +366,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         mProject.save(getApplicationContext());
-        ImportPatternCache.save();
+        ImportPatternCache.save(getApplicationContext());
         super.onStop();
     }
 

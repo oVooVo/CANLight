@@ -94,9 +94,11 @@ public class YouTubeTrackAdapter extends TrackAdapter {
 
             @Override
             protected void onPostExecute(SearchListResponse result) {
-                for (SearchResult r : result.getItems()) {
-                    if ("youtube#video".equals(r.getId().getKind())) {
-                        mSearchResults.add(r);
+                if (result != null) {
+                    for (SearchResult r : result.getItems()) {
+                        if ("youtube#video".equals(r.getId().getKind())) {
+                            mSearchResults.add(r);
+                        }
                     }
                 }
                 onResultsArrived(mSearchResults);

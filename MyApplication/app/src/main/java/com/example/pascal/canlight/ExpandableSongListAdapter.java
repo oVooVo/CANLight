@@ -161,6 +161,7 @@ public class ExpandableSongListAdapter extends BaseExpandableListAdapter {
                 .findViewById(R.id.lblListItem);
 
         txtListChild.setText(childText);
+        txtListChild.setTextSize(18);
         return convertView;
     }
 
