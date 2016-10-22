@@ -8,4 +8,6 @@
         android:title="@string/menu_edit_song_group"/>
     <item android:id="@+id/menu_rename_group"
         android:title="@string/menu_rename_group_title"/>
+    <item android:id="@+id/menu_remove_group"
+        android:title="@string/menu_remove_group_title"/>
 </menu>

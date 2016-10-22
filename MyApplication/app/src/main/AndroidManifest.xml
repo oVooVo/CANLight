@@ -11,7 +11,6 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat">
-
         <service
             android:name=".MyDriveEventService"
             android:exported="true">
@@ -22,53 +21,47 @@
 
         <activity
             android:name=".MainActivity"
-            android:launchMode= "singleInstance"
-            android:configChanges="orientation|screenSize">
+            android:configChanges="orientation|screenSize"
+            android:launchMode="singleInstance">
             <intent-filter android:label="@string/app_name">
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+
                 <data
                     android:host="canlight.com"
                     android:pathPrefix="/rcv_shr/"
                     android:scheme="http" />
             </intent-filter>
         </activity>
-
-        <activity android:name=".chordPattern.EditActivity"
-            android:configChanges="orientation|screenSize"/>
-
+        <activity
+            android:name=".chordPattern.EditActivity"
+            android:configChanges="orientation|screenSize" />
         <activity
             android:name=".chordPattern.ImportPatternActivity"
             android:configChanges="orientation|screenSize" />
-
         <activity android:name=".chordPattern.PatternPreviewActivity" />
-
         <activity android:name=".SettingsActivity" />
-
         <activity
             android:name="com.spotify.sdk.android.authentication.LoginActivity"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
-
-        <activity android:name=".ReceiverActivity"/>
-
+        <activity android:name=".ReceiverActivity" />
         <activity android:name=".googleDrive.GoogleDriveCreateFileActivity" />
-
         <activity android:name=".googleDrive.GoogleDriveActivity" />
-
-        <activity android:name=".ImportExportActivity"/>
-
-        <activity android:name=".audioPlayer.GetTrackActivity"/>
-
-
+        <activity android:name=".ImportExportActivity" />
+        <activity android:name=".audioPlayer.GetTrackActivity" />
 
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
+
+        <activity android:name=".NewGroupActivity"></activity>
     </application>
 
 </manifest>

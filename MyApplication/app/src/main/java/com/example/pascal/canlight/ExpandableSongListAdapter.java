@@ -162,6 +162,7 @@ public class ExpandableSongListAdapter extends BaseExpandableListAdapter {
 
         txtListChild.setText(childText);
         txtListChild.setTextSize(18);
+        txtListChild.setPadding(0, 0, 0, 0);
         return convertView;
     }
 

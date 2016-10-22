@@ -7,6 +7,10 @@
         compat:showAsAction="ifRoom"
         android:icon="@android:drawable/ic_menu_share"/>
 
+    <item android:id="@+id/menu_new_group"
+        android:title="@string/menu_new_group_title"
+        compat:showAsAction="never"/>
+
     <item android:id="@+id/menu_settings"
         android:title="@string/menu_settings_title"
         compat:showAsAction="never"/>

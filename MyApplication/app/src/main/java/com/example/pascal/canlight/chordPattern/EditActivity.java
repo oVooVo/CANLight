@@ -29,8 +29,6 @@ import com.spotify.sdk.android.authentication.AuthenticationResponse;
 import com.spotify.sdk.android.player.Config;
 import com.spotify.sdk.android.player.Spotify;
 
-import junit.framework.AssertionFailedError;
-
 /**
  * Created by pascal on 02.10.16.
  */

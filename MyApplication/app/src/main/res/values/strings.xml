@@ -63,6 +63,9 @@
     <string name="spotify_no_song_error">Spotify: no song</string>
     <string name="goto_last_content_description">Go to last seek</string>
     <string name="no_group_name">No Group</string>
+    <string name="menu_remove_group_title">Remove Group</string>
+    <string name="menu_new_group_title">New Group</string>
+    <string name="new_group_edit_text_placeholder">Group Name</string>
 
     <plurals name="numberOfRemovedLines">
         <item quantity="one">Removed %d line</item>

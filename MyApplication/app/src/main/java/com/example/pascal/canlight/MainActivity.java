@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -39,12 +40,14 @@ import java.util.Set;
 
 //TODO remove implements..
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG = "MainActivity";
 
     public static final int PATTERN_REQUEST = 0;
     public static final int IMPORT_PATTERN_REQUEST = 2;
     public static final int IMPORT_PATTERN_PREVIEW_REQUEST = 3;
     public static final int LOGIN_SPOTIFY_REQUEST = 4;
     public static final int RETURN_IMPORT_REQUEST = 6;
+    public static final int NEW_GROUP_REQUEST = 7;
     private ExpandableSongListAdapter mSongListAdapter;
 
     public static final int GET_TRACK_REQUEST = 7;
@@ -106,11 +109,14 @@ public class MainActivity extends AppCompatActivity {
         final Song song = getSong(gpos, cpos);
         final boolean isGroupContextMenu = song == null;
         final int projectIndex = isGroupContextMenu ? -1 : mProject.getIndexOf(song);
+        final boolean isNoGroupItem = (gpos == mSongListAdapter.getGroupCount() - 1);
 
         final MenuItem deleteSongItem = menu.findItem(R.id.menu_delete_song);
         final MenuItem renameSongItem = menu.findItem(R.id.menu_rename_song);
         final MenuItem editGroupItem = menu.findItem(R.id.menu_edit_song_group);
         final MenuItem renameGroupItem = menu.findItem(R.id.menu_rename_group);
+        final MenuItem removeGroupItem = menu.findItem(R.id.menu_remove_group);
+
         deleteSongItem.setVisible(!isGroupContextMenu);
         deleteSongItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
@@ -146,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         renameGroupItem.setVisible(isGroupContextMenu);
-        if (gpos == mSongListAdapter.getGroupCount() - 1) {
+        if (isNoGroupItem) {
             renameGroupItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick(MenuItem item) {
@@ -164,7 +170,6 @@ public class MainActivity extends AppCompatActivity {
                     return true;
                 }
             });
-
         } else {
             renameGroupItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                 @Override
@@ -174,6 +179,15 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }
+
+        removeGroupItem.setVisible(isGroupContextMenu && !isNoGroupItem);
+        removeGroupItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                removeGroup(gpos);
+                return true;
+            }
+        });
     }
 
     private interface OnStringDialogOk {
@@ -240,11 +254,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void editSongGroup(final int position) {
         final ListView listView = new ListView(this);
-        List<String> groups = mSongListAdapter.getGroupNames();
-        groups.add("New Group");
         final ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
                 android.R.layout.simple_list_item_checked,
-                groups);
+                mSongListAdapter.getGroupNames());
         listView.setAdapter(adapter);
         adapter.setNotifyOnChange(true);
         listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
@@ -253,7 +265,7 @@ public class MainActivity extends AppCompatActivity {
             final String groupName = (String) mSongListAdapter.getGroup(i);
             listView.setItemChecked(i, song.getGroups().contains(groupName));
         }
-        new AlertDialog(this) {
+        AlertDialog d = new AlertDialog(this) {
             {
                 setView(listView);
                 getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN
@@ -268,16 +280,6 @@ public class MainActivity extends AppCompatActivity {
                                         groups.add((String) mSongListAdapter.getGroup(i));
                                     }
                                 }
-                                if (listView.isItemChecked(n - 1)) {
-                                    getString("Group name", new OnStringDialogOk() {
-                                        @Override
-                                        public void onStringDialogOk(String result) {
-                                            groups.add(result);
-                                            song.setGroups(groups);
-                                            mSongListAdapter.notifyDataSetChanged();
-                                        }
-                                    });
-                                }
                                 song.setGroups(groups);
                                 mSongListAdapter.notifyDataSetChanged();
                             }
@@ -287,7 +289,9 @@ public class MainActivity extends AppCompatActivity {
                             public void onClick(DialogInterface dialog, int whichButton) { }
                         });
             }
-        }.show();
+        };
+        d.setTitle("Groups containing\n\"" + song.getName() + "\"");
+        d.show();
     }
 
     private void editSongName(final int position, boolean itemIsNew) {
@@ -397,6 +401,18 @@ public class MainActivity extends AppCompatActivity {
                     Project project = data.getParcelableExtra("MergedProject");
                     setProject(project);
                 }
+            case NEW_GROUP_REQUEST:
+                if (resultCode == RESULT_OK) {
+                    final String groupName = data.getStringExtra("groupName");
+                    for (int p : data.getIntArrayExtra("songs")) {
+                        final Song s = mProject.getSong(p);
+                        Set<String> groups = s.getGroups();
+                        groups.add(groupName);
+                        s.setGroups(groups);
+                    }
+                    mSongListAdapter.notifyDataSetChanged();
+                }
+
         }
     }
 
@@ -418,6 +434,13 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
+        menu.findItem(R.id.menu_new_group).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                newGroup();
+                return true;
+            }
+        });
         return true;
     }
 
@@ -436,7 +459,6 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("id", id);
         startActivityForResult(intent, RETURN_IMPORT_REQUEST);
     }
-
 
     @Override
     protected void onResume() {
@@ -468,5 +490,21 @@ public class MainActivity extends AppCompatActivity {
         // manifest: android:launchMode= "singleInstance"
         super.onNewIntent(intent);
         handleImportIntent(intent);
+    }
+
+    private void removeGroup(int gpos) {
+        final String group = (String) mSongListAdapter.getGroup(gpos);
+        for (Song s : mProject.getSongs()) {
+            Set<String> groups = s.getGroups();
+            groups.remove(group);
+            s.setGroups(groups);
+        }
+        mSongListAdapter.notifyDataSetChanged();
+    }
+
+    private void newGroup() {
+        Intent intent = new Intent(MainActivity.this, NewGroupActivity.class);
+        intent.putExtra("project", mProject);
+        MainActivity.this.startActivityForResult(intent, NEW_GROUP_REQUEST);
     }
 }
