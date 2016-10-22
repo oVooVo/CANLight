@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -39,6 +40,7 @@ import java.util.Set;
 
 //TODO remove implements..
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG = "MainActivity";
 
     public static final int PATTERN_REQUEST = 0;
     public static final int IMPORT_PATTERN_REQUEST = 2;
@@ -46,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     public static final int LOGIN_SPOTIFY_REQUEST = 4;
     public static final int RETURN_IMPORT_REQUEST = 6;
     private ExpandableSongListAdapter mSongListAdapter;
+    private boolean mDragDropIsEnabled;
 
     public static final int GET_TRACK_REQUEST = 7;
 
@@ -57,9 +60,8 @@ public class MainActivity extends AppCompatActivity {
         mProject = new Project();
         mProject.load(getApplicationContext());
         ImportPatternCache.load(getApplicationContext());
-        ExpandableListView listView = (ExpandableListView) findViewById(R.id.listView);
+        final SongListView listView = (SongListView) findViewById(R.id.listView);
         listView.setClickable(true);
-        registerForContextMenu(listView);
         listView.setOnChildClickListener( new ExpandableListView.OnChildClickListener() {
             @Override
             public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
@@ -83,6 +85,35 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
+    }
+
+    void toggleDragDropEnabled(MenuItem item) {
+        mDragDropIsEnabled = !mDragDropIsEnabled;
+        final SongListView listView = (SongListView) findViewById(R.id.listView);
+        if (mDragDropIsEnabled) {
+            unregisterForContextMenu(listView);
+
+            listView.setOnItemLongClickListener(new ExpandableListView.OnItemLongClickListener() {
+                @Override
+                public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                    if (ExpandableListView.getPackedPositionType(id) == ExpandableListView.PACKED_POSITION_TYPE_CHILD) {
+                        int groupPosition = ExpandableListView.getPackedPositionGroup(id);
+                        int childPosition = ExpandableListView.getPackedPositionChild(id);
+
+                        Log.d(TAG, "start drag");
+                        listView.startDrag(view, groupPosition, childPosition);
+
+                        return true;
+                    }
+                    return false;
+                }
+            });
+
+            item.setTitle("End rearranging");
+        } else {
+            registerForContextMenu(listView);
+            item.setTitle("Rearrange ...");
+        }
     }
 
     @Override
@@ -418,6 +449,19 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
+
+        final MenuItem toggleDragDropItem = menu.findItem(R.id.menu_toggle_drag_drop);
+        toggleDragDropItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                toggleDragDropEnabled(item);
+                return true;
+            }
+        });
+
+
+        mDragDropIsEnabled = true;
+        toggleDragDropEnabled(toggleDragDropItem);
         return true;
     }
 

@@ -1,8 +1,13 @@
 package com.example.pascal.canlight;
 
+import android.content.ClipData;
+import android.content.ClipDescription;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Typeface;
+import android.os.Build;
 import android.util.Log;
+import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -114,12 +119,7 @@ public class ExpandableSongListAdapter extends BaseExpandableListAdapter {
     @Override
     public long getChildId(int groupPosition, int childPosition) {
         update();
-        long id = 0;
-        for (int i = 0; i < groupPosition - 1; ++i) {
-            id += mSongs.get(i).size();
-        }
-        id += childPosition;
-        return id;
+        return childPosition;
     }
 
     @Override
@@ -162,6 +162,7 @@ public class ExpandableSongListAdapter extends BaseExpandableListAdapter {
 
         txtListChild.setText(childText);
         txtListChild.setTextSize(18);
+
         return convertView;
     }
 
@@ -178,4 +179,5 @@ public class ExpandableSongListAdapter extends BaseExpandableListAdapter {
     public boolean isChildSelectable(int groupPosition, int childPosition) {
         return true;
     }
+
 }

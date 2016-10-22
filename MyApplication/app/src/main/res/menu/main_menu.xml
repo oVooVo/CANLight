@@ -11,4 +11,8 @@
         android:title="@string/menu_settings_title"
         compat:showAsAction="never"/>
 
+    <item android:id="@+id/menu_toggle_drag_drop"
+        android:title=""
+        compat:showAsAction="never"/>
+
 </menu>
