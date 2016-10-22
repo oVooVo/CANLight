@@ -119,6 +119,13 @@ public class GetTrackActivity extends Activity {
                 }
             }
         });
+        editTextQuery.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                ((EditText) v).setText(getIntent().getStringExtra("songName"));
+                return false;
+            }
+        });
 
         final String initialService = getIntent().getStringExtra("service");
         setService(SERVICES.indexOf(initialService));

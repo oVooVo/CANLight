@@ -27,7 +27,6 @@ import junit.framework.AssertionFailedError;
 public class PlayerFragment extends Fragment {
     private static final String TAG = "PlayerFragment";
     private Player mPlayer;
-    private boolean mSeekBarUpdatesEnabled = true;
     private static boolean mYouTubePlayerIsShown = true;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedState) {
@@ -118,13 +117,11 @@ public class PlayerFragment extends Fragment {
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                mSeekBarUpdatesEnabled = false;
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 player.seek(seekBar.getProgress());
-                mSeekBarUpdatesEnabled = true;
             }
         });
         updateView();

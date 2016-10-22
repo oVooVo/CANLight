@@ -229,6 +229,7 @@ public class EditActivity extends AppCompatActivity {
                 Intent intent = new Intent(EditActivity.this, GetTrackActivity.class);
                 intent.putExtra("label", mCurrentSong.getTrackLabel());
                 intent.putExtra("service", mCurrentSong.getTrackService());
+                intent.putExtra("songName", mCurrentSong.getName());
                 EditActivity.this.startActivityForResult(intent, MainActivity.GET_TRACK_REQUEST);
                 return true;
             }

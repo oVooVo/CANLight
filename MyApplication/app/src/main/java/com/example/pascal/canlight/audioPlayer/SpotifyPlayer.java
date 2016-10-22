@@ -168,6 +168,8 @@ public class SpotifyPlayer extends Player
                 updateCurrentPosition(0);
             }
             updateSong();
+        } else {
+            updateSong();
         }
     }
 
