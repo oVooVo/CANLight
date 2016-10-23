@@ -2,6 +2,8 @@ package com.example.pascal.canlight;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
+
 import junit.framework.AssertionFailedError;
 
 import org.json.JSONArray;
@@ -17,29 +19,31 @@ import java.util.Set;
  * Created by pascal on 06.10.16.
  */
 public class Song implements Parcelable {
-
-    private String name;
-    private String pattern = "";
-    private double scrollRate = 2;
-    private boolean uninitalizedPattern;
+    private static final String TAG = "Song";
+    private String mName;
+    private String mPattern = "";
+    private double mScrollRate = 2;
+    private boolean mUninitalizedPattern;
     private Set<String> mGroups;
     private String mTrackLabel;
     private String mTrackId;
     private String mTrackService;
+    private MidiCommand mMidiCommand;
     public static final double DEFAULT_PATTERN_TEXT_SIZE = 18;
     private double patternTextSize = DEFAULT_PATTERN_TEXT_SIZE;
 
     public Song(String name) {
-        this.name = name;
-        this.uninitalizedPattern = true;
-        this.mGroups = new HashSet<>();
+        mName = name;
+        mUninitalizedPattern = true;
+        mGroups = new HashSet<>();
+        mMidiCommand = new MidiCommand();
     }
 
     public Song(Parcel in) {
-        name = in.readString();
-        pattern = in.readString();
-        scrollRate = in.readDouble();
-        uninitalizedPattern = in.readInt() != 0;
+        mName = in.readString();
+        mPattern = in.readString();
+        mScrollRate = in.readDouble();
+        mUninitalizedPattern = in.readInt() != 0;
         patternTextSize = in.readDouble();
         List<String> groups = new ArrayList<>();
         in.readStringList(groups);
@@ -47,6 +51,7 @@ public class Song implements Parcelable {
         mTrackService = in.readString();
         mTrackId = in.readString();
         mTrackLabel = in.readString();
+        mMidiCommand = in.readParcelable(MidiCommand.class.getClassLoader());
     }
 
     public Set<String> getGroups() {
@@ -58,28 +63,36 @@ public class Song implements Parcelable {
     }
 
     public void setName(String name) {
-        this.name = name;
+        mName = name;
     }
 
     public void setPattern(String pattern) {
-        this.uninitalizedPattern = (pattern == null);
-        this.pattern = pattern;
+        mUninitalizedPattern = (pattern == null);
+        mPattern = pattern;
     }
 
     public void setScrollRate(double scrollRate) {
-        this.scrollRate = scrollRate;
+        mScrollRate = scrollRate;
     }
 
     public String getName() {
-        return this.name;
+        return mName;
     }
 
     public String getPattern() {
-        return this.pattern;
+        return mPattern;
     }
 
     public double getScrollRate() {
-        return this.scrollRate;
+        return mScrollRate;
+    }
+
+    public MidiCommand getMidiCommand() {
+        return mMidiCommand;
+    }
+
+    public void setMidiCommand(MidiCommand midiCommand) {
+        mMidiCommand = midiCommand;
     }
 
     public static Song fromJson(JSONObject o) {
@@ -92,6 +105,7 @@ public class Song implements Parcelable {
         String trackId = song.getTrackId();
         String trackLabel = song.getTrackLabel();
         String trackService = song.getTrackService();
+        MidiCommand midiCommand = song.getMidiCommand();
 
         try { name = o.getString("name"); } catch (JSONException e) {
             throw new AssertionFailedError();
@@ -110,6 +124,9 @@ public class Song implements Parcelable {
             trackId = o.getString("TrackId");
             trackLabel = o.getString("TrackLabel");
         } catch (JSONException e) {} // ignore. it's okay.
+        try {
+            midiCommand.fromJson(o.getJSONObject("MidiCommand"));
+        } catch (JSONException e) {} // ignore. it's okay.
 
         song.setPattern(pattern);
         song.setScrollRate(scrollRate);
@@ -117,6 +134,8 @@ public class Song implements Parcelable {
         song.setPatternTextSize(patternTextSize);
         song.setGroups(groups);
         song.setTrack(trackService, trackId, trackLabel);
+        song.setMidiCommand(midiCommand);
+        Log.d(TAG, "get midi command: " + midiCommand.toJson().toString());
         return song;
     }
 
@@ -135,6 +154,8 @@ public class Song implements Parcelable {
             o.put("TrackService", getTrackService());
             o.put("TrackId", getTrackId());
             o.put("TrackLabel", getTrackLabel());
+            o.put("MidiCommand", getMidiCommand().toJson());
+            Log.d(TAG, "set midi command: " + getMidiCommand().toJson().toString());
         } catch (JSONException e) {
             throw new AssertionFailedError();
         }
@@ -142,7 +163,7 @@ public class Song implements Parcelable {
     }
 
     public boolean getPatternIsUninitialized() {
-        return uninitalizedPattern;
+        return mUninitalizedPattern;
     }
 
     @Override
@@ -152,15 +173,16 @@ public class Song implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(name);
-        dest.writeString(pattern);
-        dest.writeDouble(scrollRate);
-        dest.writeInt(uninitalizedPattern ? 1 : 0);
+        dest.writeString(mName);
+        dest.writeString(mPattern);
+        dest.writeDouble(mScrollRate);
+        dest.writeInt(mUninitalizedPattern ? 1 : 0);
         dest.writeDouble(patternTextSize);
         dest.writeStringList(new ArrayList<>(mGroups));
         dest.writeString(mTrackService);
         dest.writeString(mTrackId);
         dest.writeString(mTrackLabel);
+        dest.writeParcelable(mMidiCommand, 0);
     }
 
     // this is used to regenerate your object. All Parcelables must have a CREATOR that implements these two methods

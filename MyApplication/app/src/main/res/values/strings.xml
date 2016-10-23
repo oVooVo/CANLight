@@ -66,6 +66,7 @@
     <string name="menu_remove_group_title">Remove Group</string>
     <string name="menu_new_group_title">New Group</string>
     <string name="new_group_edit_text_placeholder">Group Name</string>
+    <string name="menu_edit_midi_command_title">Midi</string>
 
     <plurals name="numberOfRemovedLines">
         <item quantity="one">Removed %d line</item>
@@ -82,4 +83,6 @@
     <plurals name="importCacheSize">
         <item quantity="other">", Size: %d kB"</item>
     </plurals>
+    <string name="title_activity_edit_midi_command">EditMidiCommandActivity</string>
+    <string name="midi_command_is_enabled_switch_title">Enabled</string>
 </resources>

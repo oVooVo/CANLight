@@ -33,6 +33,11 @@
         android:icon="@drawable/ic_edit"
         compat:showAsAction="ifRoom" />
 
+    <item android:id="@+id/menu_edit_midi_command"
+        android:title="@string/menu_edit_midi_command_title"
+        android:icon="@drawable/ic_midi_logo"
+        compat:showAsAction="ifRoom" />
+
     <item android:id="@+id/menu_auto_scroll_start_pause"
         android:title="@string/menu_auto_scroll_start_title"
         android:icon="@android:drawable/ic_media_play"

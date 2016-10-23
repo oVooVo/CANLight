@@ -1,6 +1,8 @@
 package com.example.pascal.canlight;
 
+import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Application;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -35,11 +37,10 @@ import junit.framework.AssertionFailedError;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 //TODO remove implements..
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements Application.ActivityLifecycleCallbacks {
     private static final String TAG = "MainActivity";
 
     public static final int PATTERN_REQUEST = 0;
@@ -48,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
     public static final int LOGIN_SPOTIFY_REQUEST = 4;
     public static final int RETURN_IMPORT_REQUEST = 6;
     public static final int NEW_GROUP_REQUEST = 7;
+
     private ExpandableSongListAdapter mSongListAdapter;
 
     public static final int GET_TRACK_REQUEST = 7;
@@ -56,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        getApplication().registerActivityLifecycleCallbacks(this);
 
         mProject = new Project();
         mProject.load(getApplicationContext());
@@ -188,6 +191,42 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
+    }
+
+    @Override
+    public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
+
+    }
+
+    @Override
+    public void onActivityStarted(Activity activity) {
+
+    }
+
+    @Override
+    public void onActivityResumed(Activity activity) {
+
+    }
+
+    @Override
+    public void onActivityPaused(Activity activity) {
+
+    }
+
+    @Override
+    public void onActivityStopped(Activity activity) {
+
+    }
+
+    @Override
+    public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
+
+    }
+
+    @Override
+    public void onActivityDestroyed(Activity activity) {
+        mProject.save(getApplicationContext());
+        ImportPatternCache.save(getApplicationContext());
     }
 
     private interface OnStringDialogOk {
@@ -365,13 +404,6 @@ public class MainActivity extends AppCompatActivity {
         });
         ExpandableListView listView = (ExpandableListView) findViewById(R.id.listView);
         listView.setAdapter(mSongListAdapter);
-    }
-
-    @Override
-    protected void onStop() {
-        mProject.save(getApplicationContext());
-        ImportPatternCache.save(getApplicationContext());
-        super.onStop();
     }
 
     private void openEditMode(int position) {

@@ -37,7 +37,8 @@ import java.util.Set;
  * Created by pascal on 02.10.16.
  */
 public class Project implements Parcelable {
-    final private List<Song> mSongs;
+    private static final String TAG = "Project";
+    private final List<Song> mSongs;
 
     public Project() {
         mSongs = new ArrayList<>();
@@ -118,6 +119,8 @@ public class Project implements Parcelable {
                 mSongs.clear();
                 fromJson(o);
             } catch (Exception e) {
+                e.printStackTrace();
+                Log.w(TAG, "read json error");
                 throw new AssertionFailedError();
             }
         } catch (FileNotFoundException e) {
