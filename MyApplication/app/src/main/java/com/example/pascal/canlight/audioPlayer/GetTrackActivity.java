@@ -98,7 +98,7 @@ public class GetTrackActivity extends Activity {
                 findViewById(R.id.progressBar).setVisibility(View.INVISIBLE);
                 if (results.isEmpty()) {
                     Toast.makeText(GetTrackActivity.this,
-                            "No results", Toast.LENGTH_LONG).show();
+                            R.string.no_results, Toast.LENGTH_LONG).show();
                 }
             }
         };

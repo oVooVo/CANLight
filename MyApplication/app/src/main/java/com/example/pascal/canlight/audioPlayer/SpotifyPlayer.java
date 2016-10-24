@@ -1,6 +1,7 @@
 package com.example.pascal.canlight.audioPlayer;
 
 import android.app.Activity;
+import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -23,14 +24,16 @@ public class SpotifyPlayer extends Player
     private Activity mActivity;
     private String mId;
     private int mLastSeekPosition = 0;
+    private final String CLIENT_ID;
     private static final String TAG = "SpotifyPlayer";
 
     private static com.spotify.sdk.android.player.Player mPlayer;
 
-    public static final String CLIENT_ID = "8874e81dddd441fb8854482e4aafc634";
     private static final String REDIRECT_URI = "canlight-spotify://callback";
 
-    public SpotifyPlayer(Activity activity) {
+    public SpotifyPlayer(Context context, Activity activity) {
+        super(context);
+        CLIENT_ID = context.getString(R.string.spotify_client_id);
         mActivity = activity;
 
         if (mPlayer != null) {

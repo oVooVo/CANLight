@@ -58,7 +58,7 @@ public class PatternImporter {
 
         public static abstract class SearchResults {
         private static final String URL_PATTERN = "https://www.ultimate-guitar.com/search.php?search_type=title&order=&value=";
-        public SearchResults(String key, Context context) {
+        public SearchResults(String key, final Context context) {
             if (ImportPatternCache.isSearchCached(key)) {
                 onSearchResultsArrived(ImportPatternCache.searchResults(key));
             } else {
@@ -76,7 +76,7 @@ public class PatternImporter {
                         // onPostExecute displays the results of the AsyncTask.
                         @Override
                         protected void onPostExecute(String result) {
-                            ParseSearchResults parser = new ParseSearchResults(result);
+                            ParseSearchResults parser = new ParseSearchResults(context, result);
                             ArrayList<SearchResult> srs = parser.entries();
                             SearchResult[] sar = srs.toArray(new SearchResult[srs.size()]);
                             if (sar.length > 0) {

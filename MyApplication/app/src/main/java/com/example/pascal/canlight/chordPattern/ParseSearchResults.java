@@ -1,5 +1,9 @@
 package com.example.pascal.canlight.chordPattern;
 
+import android.content.Context;
+
+import com.example.pascal.canlight.R;
+
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -10,11 +14,13 @@ import java.util.ArrayList;
  */
 public class ParseSearchResults {
 
-    private ArrayList<PatternImporter.SearchResult> entries;
+    private ArrayList<PatternImporter.SearchResult> mEntries;
+    private final Context mContext;
 
-    public ParseSearchResults(String result) {
-        entries = getEntries(result);
-        for (Iterator<PatternImporter.SearchResult> iterator = entries.iterator(); iterator.hasNext();) {
+    public ParseSearchResults(Context context, String result) {
+        mEntries = getEntries(result);
+        mContext = context;
+        for (Iterator<PatternImporter.SearchResult> iterator = mEntries.iterator(); iterator.hasNext();) {
             PatternImporter.SearchResult s = iterator.next();
             if (!filterResult(s)) {
                 iterator.remove();
@@ -31,7 +37,7 @@ public class ParseSearchResults {
         }
     }
 
-    public ArrayList<PatternImporter.SearchResult> entries() { return entries; }
+    public ArrayList<PatternImporter.SearchResult> entries() { return mEntries; }
 
     static private class StringPart {
         public int start;
@@ -71,7 +77,7 @@ public class ParseSearchResults {
     ArrayList<PatternImporter.SearchResult> getEntries(String html) {
         ArrayList<PatternImporter.SearchResult> entries = new ArrayList<>();
 
-        String artist = "No Artist";
+        String artist = mContext.getString(R.string.no_artist);
 
         int offset = 0;
         StringPart part;

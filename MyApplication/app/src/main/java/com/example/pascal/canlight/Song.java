@@ -137,7 +137,6 @@ public class Song implements Parcelable {
         song.setGroups(groups);
         song.setTrack(trackService, trackId, trackLabel);
         song.setMidiCommand(midiCommand);
-        Log.d(TAG, "get midi command: " + midiCommand.toJson().toString());
         return song;
     }
 
@@ -157,7 +156,6 @@ public class Song implements Parcelable {
             o.put("TrackId", getTrackId());
             o.put("TrackLabel", getTrackLabel());
             o.put("MidiProgram", getMidiProgram().toJson());
-            Log.d(TAG, "set midi command: " + getMidiProgram().toJson().toString());
         } catch (JSONException e) {
             throw new AssertionFailedError();
         }

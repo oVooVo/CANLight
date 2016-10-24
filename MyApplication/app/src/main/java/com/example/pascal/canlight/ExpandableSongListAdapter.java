@@ -62,7 +62,7 @@ public class ExpandableSongListAdapter extends BaseExpandableListAdapter {
             if (!songsWithoutGroup.isEmpty()) {
                 mSongs.add(songsWithoutGroup);
                 mNoGroupIndex = mGroupNames.size();
-                mGroupNames.add("No Group");
+                mGroupNames.add(mContext.getString(R.string.no_group_title));
             }
         }
         mCacheIsInvalid = false;

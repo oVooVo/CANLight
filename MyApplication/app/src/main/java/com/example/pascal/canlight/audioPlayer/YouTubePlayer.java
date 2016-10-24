@@ -24,6 +24,7 @@ public class YouTubePlayer extends Player implements
 
 
     public YouTubePlayer(Activity activity, YouTubePlayerSupportFragment playerFragment) {
+        super(activity);
         mActivity = activity;
         mPlayerFragment = playerFragment;
         Log.i(TAG, "initialize player ...");

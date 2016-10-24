@@ -40,7 +40,7 @@ public class GoogleDriveCreateFileActivity extends GoogleDriveActivity {
         super.onConnected(connectionHint);
 
         final MetadataChangeSet meta = new MetadataChangeSet.Builder()
-                .setTitle("New file")
+                .setTitle(getString(R.string.new_drive_file_name))
                 .setMimeType("application/json")
                 .setStarred(true).build();
 
@@ -86,13 +86,13 @@ public class GoogleDriveCreateFileActivity extends GoogleDriveActivity {
                 @Override
                 public void onResult(DriveFolder.DriveFileResult result) {
                     if (!result.getStatus().isSuccess()) {
-                        showMessage("Error while trying to create the file");
+                        showMessage(getString(R.string.drive_file_creation_failed));
                         setResult(RESULT_CANCELED);
                         finish();
                         return;
                     }
                     final DriveId id = result.getDriveFile().getDriveId();
-                    showMessage("Created an empty file: " + id);
+                    showMessage(getString(R.string.created_drive_file_id) + id);
                     id.asDriveFile().addChangeListener(getGoogleApiClient(), new ChangeListener() {
 
                         @Override
@@ -109,7 +109,7 @@ public class GoogleDriveCreateFileActivity extends GoogleDriveActivity {
                                     throw new AssertionFailedError();
                                 }
                                 shareIdIntent.putExtra(Intent.EXTRA_TEXT, "http://canlight.com/rcv_shr/" + id);
-                                Intent intent = Intent.createChooser(shareIdIntent, "Share CANLight collection");
+                                Intent intent = Intent.createChooser(shareIdIntent, getString(R.string.share_drive));
                                 startActivityForResult(intent, CREATE_CHOOSER_REQUEST);
                             }
                         }

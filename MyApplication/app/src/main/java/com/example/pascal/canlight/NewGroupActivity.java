@@ -51,14 +51,14 @@ public class NewGroupActivity extends Activity {
             public void onClick(View v) {
                 if (getGroupName().isEmpty()) {
                     Toast.makeText(NewGroupActivity.this,
-                            "Group name must not be empty", Toast.LENGTH_SHORT).show();
+                            R.string.group_name_must_not_be_empty, Toast.LENGTH_SHORT).show();
                 } else if (getSongs().length == 0) {
                     Toast.makeText(NewGroupActivity.this,
-                            "No song selected", Toast.LENGTH_SHORT).show();
+                            R.string.no_song_selected, Toast.LENGTH_SHORT).show();
                 } else {
                     if (isDuplicate()) {
                         Toast.makeText(NewGroupActivity.this,
-                                "Added selected ", Toast.LENGTH_SHORT).show();
+                                R.string.added_selected, Toast.LENGTH_SHORT).show();
                     }
                     Intent intent = new Intent();
                     intent.putExtra("groupName", getGroupName());

@@ -38,9 +38,9 @@ public class SettingsActivity extends AppCompatActivity {
                 AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, intent);
                 AuthenticationResponse.Type result = MySpotify.onLoginResponse(response);
                 if (AuthenticationResponse.Type.ERROR.equals(result)) {
-                    Toast.makeText(this, "Unable to authorize", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, R.string.cannot_authorize, Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(this, "Authorized successfully", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, R.string.authorize_successfull, Toast.LENGTH_SHORT).show();
                 }
                 break;
         }

@@ -43,7 +43,7 @@ public class ReceiverActivity extends GoogleDriveActivity {
                         .execute(result.getDriveId());
             } else {
                 Toast.makeText(ReceiverActivity.this,
-                        "Cannot get drive id. Do you have access rights?",
+                        R.string.google_drive_cannot_get_drive_id,
                         Toast.LENGTH_LONG)
                         .show();
                 setResult(RESULT_CANCELED);
@@ -91,7 +91,7 @@ public class ReceiverActivity extends GoogleDriveActivity {
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
             if (result == null) {
-                showMessage("Error while reading from the file");
+                showMessage(getString(R.string.error_read_file));
                 setResult(RESULT_CANCELED);
                 finish();
             } else {

@@ -63,7 +63,7 @@ public class ImportPatternActivity extends AppCompatActivity {
             }
         });
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle("Import Pattern");
+            getSupportActionBar().setTitle(R.string.import_pattern_activity_title);
         }
 
         Button searchButton = (Button) findViewById(R.id.buttonRefreshImportList);

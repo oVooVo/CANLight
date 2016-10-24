@@ -1,5 +1,6 @@
 package com.example.pascal.canlight.audioPlayer;
 
+import android.content.Context;
 import android.os.Handler;
 import android.support.annotation.CallSuper;
 import android.util.Log;
@@ -7,6 +8,7 @@ import android.view.View;
 import android.widget.Button;
 
 import com.example.pascal.canlight.Project;
+import com.example.pascal.canlight.R;
 import com.spotify.sdk.android.player.Metadata;
 
 import java.util.Locale;
@@ -32,8 +34,10 @@ public abstract class Player {
     private OnPlayStateChangeListener mOnPlayStateChange;
     private OnCurrentPositionChangeListener mOnCurrentPositionChange;
     private final Handler mHandler;
+    private final Context mContext;
 
-    public Player() {
+    public Player(Context context) {
+        mContext = context;
         mHandler = new Handler();
     }
 
@@ -68,13 +72,13 @@ public abstract class Player {
         }
 
         // ms / 100 is correct enough.
-        return String.format(Locale.getDefault(), "%2d:%02d.%01d", min, sec, ms / 100);
+        return String.format(mContext.getString(R.string.player_time_format), min, sec, ms / 100);
     }
 
     protected void updateSong(String label) {
         if (mOnSongChange != null) {
             if (label == null) {
-                mOnSongChange.onSongChange("No Song", 0);
+                mOnSongChange.onSongChange(mContext.getString(R.string.no_song), 0);
             } else {
                 mOnSongChange.onSongChange(label, getDuration());
             }

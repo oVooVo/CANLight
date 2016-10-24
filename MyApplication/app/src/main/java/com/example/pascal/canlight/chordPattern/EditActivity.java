@@ -321,7 +321,7 @@ public class EditActivity extends AppCompatActivity {
         }
         if ("Spotify".equals(service)) {
             if (mSpotifyPlayer == null) {
-                mSpotifyPlayer = new SpotifyPlayer(this);
+                mSpotifyPlayer = new SpotifyPlayer(this, this);
             }
             mActivePlayer = mSpotifyPlayer;
             if (mYouTubePlayer != null) {
@@ -439,7 +439,7 @@ public class EditActivity extends AppCompatActivity {
             case MainActivity.LOGIN_SPOTIFY_REQUEST:
                 AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, data);
                 if (response.getType() == AuthenticationResponse.Type.TOKEN) {
-                    Config playerConfig = new Config(this, response.getAccessToken(), SpotifyPlayer.CLIENT_ID);
+                    Config playerConfig = new Config(this, response.getAccessToken(), getString(R.string.spotify_client_id));
                     Spotify.getPlayer(playerConfig, this, new com.spotify.sdk.android.player.SpotifyPlayer.InitializationObserver() {
                         @Override
                         public void onInitialized(com.spotify.sdk.android.player.SpotifyPlayer spotifyPlayer) {

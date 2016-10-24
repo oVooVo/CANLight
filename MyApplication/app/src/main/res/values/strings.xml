@@ -85,4 +85,23 @@
     </plurals>
     <string name="title_activity_edit_midi_command">EditMidiCommandActivity</string>
     <string name="midi_command_is_enabled_switch_title">Enabled</string>
+    <string name="no_group_title">No Group</string>
+    <string name="no_results">No results</string>
+    <string name="new_drive_file_name">New file</string>
+    <string name="drive_file_creation_failed">Error while trying to create the file</string>
+    <string name="created_drive_file_id">"Created an empty file: "</string>
+    <string name="share_drive">Share CANLight collection</string>
+    <string name="import_pattern_activity_title">Import Pattern</string>
+    <string name="confirm_deletition_string">Do you really want to delete \"%s\" from all groups?</string>
+    <string name="groups_containing">Groups containing\n\"%s\"</string>
+    <string name="group_name_must_not_be_empty">Group name must not be empty</string>
+    <string name="no_song_selected">No song selected</string>
+    <string name="added_selected">"Added selected "</string>
+    <string name="no_artist">No Artist</string>
+    <string name="player_time_format" formatted="false">%2d:%02d.%01d</string>
+    <string name="no_song">No Song</string>
+    <string name="google_drive_cannot_get_drive_id">Cannot get drive id. Do you have access rights?</string>
+    <string name="error_read_file">Error while reading from the file</string>
+    <string name="cannot_authorize">Unable to authorize</string>
+    <string name="authorize_successfull">Authorized successfully</string>
 </resources>

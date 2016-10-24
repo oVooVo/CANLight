@@ -1,12 +1,8 @@
 package com.example.pascal.canlight;
 
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Application;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.hardware.usb.UsbManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -33,7 +29,6 @@ import android.widget.Toast;
 import com.example.pascal.canlight.chordPattern.EditActivity;
 import com.example.pascal.canlight.chordPattern.ImportPatternCache;
 import com.example.pascal.canlight.midi.Midi;
-import com.example.pascal.canlight.midi.MidiProgram;
 
 import junit.framework.AssertionFailedError;
 
@@ -42,8 +37,7 @@ import java.net.URLDecoder;
 import java.util.HashSet;
 import java.util.Set;
 
-//TODO remove implements..
-public class MainActivity extends AppCompatActivity implements Application.ActivityLifecycleCallbacks {
+public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
     public static final int PATTERN_REQUEST = 0;
@@ -61,7 +55,6 @@ public class MainActivity extends AppCompatActivity implements Application.Activ
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        getApplication().registerActivityLifecycleCallbacks(this);
 
         mProject = new Project();
         mProject.load(getApplicationContext());
@@ -96,11 +89,6 @@ public class MainActivity extends AppCompatActivity implements Application.Activ
         Midi.init(this);
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-    }
-
     int currentEditPosition = -1;
     private Project mProject;
 
@@ -130,9 +118,8 @@ public class MainActivity extends AppCompatActivity implements Application.Activ
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 new AlertDialog.Builder(MainActivity.this)
-                        .setMessage("Do you really want to delete \""
-                                + mProject.getSong(projectIndex).getName()
-                                + "\" from all groups?")
+                        .setMessage(String.format(getString(R.string.confirm_deletition_string),
+                                mProject.getSong(projectIndex).getName()))
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
@@ -173,6 +160,7 @@ public class MainActivity extends AppCompatActivity implements Application.Activ
                                 song.setGroups(groups);
                             }
                             mSongListAdapter.notifyDataSetChanged();
+                            save();
                         }
                     });
                     return true;
@@ -198,38 +186,7 @@ public class MainActivity extends AppCompatActivity implements Application.Activ
         });
     }
 
-    @Override
-    public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
-
-    }
-
-    @Override
-    public void onActivityStarted(Activity activity) {
-
-    }
-
-    @Override
-    public void onActivityResumed(Activity activity) {
-
-    }
-
-    @Override
-    public void onActivityPaused(Activity activity) {
-
-    }
-
-    @Override
-    public void onActivityStopped(Activity activity) {
-
-    }
-
-    @Override
-    public void onActivitySaveInstanceState(Activity activity, Bundle outState) {
-
-    }
-
-    @Override
-    public void onActivityDestroyed(Activity activity) {
+    private void save() {
         mProject.save(getApplicationContext());
         ImportPatternCache.save(getApplicationContext());
     }
@@ -326,6 +283,7 @@ public class MainActivity extends AppCompatActivity implements Application.Activ
                                 }
                                 song.setGroups(groups);
                                 mSongListAdapter.notifyDataSetChanged();
+                                save();
                             }
                         });
                 setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.rename_dialog_cancel),
@@ -334,7 +292,7 @@ public class MainActivity extends AppCompatActivity implements Application.Activ
                         });
             }
         };
-        d.setTitle("Groups containing\n\"" + song.getName() + "\"");
+        d.setTitle(String.format(getString(R.string.groups_containing), song.getName()));
         d.show();
     }
 
@@ -397,6 +355,7 @@ public class MainActivity extends AppCompatActivity implements Application.Activ
             @Override
             public void onSongListChanged() {
                 mSongListAdapter.notifyDataSetChanged();
+                save();
             }
         });
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -449,6 +408,7 @@ public class MainActivity extends AppCompatActivity implements Application.Activ
                         s.setGroups(groups);
                     }
                     mSongListAdapter.notifyDataSetChanged();
+                    save();
                 }
                 break;
         }
@@ -504,6 +464,7 @@ public class MainActivity extends AppCompatActivity implements Application.Activ
         if (handleImportIntent(getIntent())) {
             setIntent(new Intent());
         }
+        save();
     }
 
     private boolean handleImportIntent(Intent intent) {
@@ -538,6 +499,7 @@ public class MainActivity extends AppCompatActivity implements Application.Activ
             s.setGroups(groups);
         }
         mSongListAdapter.notifyDataSetChanged();
+        save();
     }
 
     private void newGroup() {
