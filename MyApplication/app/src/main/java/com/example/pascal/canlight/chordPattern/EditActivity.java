@@ -1,19 +1,12 @@
 package com.example.pascal.canlight.chordPattern;
 
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.hardware.usb.UsbDevice;
-import android.hardware.usb.UsbDeviceConnection;
-import android.hardware.usb.UsbManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -24,7 +17,8 @@ import android.widget.NumberPicker;
 import android.widget.Switch;
 import android.widget.Toast;
 
-import com.example.pascal.canlight.MidiCommand;
+import com.example.pascal.canlight.midi.Midi;
+import com.example.pascal.canlight.midi.MidiProgram;
 import com.example.pascal.canlight.audioPlayer.GetTrackActivity;
 import com.example.pascal.canlight.audioPlayer.Player;
 import com.example.pascal.canlight.audioPlayer.PlayerFragment;
@@ -35,9 +29,6 @@ import com.example.pascal.canlight.SliderDialog;
 import com.example.pascal.canlight.Song;
 import com.example.pascal.canlight.SpotifySpinner;
 import com.example.pascal.canlight.audioPlayer.YouTubePlayer;
-import com.example.pascal.canlight.midi.Midi;
-import com.felhr.usbserial.UsbSerialDevice;
-import com.felhr.usbserial.UsbSerialInterface;
 import com.google.android.youtube.player.YouTubePlayerSupportFragment;
 import com.spotify.sdk.android.authentication.AuthenticationClient;
 import com.spotify.sdk.android.authentication.AuthenticationResponse;
@@ -45,16 +36,6 @@ import com.spotify.sdk.android.player.Config;
 import com.spotify.sdk.android.player.Spotify;
 
 import junit.framework.AssertionFailedError;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import jp.kshoji.driver.midi.activity.AbstractSingleMidiActivity;
-import jp.kshoji.driver.midi.device.MidiDeviceConnectionWatcher;
-import jp.kshoji.driver.midi.device.MidiInputDevice;
-import jp.kshoji.driver.midi.device.MidiOutputDevice;
-import jp.kshoji.driver.midi.listener.OnMidiDeviceAttachedListener;
-import jp.kshoji.driver.midi.listener.OnMidiDeviceDetachedListener;
 
 /**
  * Created by pascal on 02.10.16.
@@ -107,9 +88,7 @@ public class EditActivity extends AppCompatActivity {
                     }
                 });
         initializeTrackId(mCurrentSong);
-
-        test();
-        //Toast.makeText(this, "Sent midi", Toast.LENGTH_SHORT).show();
+        Midi.getInstance().sendMidiProgram(mCurrentSong.getMidiProgram());
     }
 
 
@@ -128,14 +107,6 @@ public class EditActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item){
         returnToMain();
         return true;
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        //TODO move init
-        Midi.init(getApplicationContext());
-        Midi.getInstance().send(mCurrentSong.getMidiCommand());
     }
 
     @Override
@@ -273,11 +244,10 @@ public class EditActivity extends AppCompatActivity {
             }
         });
         menu.findItem(R.id.menu_edit_midi_command).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            void initNumberPicker(NumberPicker np, byte value, final Switch isEnabledSwitch) {
-                if (np == null) throw new AssertionFailedError();
+            void initNumberPicker(NumberPicker np, int value, int max, final Switch isEnabledSwitch) {
                 np.setWrapSelectorWheel(false);
-                np.setMaxValue(127);
-                np.setMinValue(0);
+                np.setMinValue(1);
+                np.setMaxValue(max);
                 np.setValue(value);
                 np.setOnValueChangedListener(new NumberPicker.OnValueChangeListener() {
                     @Override
@@ -293,14 +263,14 @@ public class EditActivity extends AppCompatActivity {
                 d.setOnShowListener(new DialogInterface.OnShowListener() {
                     @Override
                     public void onShow(DialogInterface dialog) {
-                        final MidiCommand mc = mCurrentSong.getMidiCommand();
+                        final MidiProgram mc = mCurrentSong.getMidiProgram();
                         final NumberPicker np1 = (NumberPicker) d.findViewById(R.id.numberPicker1);
                         final NumberPicker np2 = (NumberPicker) d.findViewById(R.id.numberPicker2);
                         final NumberPicker np3 = (NumberPicker) d.findViewById(R.id.numberPicker3);
                         final Switch isEnabledSwitch = (Switch) d.findViewById(R.id.isEnabledSwitch);
-                        initNumberPicker(np1, mc.getStatusByte(), isEnabledSwitch);
-                        initNumberPicker(np2, mc.getDataByte1(), isEnabledSwitch);
-                        initNumberPicker(np3, mc.getDataByte2(), isEnabledSwitch);
+                        initNumberPicker(np1, mc.getBank() + 1, 4, isEnabledSwitch);
+                        initNumberPicker(np2, mc.getPage() + 1, 20, isEnabledSwitch);
+                        initNumberPicker(np3, mc.getProgram() +1 , 5, isEnabledSwitch);
                         if (isEnabledSwitch != null) {
                             isEnabledSwitch.setChecked(mc.isValid());
                         } else {
@@ -317,11 +287,15 @@ public class EditActivity extends AppCompatActivity {
                                 final NumberPicker np2 = (NumberPicker) d.findViewById(R.id.numberPicker2);
                                 final NumberPicker np3 = (NumberPicker) d.findViewById(R.id.numberPicker3);
                                 final Switch isEnabledSwitch = (Switch) d.findViewById(R.id.isEnabledSwitch);
-                                final MidiCommand mc = new MidiCommand(
+                                assert isEnabledSwitch != null;
+                                assert np1 != null;
+                                assert np2 != null;
+                                assert np3 != null;
+                                final MidiProgram mc = new MidiProgram(
                                         isEnabledSwitch.isChecked(),
-                                        (byte) np1.getValue(),
-                                        (byte) np2.getValue(),
-                                        (byte) np3.getValue() );
+                                        np1.getValue() - 1,
+                                        np2.getValue() - 1,
+                                        np3.getValue() - 1);
                                 mCurrentSong.setMidiCommand(mc);
                             }
                         });
@@ -525,93 +499,4 @@ public class EditActivity extends AppCompatActivity {
             });
         }
     }
-
-
-
-    MidiOutputDevice mout;
-    private void test() {
-        UsbManager m = (UsbManager) getSystemService(Context.USB_SERVICE);
-        List<String> ids = new ArrayList<>();
-        for (String id : m.getDeviceList().keySet()) {
-            ids.add(id);
-        }
-        if (ids.isEmpty()) {
-            Toast.makeText(this, "No USB device.", Toast.LENGTH_SHORT).show();
-            return;
-        } else {
-            Toast.makeText(this, "Usb devices: " + TextUtils.join(", ", ids), Toast.LENGTH_SHORT).show();
-        }
-        final String ACTION_USB_PERMISSION = "com.android.example.USB_PERMISSION";
-        UsbDevice device = (UsbDevice) m.getDeviceList().values().toArray()[0];
-        PendingIntent pi = PendingIntent.getBroadcast(this, 0, new Intent(ACTION_USB_PERMISSION), 0);
-        m.requestPermission(device, pi);
-        if (m.hasPermission(device)) {
-            Toast.makeText(this, "Permission to access device granted", Toast.LENGTH_SHORT).show();
-        } else {
-            Toast.makeText(this, "No permission to access device", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        final UsbDeviceConnection usbConnection = m.openDevice(device);
-        Toast.makeText(this, "Usb connection: " + usbConnection, Toast.LENGTH_SHORT).show();
-        if (mout == null) {
-            Toast.makeText(this, "no mout. trying to get it" + usbConnection, Toast.LENGTH_SHORT).show();
-            new MidiDeviceConnectionWatcher(this.getApplicationContext(), m, new OnMidiDeviceAttachedListener() {
-                @Override
-                public void onDeviceAttached(@NonNull UsbDevice usbDevice) {
-
-                }
-
-                @Override
-                public void onMidiInputDeviceAttached(@NonNull MidiInputDevice midiInputDevice) {
-
-                }
-
-                @Override
-                public void onMidiOutputDeviceAttached(@NonNull MidiOutputDevice midiOutputDevice) {
-                    Toast.makeText(EditActivity.this, "Midi device attached", Toast.LENGTH_SHORT).show();
-                    mout = midiOutputDevice;
-
-                    Toast.makeText(EditActivity.this, "send midi note on" + usbConnection, Toast.LENGTH_SHORT).show();
-                    //mout.sendMidiNoteOn(0, 0x0b, 0xb0, 0x00);
-                    //mout.sendMidiNoteOn(0, 0x20, 0x01, 0x00);
-                    //mout.sendMidiNoteOn(0, 0xc0, 0x31, 0x00);
-
-                    mout.sendMidiNoteOn(0, 0xb0, 0x0b, 0x00);
-                    mout.sendMidiNoteOn(0, 0x01, 0x20, 0x00);
-                    mout.sendMidiNoteOn(0, 0x31, 0xc0, 0x00);
-
-                    //mout.sendMidiNoteOn(0, 0x31, 0xc0, 0x00);
-                    //mout.sendMidiNoteOn(0, 0x01, 0x20, 0x00);
-                    //mout.sendMidiNoteOn(0, 0xb0, 0x0b, 0x00);
-                }
-            },
-            new OnMidiDeviceDetachedListener() {
-                @Override
-                public void onDeviceDetached(@NonNull UsbDevice usbDevice) {
-
-                }
-
-                @Override
-                public void onMidiInputDeviceDetached(@NonNull MidiInputDevice midiInputDevice) {
-
-                }
-
-                @Override
-                public void onMidiOutputDeviceDetached(@NonNull MidiOutputDevice midiOutputDevice) {
-
-                }
-            });
-        } else {
-            Toast.makeText(this, "send midi note on" + usbConnection, Toast.LENGTH_SHORT).show();
-            mout.sendMidiNoteOn(0, 0, 60, 127);
-        }
-    }
-
-/*
-    Midi.init(this);
-    Midi.getInstance().send((byte) 0x0b, (byte) 0xb0, (byte) 0x00);
-    Midi.getInstance().send((byte) 0x20, (byte) 0x01, (byte) 0x00);
-    Midi.getInstance().send((byte) 0xc0, (byte) 0x31, (byte) 0x00);
-    */
-
 }

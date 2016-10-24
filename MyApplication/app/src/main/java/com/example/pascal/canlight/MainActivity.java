@@ -3,14 +3,15 @@ package com.example.pascal.canlight;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Application;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.hardware.usb.UsbManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -31,6 +32,8 @@ import android.widget.Toast;
 
 import com.example.pascal.canlight.chordPattern.EditActivity;
 import com.example.pascal.canlight.chordPattern.ImportPatternCache;
+import com.example.pascal.canlight.midi.Midi;
+import com.example.pascal.canlight.midi.MidiProgram;
 
 import junit.framework.AssertionFailedError;
 
@@ -89,6 +92,8 @@ public class MainActivity extends AppCompatActivity implements Application.Activ
                 return true;
             }
         });
+
+        Midi.init(this);
     }
 
     @Override
@@ -433,6 +438,7 @@ public class MainActivity extends AppCompatActivity implements Application.Activ
                     Project project = data.getParcelableExtra("MergedProject");
                     setProject(project);
                 }
+                break;
             case NEW_GROUP_REQUEST:
                 if (resultCode == RESULT_OK) {
                     final String groupName = data.getStringExtra("groupName");
@@ -444,7 +450,7 @@ public class MainActivity extends AppCompatActivity implements Application.Activ
                     }
                     mSongListAdapter.notifyDataSetChanged();
                 }
-
+                break;
         }
     }
 

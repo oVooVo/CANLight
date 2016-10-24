@@ -113,15 +113,23 @@ public class Project implements Parcelable {
             FileInputStream fis = context.openFileInput(FILENAME);
 
             final JSONObject o;
+            String data;
             try {
-                final String data = IOUtils.toString(fis);
+                data = IOUtils.toString(fis);
+            } catch (IOException e) {
+                Log.d(TAG, "tostring failed");
+                data = "";
+            }
+            Log.d(TAG, "data = " + data);
+            try {
+                Log.d(TAG, "json data: " + data);
                 o = new JSONObject(data);
                 mSongs.clear();
                 fromJson(o);
             } catch (Exception e) {
                 e.printStackTrace();
                 Log.w(TAG, "read json error");
-                throw new AssertionFailedError();
+                //throw new AssertionFailedError();
             }
         } catch (FileNotFoundException e) {
             // that's okay, no file to restore, maybe it's the first start.

@@ -60,7 +60,7 @@ public class ImportPatternCache {
             } catch (Exception e) {
                 e.printStackTrace();
                 Log.w(TAG, "Cannot read json");
-                //throw new AssertionFailedError();
+                throw new AssertionFailedError();
             }
         } catch (FileNotFoundException e) {
             // that's okay, no file to restore, maybe it's the first start.
