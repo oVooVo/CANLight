@@ -18,8 +18,9 @@ public class ParseSearchResults {
     private final Context mContext;
 
     public ParseSearchResults(Context context, String result) {
-        mEntries = getEntries(result);
         mContext = context;
+        assert mContext != null;
+        mEntries = getEntries(result);
         for (Iterator<PatternImporter.SearchResult> iterator = mEntries.iterator(); iterator.hasNext();) {
             PatternImporter.SearchResult s = iterator.next();
             if (!filterResult(s)) {

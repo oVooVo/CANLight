@@ -85,7 +85,11 @@ public class ChordPatternEdit extends EditText {
     }
 
     private static final Pattern HEADLINE_PATTERN = Pattern.compile(
-            "^\\W*(pre|post)?\\W*(verse|chorus|bridge|intro|outro)(\\W|[0-9_IVX])*\\W*$",
+            "^\\W*(" +
+                    "((pre|post)?\\W*(verse|refrain|chorus|bridge|intro|outro)(\\W|[0-9_IVX])*)" +
+                    "|" +
+                    "(\\[.*\\]))" +
+                    "\\W*$",
             Pattern.CASE_INSENSITIVE);
 
     private void updateHighlights() {

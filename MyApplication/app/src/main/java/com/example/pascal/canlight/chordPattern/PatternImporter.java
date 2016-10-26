@@ -59,6 +59,7 @@ public class PatternImporter {
         public static abstract class SearchResults {
         private static final String URL_PATTERN = "https://www.ultimate-guitar.com/search.php?search_type=title&order=&value=";
         public SearchResults(String key, final Context context) {
+            assert context != null;
             if (ImportPatternCache.isSearchCached(key)) {
                 onSearchResultsArrived(ImportPatternCache.searchResults(key));
             } else {
