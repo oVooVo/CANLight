@@ -246,6 +246,7 @@ public class EditActivity extends AppCompatActivity {
         });
         menu.findItem(R.id.menu_edit_midi_command).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             void initNumberPicker(NumberPicker np, int value, int max, final Switch isEnabledSwitch) {
+                assert np != null;
                 np.setWrapSelectorWheel(false);
                 np.setMinValue(1);
                 np.setMaxValue(max);
@@ -272,6 +273,7 @@ public class EditActivity extends AppCompatActivity {
                         initNumberPicker(np1, mc.getBank() + 1, 4, isEnabledSwitch);
                         initNumberPicker(np2, mc.getPage() + 1, 20, isEnabledSwitch);
                         initNumberPicker(np3, mc.getProgram() +1 , 5, isEnabledSwitch);
+                        np1.setDisplayedValues( new String[] { "A", "B", "C", "D" } );
                         if (isEnabledSwitch != null) {
                             isEnabledSwitch.setChecked(mc.isValid());
                         } else {

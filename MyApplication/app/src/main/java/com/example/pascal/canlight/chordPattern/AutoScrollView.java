@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.os.Handler;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.widget.ScrollView;
@@ -17,6 +18,7 @@ import com.example.pascal.canlight.R;
  * Created by pascal on 17.10.16.
  */
 public class AutoScrollView extends ScrollView {
+    private static final String TAG = "AutoScrollView";
 
     private boolean mAutoScrollIsActive = false;
     private Handler mHandler;
