@@ -61,7 +61,7 @@
         <activity
             android:name="com.spotify.sdk.android.authentication.LoginActivity"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
-        <activity android:name=".ReceiverActivity" />
+        <activity android:name=".googleDrive.ReceiverActivity" />
         <activity android:name=".googleDrive.GoogleDriveCreateFileActivity" />
         <activity android:name=".googleDrive.GoogleDriveActivity" />
         <activity android:name=".ImportExportActivity" />

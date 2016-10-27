@@ -87,7 +87,7 @@
     <string name="midi_command_is_enabled_switch_title">Enabled</string>
     <string name="no_group_title">No Group</string>
     <string name="no_results">No results</string>
-    <string name="new_drive_file_name">New file</string>
+    <string name="new_drive_file_name">Repertoire.json</string>
     <string name="drive_file_creation_failed">Error while trying to create the file</string>
     <string name="created_drive_file_id">"Created an empty file: "</string>
     <string name="share_drive">Share CANLight collection</string>
@@ -104,4 +104,5 @@
     <string name="error_read_file">Error while reading from the file</string>
     <string name="cannot_authorize">Unable to authorize</string>
     <string name="authorize_successfull">Authorized successfully</string>
+    <string name="projectfFile_mime">application/json</string>
 </resources>

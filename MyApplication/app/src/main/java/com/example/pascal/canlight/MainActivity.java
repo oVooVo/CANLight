@@ -28,6 +28,7 @@ import android.widget.Toast;
 
 import com.example.pascal.canlight.chordPattern.EditActivity;
 import com.example.pascal.canlight.chordPattern.ImportPatternCache;
+import com.example.pascal.canlight.googleDrive.ReceiverActivity;
 import com.example.pascal.canlight.midi.Midi;
 
 import junit.framework.AssertionFailedError;

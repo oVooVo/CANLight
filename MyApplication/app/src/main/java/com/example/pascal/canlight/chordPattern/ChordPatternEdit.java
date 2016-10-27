@@ -1,6 +1,7 @@
 package com.example.pascal.canlight.chordPattern;
 
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Handler;
@@ -19,6 +20,7 @@ import android.view.MotionEvent;
 import android.view.ViewParent;
 import android.widget.EditText;
 import android.widget.ScrollView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,7 +39,11 @@ public class ChordPatternEdit extends EditText {
         super(context, attrs);
         setGravity(Gravity.LEFT | Gravity.TOP);
         setHorizontallyScrolling(true);
-        setTypeface(Typeface.MONOSPACE);
+        //setTypeface(Typeface.MONOSPACE);
+
+        AssetManager am = context.getApplicationContext().getAssets();
+        Typeface typeface = Typeface.createFromAsset(am, "fonts/" + "nk57-monospace-no-sb.ttf");
+        setTypeface(typeface);
 
         setMovementMethod(ScrollingMovementMethod.getInstance());
 

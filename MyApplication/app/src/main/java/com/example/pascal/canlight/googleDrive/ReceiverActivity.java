@@ -1,4 +1,4 @@
-package com.example.pascal.canlight;
+package com.example.pascal.canlight.googleDrive;
 
 import android.content.Context;
 import android.content.Intent;
@@ -6,8 +6,8 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.example.pascal.canlight.googleDrive.GoogleDriveActivity;
-import com.example.pascal.canlight.googleDrive.GoogleDriveApiClientAsyncTask;
+import com.example.pascal.canlight.ImportExportActivity;
+import com.example.pascal.canlight.Project;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveApi;
@@ -23,6 +23,8 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+
+import com.example.pascal.canlight.R;
 
 public class ReceiverActivity extends GoogleDriveActivity {
 

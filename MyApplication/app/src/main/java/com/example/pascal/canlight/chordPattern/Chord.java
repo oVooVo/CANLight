@@ -18,8 +18,9 @@ public class Chord {
     public enum MinorPolicy { LowerCase, FollowingM}
     public static final MinorPolicy MINOR_POLICY = MinorPolicy.LowerCase;
     public static final EnharmonicPolicy ENHARMONIC_POLICY = EnharmonicPolicy.Natural;
-    public static final String FLAT = "b";  //"\u266D"; // Nice unicode version makes issues with monospace font.
-    public static final String SHARP = "#"; //"\u266F"; // Nice unicode version makes issues with monospace font.
+    // Nice unicode version makes issues with monospace font. However for legacy,
+    public static final String FLAT = "\u266D";
+    public static final String SHARP = "\u266F";
 
     private static HashMap<String, Line> lineCache = new HashMap<>();
     private static HashMap<String, Chord> chordCache = new HashMap<>();
