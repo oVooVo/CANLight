@@ -21,7 +21,7 @@ public class YouTubePlayer extends Player implements
     private final Activity mActivity;
     private String mVideoId;
     private String mLabel;
-
+    private boolean mIsInFullscreenMode = false;
 
     public YouTubePlayer(Activity activity, YouTubePlayerSupportFragment playerFragment) {
         super(activity);
@@ -40,6 +40,18 @@ public class YouTubePlayer extends Player implements
                         mPlayer.setPlayerStateChangeListener(YouTubePlayer.this);
                         mPlayer.setPlaybackEventListener(YouTubePlayer.this);
                         mPlayer.loadVideo(mVideoId, 0);
+                        mPlayer.setFullscreenControlFlags(0);
+                        mPlayer.setOnFullscreenListener(new com.google.android.youtube.player.YouTubePlayer.OnFullscreenListener() {
+                            @Override
+                            public void onFullscreen(boolean b) {
+                                if (b) {
+                                    mPlayer.setPlayerStyle(com.google.android.youtube.player.YouTubePlayer.PlayerStyle.DEFAULT);
+                                } else {
+                                    mPlayer.setPlayerStyle(com.google.android.youtube.player.YouTubePlayer.PlayerStyle.CHROMELESS);
+                                }
+                                mIsInFullscreenMode = b;
+                            }
+                        });
                     }
 
                     @Override
@@ -171,5 +183,13 @@ public class YouTubePlayer extends Player implements
         } else {
             return 0;
         }
+    }
+
+    public void setFullscreen(boolean f) {
+        mPlayer.setFullscreen(f);
+    }
+
+    public boolean isFullscreen() {
+        return mIsInFullscreenMode;
     }
 }

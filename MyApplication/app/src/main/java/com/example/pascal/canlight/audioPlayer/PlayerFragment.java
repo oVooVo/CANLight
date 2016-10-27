@@ -8,7 +8,9 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -21,6 +23,8 @@ import com.google.android.youtube.player.YouTubePlayerSupportFragment;
 
 import junit.framework.AssertionFailedError;
 
+//TODO crash: close app during youtube play
+
 /**
  * Created by pascal on 20.10.16.
  */
@@ -31,16 +35,6 @@ public class PlayerFragment extends Fragment {
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedState) {
         View view = inflater.inflate(R.layout.player_layout, container, false);
-        init(view);
-        return view;
-    }
-
-    public void onResume() {
-        super.onResume();
-        updateView();
-    }
-
-    private void init(View view) {
         final TextView songLabel = (TextView) view.findViewById(R.id.songNameLabel);
         songLabel.setSelected(true);
 
@@ -54,6 +48,29 @@ public class PlayerFragment extends Fragment {
                 updateView();
             }
         });
+
+        final Button fullscreenButton = (Button) view.findViewById(R.id.fullscreenButton);
+        fullscreenButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ((YouTubePlayer) mPlayer).setFullscreen(true);
+            }
+        });
+
+        view.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                Log.d(TAG, "key code: " + keyCode);
+                return false;
+            }
+        });
+
+        return view;
+    }
+
+    public void onResume() {
+        super.onResume();
+        updateView();
     }
 
     @Override
@@ -129,7 +146,9 @@ public class PlayerFragment extends Fragment {
 
     private void updateView() {
 
-        YouTubePlayerSupportFragment playerSupportFragment = getYouTubePlayerSupportFragment();
+        final YouTubePlayerSupportFragment playerSupportFragment = getYouTubePlayerSupportFragment();
+        assert getView() != null;
+        final Button fullscreenButton = (Button) getView().findViewById(R.id.fullscreenButton);
         final boolean showYouTubePlayer;
 
         if (mPlayer == null) {
@@ -143,8 +162,10 @@ public class PlayerFragment extends Fragment {
         }
         if (showYouTubePlayer) {
             getFragmentManager().beginTransaction().show(playerSupportFragment).commitAllowingStateLoss();
+            fullscreenButton.setVisibility(View.VISIBLE);
         } else {
             getFragmentManager().beginTransaction().hide(playerSupportFragment).commitAllowingStateLoss();
+            fullscreenButton.setVisibility(View.GONE);
         }
 
         if (getView() != null) {
@@ -170,4 +191,5 @@ public class PlayerFragment extends Fragment {
     public YouTubePlayerSupportFragment getYouTubePlayerSupportFragment() {
         return (YouTubePlayerSupportFragment) getChildFragmentManager().findFragmentById(R.id.youtube_fragment);
     }
+
 }

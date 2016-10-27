@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.NumberPicker;
 import android.widget.Switch;
@@ -68,7 +69,7 @@ public class EditActivity extends AppCompatActivity {
         editText.setTextSize((float) mCurrentSong.getPatternTextSize());
         editText.setFocusable(false);
 
-        if (getSupportActionBar() == null) throw new AssertionFailedError();
+        assert getSupportActionBar() != null;
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle(mCurrentSong.getName());
 
@@ -89,6 +90,24 @@ public class EditActivity extends AppCompatActivity {
                 });
         initializeTrackId(mCurrentSong);
         Midi.getInstance().sendMidiProgram(mCurrentSong.getMidiProgram());
+
+        findViewById(R.id.settingsButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(EditActivity.this, GetTrackActivity.class);
+                intent.putExtra("label", mCurrentSong.getTrackLabel());
+                intent.putExtra("service", mCurrentSong.getTrackService());
+                intent.putExtra("songName", mCurrentSong.getName());
+                EditActivity.this.startActivityForResult(intent, MainActivity.GET_TRACK_REQUEST);
+            }
+        });
+
+        findViewById(R.id.togglePlayerVisibilityButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setPlayerVisibility(findViewById(R.id.player).getVisibility() != View.VISIBLE);
+            }
+        });
     }
 
 
@@ -225,24 +244,6 @@ public class EditActivity extends AppCompatActivity {
                 return true;
             }
         });
-        menu.findItem(R.id.menu_toogle_player_visibility).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                setPlayerVisibility(findViewById(R.id.player).getVisibility() != View.VISIBLE);
-                return true;
-            }
-        });
-        menu.findItem(R.id.menu_config_player).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                Intent intent = new Intent(EditActivity.this, GetTrackActivity.class);
-                intent.putExtra("label", mCurrentSong.getTrackLabel());
-                intent.putExtra("service", mCurrentSong.getTrackService());
-                intent.putExtra("songName", mCurrentSong.getName());
-                EditActivity.this.startActivityForResult(intent, MainActivity.GET_TRACK_REQUEST);
-                return true;
-            }
-        });
         menu.findItem(R.id.menu_edit_midi_command).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             void initNumberPicker(NumberPicker np, int value, int max, final Switch isEnabledSwitch) {
                 np.setWrapSelectorWheel(false);
@@ -361,12 +362,16 @@ public class EditActivity extends AppCompatActivity {
                     mCurrentSong.getTrackId(),
                     0);
             player.setVisibility(View.VISIBLE);
+            ((Button) findViewById(R.id.togglePlayerVisibilityButton)).setCompoundDrawablesWithIntrinsicBounds(
+                    0, R.drawable.ic_arrow_down, 0, 0);
         } else {
             mShowPlayer = false;
             player.setVisibility(View.GONE);
             if (mActivePlayer != null) {
                 mActivePlayer.pause();
             }
+            ((Button) findViewById(R.id.togglePlayerVisibilityButton)).setCompoundDrawablesWithIntrinsicBounds(
+                    0, R.drawable.ic_action_headphones, 0, 0);
         }
     }
 
@@ -398,7 +403,6 @@ public class EditActivity extends AppCompatActivity {
         mOptionsMenu.findItem(R.id.menu_auto_scroll_start_pause).setVisible(ro);
         mOptionsMenu.findItem(R.id.menu_auto_scroll_speed).setVisible(ro);
         mOptionsMenu.findItem(R.id.menu_scale_pattern).setVisible(ro);
-        mOptionsMenu.findItem(R.id.menu_toogle_player_visibility).setVisible(ro);
         mOptionsMenu.findItem(R.id.menu_view_pattern).setVisible(!ro);
         mOptionsMenu.findItem(R.id.menu_cancel_edit).setVisible(!ro);
         mOptionsMenu.findItem(R.id.menu_transpose_up).setVisible(!ro);
@@ -474,7 +478,11 @@ public class EditActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        returnToMain();
+        if (mYouTubePlayer != null && mYouTubePlayer.isFullscreen()) {
+            mYouTubePlayer.setFullscreen(false);
+        } else {
+            returnToMain();
+        }
     }
 
     private void returnToMain() {
