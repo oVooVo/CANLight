@@ -498,7 +498,7 @@ public class EditActivity extends AppCompatActivity {
 
     private void initializeTrackId(Song song) {
         if (mCurrentSong.getTrackId() == null || mCurrentSong.getTrackId().isEmpty()) {
-            SpotifySpinner.findTrack(song, new SpotifySpinner.OnTrackFoundListener() {
+            SpotifySpinner.findTrack(this, song, new SpotifySpinner.OnTrackFoundListener() {
                 @Override
                 public void onTrackFound(String service, String id, String label) {
                     if (mShowPlayer) {

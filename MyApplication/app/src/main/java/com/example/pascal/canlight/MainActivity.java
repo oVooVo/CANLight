@@ -58,6 +58,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        SettingsFragment.setContext(getApplicationContext());
+
         mProject = new Project();
         mProject.load(getApplicationContext());
         ImportPatternCache.load(getApplicationContext());

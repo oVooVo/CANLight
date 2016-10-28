@@ -49,7 +49,7 @@ public class SpotifyTrackAdapter extends TrackAdapter {
 
     @Override
     void search(String key) {
-        MySpotify.getSpotifyService().searchTracks(key, new Callback<TracksPager>() {
+        MySpotify.searchTracks(mContext, key, new Callback<TracksPager>() {
             @Override
             public void success(TracksPager tracksPager, Response response) {
                 mLabels.clear();

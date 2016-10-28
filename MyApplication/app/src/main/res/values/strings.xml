@@ -101,4 +101,5 @@
     <string name="cannot_authorize">Unable to authorize</string>
     <string name="authorize_successfull">Authorized successfully</string>
     <string name="projectfFile_mime">application/json</string>
+    <string name="pref_spotifyMarket">pref_spotifyMarket</string>
 </resources>

@@ -12,7 +12,9 @@ import android.widget.Filter;
 import com.example.pascal.canlight.audioPlayer.GetTrackActivity;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import kaaes.spotify.webapi.android.models.ArtistSimple;
 import kaaes.spotify.webapi.android.models.Track;
@@ -30,6 +32,7 @@ public class SpotifySpinner extends AutoCompleteTextView {
     private Handler mHandler;
     private List<String> mIds;
     private List<String> mLabels;
+
     private static class Adapter extends ArrayAdapter<String> {
         List<String> mItems;
         public Adapter(Context context, List<String> items) {
@@ -94,9 +97,9 @@ public class SpotifySpinner extends AutoCompleteTextView {
         void onTrackFound(String service, String id, String label);
     }
 
-    public static void findTrack(final Song song, final OnTrackFoundListener l) {
-        MySpotify.getSpotifyService().searchTracks(song.getName(), new Callback<TracksPager>() {
-            @Override
+    public static void findTrack(Context context, final Song song, final OnTrackFoundListener l) {
+        MySpotify.searchTracks(context, song.getName(), new Callback<TracksPager>() {
+                    @Override
             public void success(TracksPager tracksPager, Response response) {
                 if (!tracksPager.tracks.items.isEmpty()) {
                     final Track track = tracksPager.tracks.items.get(0);
@@ -148,7 +151,7 @@ public class SpotifySpinner extends AutoCompleteTextView {
 
                 requestId++;
                 final int currentRequestId = requestId;
-                MySpotify.getSpotifyService().searchTracks(key, new Callback<TracksPager>() {
+                MySpotify.searchTracks(getContext(), key, new Callback<TracksPager>() {
                     @Override
                     public void success(TracksPager tracksPager, Response response) {
                         if (currentRequestId == requestId) {
