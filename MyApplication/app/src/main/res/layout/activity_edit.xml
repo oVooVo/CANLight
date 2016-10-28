@@ -16,6 +16,7 @@
             android:layout_height="fill_parent"
             android:inputType="textMultiLine"
             android:id="@+id/editText"
+            android:scrollHorizontally="false"
             android:windowSoftInputMode="adjustPan"/>
     </com.example.pascal.canlight.chordPattern.AutoScrollView>
 
@@ -39,7 +40,7 @@
         android:maxWidth="50dp"
         android:layout_alignBottom="@id/autoScrollView"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />yxsxx
+        android:layout_alignParentEnd="true" />
 
 
 </RelativeLayout>

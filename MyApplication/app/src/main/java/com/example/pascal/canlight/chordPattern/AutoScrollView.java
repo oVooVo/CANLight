@@ -67,6 +67,7 @@ public class AutoScrollView extends ScrollView {
                     double actualScrollRate = (mScrollRate / FACTOR) * textView.getTextSize() / 18.0;
                     if (!scrollBy(actualScrollRate)) {
                         endAutoScroll();
+                        mVerticalScroll = scrollStart();
                     }
                 }
                 mHandler.postDelayed(this, (int) (50 / FACTOR));
@@ -76,7 +77,8 @@ public class AutoScrollView extends ScrollView {
     }
 
     public void onSizeChanged(int w, int h, int oldW, int oldH) {
-        mVerticalScroll = scrollStart();
+	// adjust scrolling in order to avoid jumps
+        mVerticalScroll += (oldH - h) / 2;
         super.onSizeChanged(w, h, oldW, oldH);
     }
 
@@ -95,7 +97,6 @@ public class AutoScrollView extends ScrollView {
 
     public void endAutoScroll() {
         mAutoScrollIsActive = false;
-        mVerticalScroll = scrollStart();
         if (mOnAutoScrollStoppedListener != null) {
             mOnAutoScrollStoppedListener.onAutoScrollStopped();
         }
@@ -157,6 +158,8 @@ public class AutoScrollView extends ScrollView {
     public void fling(int velocityY) {
         if (!mAutoScrollIsActive) {
             super.fling(velocityY);
+        } else {
+            // dont't fling. It confuses auto scroll and is counter-intuitive.
         }
     }
 

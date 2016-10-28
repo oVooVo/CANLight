@@ -18,6 +18,7 @@ import android.util.Log;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.ViewParent;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -38,14 +39,10 @@ public class ChordPatternEdit extends EditText {
     public ChordPatternEdit(final Context context, AttributeSet attrs) {
         super(context, attrs);
         setGravity(Gravity.LEFT | Gravity.TOP);
-        setHorizontallyScrolling(true);
-        //setTypeface(Typeface.MONOSPACE);
 
         AssetManager am = context.getApplicationContext().getAssets();
         Typeface typeface = Typeface.createFromAsset(am, "fonts/" + "nk57-monospace-no-sb.ttf");
         setTypeface(typeface);
-
-        setMovementMethod(ScrollingMovementMethod.getInstance());
 
         addTextChangedListener(new TextWatcher() {
             @Override
@@ -88,6 +85,11 @@ public class ChordPatternEdit extends EditText {
         mIsEditable = isEditable;
         setFocusable(isEditable);
         setFocusableInTouchMode(isEditable);
+        if (!isEditable) {
+	    //hide keyboard
+            InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(getWindowToken(), 0);
+        }
     }
 
     private static final Pattern HEADLINE_PATTERN = Pattern.compile(
@@ -128,7 +130,6 @@ public class ChordPatternEdit extends EditText {
         super.setText(text);
         updateHighlights();
     }
-
 
     static final Pattern CAN_REMOVE_FIRST_CHARACTER_PATTERN = Pattern.compile("^\\s(" + Chord.CHORD_SPLIT_PATTERN + ").*", Pattern.DOTALL);
 
@@ -246,8 +247,8 @@ public class ChordPatternEdit extends EditText {
         if (mIsEditable || !isInScrollView()) {
             return super.onTouchEvent(event);
         } else {
-            //Ignore touches
-            return true;
+            //Ignore touches, however return false to give parent (e.g. ScrollView) oportunity to handle e.g. scroll.
+            return false;
         }
     }
 }
