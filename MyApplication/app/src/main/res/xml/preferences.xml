@@ -3,12 +3,6 @@
     <Preference
         android:title="@string/pref_clear_cache_title"
         android:key="@string/pref_clear_cache_key"/>
-    <Preference
-        android:title="@string/pref_loggin_spotify_title"
-        android:key="@string/pref_loggin_spotify_key"/>
-    <Preference
-        android:title="@string/pref_loggin_google_drive_title"
-        android:key="@string/pref_loggin_google_drive_key"/>
     <CheckBoxPreference
         android:title="@string/pref_keep_screen_on_title"
         android:summary="@string/pref_keep_screen_on_summary"

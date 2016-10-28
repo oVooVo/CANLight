@@ -24,22 +24,6 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
                 return true;
             }
         });
-        findPreference(getString(R.string.pref_loggin_spotify_key)).setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                MySpotify.loginRequest(getActivity());
-                return true;
-            }
-        });
-        /*
-        findPreference(getString(R.string.pref_loggin_google_drive_key)).setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                GoogleDriveWrapper.loginRequest(getActivity());
-                return true;
-            }
-        });
-        */
     }
 
     @Override
