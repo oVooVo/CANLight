@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
         mProject = new Project();
         mProject.load(getApplicationContext());
         ImportPatternCache.load(getApplicationContext());
-        ExpandableListView listView = (ExpandableListView) findViewById(R.id.listView);
+        final ExpandableListView listView = (ExpandableListView) findViewById(R.id.listView);
         listView.setClickable(true);
         registerForContextMenu(listView);
         listView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
@@ -343,7 +343,12 @@ public class MainActivity extends AppCompatActivity {
                         new OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 final String newName = editName.getText().toString();
-                                mProject.renameSong(position, newName);
+                                if (newName.isEmpty() && fItemIsNew) {
+                                    mProject.removeSong(position);
+                                } else {
+                                    mProject.renameSong(position, newName);
+                                    expandNoGroup();
+                                }
                             }
                         });
                 setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.rename_dialog_cancel),
@@ -361,9 +366,29 @@ public class MainActivity extends AppCompatActivity {
                         final String label = editName.getLabel(itemPosition);
                         mProject.renameSong(position, label);
                         mProject.getSong(position).setTrack(editName.getService(), editName.getId(itemPosition), label);
+                        expandNoGroup();
                         d.cancel();
                     }
                 });
+                editName.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                    @Override
+                    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                        if (actionId == EditorInfo.IME_ACTION_DONE) {
+                            mProject.renameSong(position, v.getText().toString());
+                            expandNoGroup();
+                            d.cancel();
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    }
+                });
+            }
+
+            void expandNoGroup() {
+                final ExpandableListView listView = (ExpandableListView) MainActivity.this.findViewById(R.id.listView);
+                final int lastGoup = listView.getExpandableListAdapter().getGroupCount() - 1;
+                listView.expandGroup(lastGoup);
             }
         }.show();
     }
@@ -371,6 +396,8 @@ public class MainActivity extends AppCompatActivity {
     void setProject(final Project project) {
         mProject = project;
         mSongListAdapter = new ExpandableSongListAdapter(this, project);
+        final ExpandableListView listView = (ExpandableListView) findViewById(R.id.listView);
+        listView.setAdapter(mSongListAdapter);
         project.setOnSongListChangedListener(new Project.OnSongListChangedListener() {
             @Override
             public void onSongListChanged() {
@@ -386,8 +413,6 @@ public class MainActivity extends AppCompatActivity {
                 editSongName(position, true);
             }
         });
-        ExpandableListView listView = (ExpandableListView) findViewById(R.id.listView);
-        listView.setAdapter(mSongListAdapter);
     }
 
     private void openEditMode(int position) {
