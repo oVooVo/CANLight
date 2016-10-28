@@ -223,7 +223,7 @@ public class EditActivity extends AppCompatActivity {
         menu.findItem(R.id.menu_auto_scroll_speed).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                new SliderDialog.ExpSliderDialog(0, 6, 1, EditActivity.this) {
+                new SliderDialog.ExpSliderDialog(0, 6, 4, EditActivity.this, "Speed") {
                     @Override
                     protected void onValueChanged(double value) {
                         setScrollRate(value);
@@ -235,7 +235,7 @@ public class EditActivity extends AppCompatActivity {
         menu.findItem(R.id.menu_scale_pattern).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                new SliderDialog.ExpSliderDialog(2, 30, 3, EditActivity.this) {
+                new SliderDialog.ExpSliderDialog(2, 30, 3, EditActivity.this, "Scale") {
                     @Override
                     protected void onValueChanged(double value) {
                         setTextSize(value);

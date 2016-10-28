@@ -139,6 +139,7 @@ public class ExpandableSongListAdapter extends BaseExpandableListAdapter {
 
         TextView lblListHeader = (TextView) convertView
                 .findViewById(R.id.lblListHeader);
+        lblListHeader.setTextSize(18);
         lblListHeader.setTypeface(null, Typeface.BOLD);
         lblListHeader.setText(headerTitle);
 
@@ -161,7 +162,7 @@ public class ExpandableSongListAdapter extends BaseExpandableListAdapter {
                 .findViewById(R.id.lblListItem);
 
         txtListChild.setText(childText);
-        txtListChild.setTextSize(18);
+        txtListChild.setTextSize(25);
         txtListChild.setPadding(0, 0, 0, 0);
         return convertView;
     }

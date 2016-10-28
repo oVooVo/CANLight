@@ -12,6 +12,7 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.method.ScrollingMovementMethod;
 import android.text.style.BackgroundColorSpan;
+import android.text.style.ForegroundColorSpan;
 import android.text.style.StyleSpan;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -113,12 +114,15 @@ public class ChordPatternEdit extends EditText {
             Chord.Line cLine = Chord.parseLine(line);
             if (HEADLINE_PATTERN.matcher(line).matches()) {
                 BackgroundColorSpan headline = new BackgroundColorSpan(Color.BLUE);
-                span.setSpan(headline, position, position + line.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+
+                // String.trim would also remove preceding whitespaces.
+                final int lineLength = line.replaceFirst("\\s*$", "").length();
+                span.setSpan(headline, position, position + lineLength, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
             }
             for (String token : cLine.tokens) {
                 Chord chord = Chord.chordFromString(token);
                 if (cLine.isChordLine && chord.isValid()) {
-                    StyleSpan bold = new StyleSpan(Typeface.BOLD);
+                    ForegroundColorSpan bold = new ForegroundColorSpan(Color.RED);
                     span.setSpan(bold, position, position + token.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
                 }
                 position = position + token.length() + 1;

@@ -20,6 +20,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
+import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.ListView;
 import android.widget.SearchView;
@@ -63,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
         ExpandableListView listView = (ExpandableListView) findViewById(R.id.listView);
         listView.setClickable(true);
         registerForContextMenu(listView);
-        listView.setOnChildClickListener( new ExpandableListView.OnChildClickListener() {
+        listView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @Override
             public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
                 final Song song = getSong(groupPosition, childPosition);
@@ -83,11 +84,24 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextChange(String newText) {
                 mSongListAdapter.filter(newText);
+                expandNonEmptyGroups();
                 return true;
             }
         });
 
         Midi.init(this);
+    }
+
+    private void expandNonEmptyGroups() {
+        ExpandableListView songsView = (ExpandableListView) findViewById(R.id.listView);
+        ExpandableListAdapter adapter = songsView.getExpandableListAdapter();
+        for (int i = 0; i < adapter.getGroupCount(); ++i) {
+            if (adapter.getChildrenCount(i) >= 0) {
+                songsView.expandGroup(i);
+            } else {
+                songsView.collapseGroup(i);
+            }
+        }
     }
 
     int currentEditPosition = -1;
@@ -125,7 +139,8 @@ public class MainActivity extends AppCompatActivity {
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 mProject.removeSong(projectIndex);
-                            }})
+                            }
+                        })
                         .setNegativeButton(android.R.string.no, null).show();
                 return true;
             }
@@ -233,7 +248,8 @@ public class MainActivity extends AppCompatActivity {
                 });
                 setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.rename_dialog_cancel),
                         new OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton) { }
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                            }
                         });
             }
         }.show();
@@ -289,7 +305,8 @@ public class MainActivity extends AppCompatActivity {
                         });
                 setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.rename_dialog_cancel),
                         new OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton) { }
+                            public void onClick(DialogInterface dialog, int whichButton) {
+                            }
                         });
             }
         };
@@ -507,5 +524,27 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(MainActivity.this, NewGroupActivity.class);
         intent.putExtra("project", mProject);
         MainActivity.this.startActivityForResult(intent, NEW_GROUP_REQUEST);
+        onBackPressed();
+    }
+
+    @Override
+    public void onBackPressed() {
+        SearchView sv = (SearchView) findViewById(R.id.searchView);
+        if (!sv.isIconified()) {
+            sv.setQuery("", true);
+            sv.setIconified(true);
+        } else {
+            ExpandableListView songsView = (ExpandableListView) findViewById(R.id.listView);
+            boolean allGroupsAreCollapsed = true;
+            for (int i = 0; i < songsView.getExpandableListAdapter().getGroupCount(); ++i) {
+                if (songsView.isGroupExpanded(i)) {
+                    allGroupsAreCollapsed = false;
+                    songsView.collapseGroup(i);
+                }
+            }
+            if (allGroupsAreCollapsed) {
+                super.onBackPressed();
+            }
+        }
     }
 }

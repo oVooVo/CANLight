@@ -2,53 +2,68 @@ package com.example.pascal.canlight;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.Context;
-import android.graphics.Rect;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.Window;
+import android.view.WindowManager;
 import android.widget.SeekBar;
+
+import java.util.Locale;
 
 /**
  * Created by pascal on 07.10.16.
  */
 public abstract class SliderDialog {
-    SeekBar slider;
-    public SliderDialog(Activity activity) {
-        Dialog dialog = new Dialog(activity);
-        Rect displayRectangle = new Rect();
-        Window window = activity.getWindow();
-        window.getDecorView().getWindowVisibleDisplayFrame(displayRectangle);
-        LayoutInflater inflater = (LayoutInflater)
-                activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View view = inflater.inflate(R.layout.slider_layout, null);
-        view.setMinimumWidth((int) (displayRectangle.width() * 0.9f));
-        dialog.setContentView(view);
-        slider = (SeekBar) dialog.findViewById(R.id.seekBar);
-        slider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
-                                          {
-                                              @Override
-                                              public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                                                  onValueChanged(value(((double) progress) / seekBar.getMax()));
-                                              }
+    final SeekBar mSlider;
+    final String mTitle;
+    final Dialog mDialog;
+    public SliderDialog(Activity activity, String title) {
+        mTitle = title;
 
-                                              @Override
-                                              public void onStartTrackingTouch(SeekBar seekBar) {
-                                              }
+        mDialog = new Dialog(activity);
+        mDialog.setContentView(R.layout.slider_layout);
 
-                                              @Override
-                                              public void onStopTrackingTouch(SeekBar seekBar) {
-                                              }
-                                          }
 
-        );
-        dialog.show();
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+        lp.copyFrom(mDialog.getWindow().getAttributes());
+        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
+        mDialog.getWindow().setAttributes(lp);
+
+        mSlider = (SeekBar) mDialog.findViewById(R.id.seekBar);
+        mSlider.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
+          {
+              @Override
+              public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                  onValueChanged(getValue());
+                  updateTitle();
+              }
+
+              @Override
+              public void onStartTrackingTouch(SeekBar seekBar) {
+              }
+
+              @Override
+              public void onStopTrackingTouch(SeekBar seekBar) {
+              }
+          });
+
+        mDialog.show();
+        mDialog.getWindow().setAttributes(lp);
+        updateTitle();
     }
 
     public void setValue(double value) {
-        value = fromValue(value) * slider.getMax();
-        slider.setProgress((int) value);
+        value = fromValue(value) * mSlider.getMax();
+        mSlider.setProgress((int) value);
     }
+
+    public double getValue() {
+        return value(((double) mSlider.getProgress()) / mSlider.getMax());
+    }
+
+    private void updateTitle() {
+        final double value = getValue();
+        final String valueString = String.format(Locale.getDefault(), "%.2f", value);
+        mDialog.setTitle(mTitle + " (" + valueString + ")");
+    }
+
 
     abstract double value(double linear01);
     abstract double fromValue(double value);
@@ -57,8 +72,8 @@ public abstract class SliderDialog {
     public static abstract class ExpSliderDialog extends SliderDialog {
         private final double min, max, curvature;
         public ExpSliderDialog(double min, double max, double curvature,
-                               Activity activity) {
-            super(activity);
+                               Activity activity, String title) {
+            super(activity, title);
             this.min = min;
             this.max = max;
             this.curvature = curvature;
