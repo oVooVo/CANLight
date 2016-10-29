@@ -20,8 +20,6 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
     private static final String TAG = "SettingsFragment";
 
     static void setContext(Context context) {
-        Log.d(TAG, "reset context: " + mContext + " -> " + context);
-
         mContext = context;
     }
 

@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
  * Created by pascal on 03.10.16.
  */
 public class ChordPatternEdit extends EditText {
-
+    private static final String TAG = "ChordPatternEdit";
     private Handler mUpdateHighlightsHandler;
     private boolean mEditLoopKillerFlag = true;
     private boolean mIsEditable;

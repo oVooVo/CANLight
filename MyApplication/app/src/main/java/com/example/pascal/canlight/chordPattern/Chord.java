@@ -1,10 +1,13 @@
 package com.example.pascal.canlight.chordPattern;
 
 import android.text.TextUtils;
+import android.util.Log;
+
 import junit.framework.AssertionFailedError;
 
 import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
@@ -13,6 +16,8 @@ import java.util.regex.Matcher;
  * Created by pascal on 03.10.16.
  */
 public class Chord {
+
+    private static final String TAG = "Chord";
 
     public enum EnharmonicPolicy{ Sharp, Natural, Flat }
     public enum MinorPolicy { LowerCase, FollowingM}
@@ -270,6 +275,7 @@ public class Chord {
     }
 
     static public class Line {
+        private static final String TAG = "Chord#Line";
         private Line(boolean isChordLine, String[] tokens, String[] chords) {
             this.isChordLine = isChordLine;
             this.tokens = tokens;
@@ -298,7 +304,7 @@ public class Chord {
                     Matcher matcher = WORD_PATTERN.matcher(text);
                     if (matcher.matches()) {
                         numWords++;
-                    } else {
+                    } else if (!text.trim().isEmpty()) {
                         numOther++;
                     }
                 }

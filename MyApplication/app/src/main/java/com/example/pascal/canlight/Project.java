@@ -115,12 +115,9 @@ public class Project implements Parcelable {
             try {
                 data = IOUtils.toString(fis);
             } catch (IOException e) {
-                Log.d(TAG, "tostring failed");
                 data = "";
             }
-            Log.d(TAG, "data = " + data);
             try {
-                Log.d(TAG, "json data: " + data);
                 o = new JSONObject(data);
                 mSongs.clear();
                 fromJson(o);

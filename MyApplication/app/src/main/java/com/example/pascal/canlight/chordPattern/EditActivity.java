@@ -91,7 +91,7 @@ public class EditActivity extends AppCompatActivity {
         initializeTrackId(mCurrentSong);
         Midi.getInstance().sendMidiProgram(mCurrentSong.getMidiProgram());
 
-        findViewById(R.id.settingsButton).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.songNameLabel).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(EditActivity.this, GetTrackActivity.class);

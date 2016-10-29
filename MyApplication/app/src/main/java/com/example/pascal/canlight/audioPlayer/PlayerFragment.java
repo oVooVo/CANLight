@@ -57,14 +57,6 @@ public class PlayerFragment extends Fragment {
             }
         });
 
-        view.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                Log.d(TAG, "key code: " + keyCode);
-                return false;
-            }
-        });
-
         return view;
     }
 
