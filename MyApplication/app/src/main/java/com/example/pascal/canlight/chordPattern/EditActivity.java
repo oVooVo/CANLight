@@ -274,6 +274,7 @@ public class EditActivity extends AppCompatActivity {
                         initNumberPicker(np2, mc.getPage() + 1, 20, isEnabledSwitch);
                         initNumberPicker(np3, mc.getProgram() +1 , 5, isEnabledSwitch);
                         np1.setDisplayedValues( new String[] { "A", "B", "C", "D" } );
+
                         if (isEnabledSwitch != null) {
                             isEnabledSwitch.setChecked(mc.isValid());
                         } else {

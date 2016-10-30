@@ -102,4 +102,6 @@
     <string name="authorize_successfull">Authorized successfully</string>
     <string name="projectfFile_mime">application/json</string>
     <string name="pref_spotifyMarket">pref_spotifyMarket</string>
+    <string name="pref_midi_channel_title">MIDI Channel</string>
+    <string name="pref_midi_channel">pref_midi_channel</string>
 </resources>

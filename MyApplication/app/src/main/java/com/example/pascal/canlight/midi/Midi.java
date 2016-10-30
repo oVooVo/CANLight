@@ -6,8 +6,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.hardware.usb.UsbDevice;
 import android.hardware.usb.UsbManager;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.util.Log;
 import android.widget.Toast;
+
+import com.example.pascal.canlight.R;
+
+import junit.framework.AssertionFailedError;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,6 +28,7 @@ import jp.kshoji.driver.midi.listener.OnMidiDeviceDetachedListener;
  * Created by pascal on 23.10.16.
  */
 public class Midi {
+    private static final String TAG = "MIDI";
     private Context mContext;
     private UsbManager mUsbManager;
     private static Midi mInstance;
@@ -50,6 +57,7 @@ public class Midi {
     }
 
     public void sendMidiProgram(final MidiProgram midiProgram) {
+        Log.d(TAG, "Send midi command on channel " + getChannel());
         if (!midiProgram.isValid()) {
             return;
         }
@@ -66,9 +74,10 @@ public class Midi {
 
             @Override
             public void onMidiOutputDeviceAttached(@NonNull MidiOutputDevice midiOutputDevice) {
+                final int channel = getChannel();
                 final int program = midiProgram.getProgram() + 5 * midiProgram.getPage();
-                midiOutputDevice.sendMidiControlChange(0, 1, 32, midiProgram.getBank());
-                midiOutputDevice.sendMidiProgramChange(0, 1, program);
+                midiOutputDevice.sendMidiControlChange(0, channel, 32, midiProgram.getBank());
+                midiOutputDevice.sendMidiProgramChange(0, channel, program);
             }
         },
         new OnMidiDeviceDetachedListener() {
@@ -87,5 +96,17 @@ public class Midi {
 
             }
         });
+    }
+
+    int getChannel() {
+        final String key = mContext.getString(R.string.pref_midi_channel);
+        String channel = PreferenceManager.getDefaultSharedPreferences(mContext).getString(key, "0");
+        int c;
+        try {
+            c = Integer.valueOf(channel);
+        } catch (NumberFormatException e) {
+            throw new AssertionFailedError();
+        }
+        return c;
     }
 }

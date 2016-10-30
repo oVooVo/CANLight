@@ -59,4 +59,40 @@
         <item>TW</item>
         <item>UY</item>
     </string-array>
+    <string-array name="midiChannels">
+        <item>Channel 1</item>
+        <item>Channel 2</item>
+        <item>Channel 3</item>
+        <item>Channel 4</item>
+        <item>Channel 5</item>
+        <item>Channel 6</item>
+        <item>Channel 7</item>
+        <item>Channel 8</item>
+        <item>Channel 9</item>
+        <item>Channel 10</item>
+        <item>Channel 11</item>
+        <item>Channel 12</item>
+        <item>Channel 13</item>
+        <item>Channel 14</item>
+        <item>Channel 15</item>
+        <item>Channel 16</item>
+    </string-array>
+    <string-array name="midiChannelValues">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+        <item>11</item>
+        <item>12</item>
+        <item>13</item>
+        <item>14</item>
+        <item>15</item>
+    </string-array>
 </resources>

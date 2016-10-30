@@ -15,4 +15,11 @@
         android:defaultValue="DE"
         android:entries="@array/SpotifyMarkets"
         android:entryValues="@array/SpotifyMarkets"/>
+    <ListPreference
+        android:key="@string/pref_midi_channel"
+        android:title="@string/pref_midi_channel_title"
+        android:summary="%s"
+        android:defaultValue="1"
+        android:entries="@array/midiChannels"
+        android:entryValues="@array/midiChannelValues"/>
 </PreferenceScreen>
