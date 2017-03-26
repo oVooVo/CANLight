@@ -1,7 +1,10 @@
 package com.example.pascal.canlight.chordPattern;
 
+import android.app.ExpandableListActivity;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
@@ -16,8 +19,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.NumberPicker;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.pascal.canlight.ChooseColorActivity;
+import com.example.pascal.canlight.ExpandableSongListAdapter;
 import com.example.pascal.canlight.midi.Midi;
 import com.example.pascal.canlight.midi.MidiProgram;
 import com.example.pascal.canlight.audioPlayer.GetTrackActivity;
@@ -71,7 +77,21 @@ public class EditActivity extends AppCompatActivity {
 
         assert getSupportActionBar() != null;
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setTitle(mCurrentSong.getName());
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        getSupportActionBar().setDisplayShowCustomEnabled(true);
+        getSupportActionBar().setCustomView(R.layout.edit_song_action_bar_layout);
+        final TextView tv = (TextView) getSupportActionBar().getCustomView().findViewById(R.id.edit_song_action_bar_textview);
+        tv.setText(mCurrentSong.getName());
+        tv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(EditActivity.this, ChooseColorActivity.class);
+                intent.putExtra("color", mCurrentSong.getColor());
+                intent.putExtra("songName", mCurrentSong.getName());
+                startActivityForResult(intent, MainActivity.CHOOSE_COLOR_REQUEST);
+            }
+        });
+        updateActionBarColor();
 
         if (mCurrentSong.getPattern() == null) {
             importPattern();
@@ -121,11 +141,6 @@ public class EditActivity extends AppCompatActivity {
             mSpotifyPlayer.pause();
             mSpotifyPlayer.deinit();
         }
-    }
-
-    public boolean onOptionsItemSelected(MenuItem item){
-        returnToMain();
-        return true;
     }
 
     @Override
@@ -476,6 +491,13 @@ public class EditActivity extends AppCompatActivity {
                     // ignore.
                 }
                 break;
+            case MainActivity.CHOOSE_COLOR_REQUEST:
+                if (resultCode == RESULT_OK) {
+                    final int color = data.getIntExtra("color", 0);
+                    mCurrentSong.setColor(color);
+                    updateActionBarColor();
+                }
+                break;
         }
     }
 
@@ -484,17 +506,13 @@ public class EditActivity extends AppCompatActivity {
         if (mYouTubePlayer != null && mYouTubePlayer.isFullscreen()) {
             mYouTubePlayer.setFullscreen(false);
         } else {
-            returnToMain();
+            final EditText editText = (EditText) findViewById(R.id.editText);
+            Intent resultIntent = new Intent();
+            mCurrentSong.setPattern(editText.getText().toString());
+            resultIntent.putExtra("song", mCurrentSong);
+            setResult(RESULT_OK, resultIntent);
+            finish();
         }
-    }
-
-    private void returnToMain() {
-        final EditText editText = (EditText) findViewById(R.id.editText);
-        Intent resultIntent = new Intent();
-        mCurrentSong.setPattern(editText.getText().toString());
-        resultIntent.putExtra("song", mCurrentSong);
-        setResult(RESULT_OK, resultIntent);
-        finish();
     }
 
     private void initializeTrackId(Song song) {
@@ -508,6 +526,32 @@ public class EditActivity extends AppCompatActivity {
                     }
                 }
             });
+        }
+    }
+
+    private void updateActionBarColor() {
+        assert(getSupportActionBar() != null);
+
+        final TextView tv = (TextView) getSupportActionBar().getCustomView().findViewById(R.id.edit_song_action_bar_textview);
+        tv.setBackgroundColor(ExpandableSongListAdapter.prettifyColor(mCurrentSong.getColor()));
+        getSupportActionBar().setBackgroundDrawable(new ColorDrawable(
+                ExpandableSongListAdapter.prettifyColor(
+                        ExpandableSongListAdapter.prettifyColor(
+                                mCurrentSong.getColor()
+                        )
+                )
+        ));
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem menuItem)
+    {
+        switch (menuItem.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+            default:
+                return super.onOptionsItemSelected(menuItem);
         }
     }
 }

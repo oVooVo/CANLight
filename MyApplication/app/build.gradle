@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.pascal.canlight"
-        minSdkVersion 15
+        minSdkVersion 21
         targetSdkVersion 24
         versionCode 1
         versionName "1.0"
@@ -61,4 +61,8 @@ repositories {
 dependencies {
     compile 'jp.kshoji:midi-driver:0.1.4:@aar'
 }
+dependencies {
+    compile 'com.android.support.constraint:constraint-layout:+'
+}
+
 

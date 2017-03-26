@@ -64,7 +64,7 @@ public class MidiProgram implements Parcelable {
         }
     };
 
-    public void fromJson(JSONObject o) {
+    public void fromJSON(JSONObject o) {
         try {
             mIsValid = o.getBoolean("isValid");
             mBank = o.getInt("bank");
@@ -75,7 +75,7 @@ public class MidiProgram implements Parcelable {
         }
     }
 
-    public JSONObject toJson() {
+    public JSONObject toJSON() {
         JSONObject o = new JSONObject();
         try {
             o.put("isValid", mIsValid);

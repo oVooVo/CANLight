@@ -48,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     public static final int LOGIN_SPOTIFY_REQUEST = 4;
     public static final int RETURN_IMPORT_REQUEST = 6;
     public static final int NEW_GROUP_REQUEST = 7;
+    public static final int CHOOSE_COLOR_REQUEST = 8;
 
     private ExpandableSongListAdapter mSongListAdapter;
 
@@ -121,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
         final int gpos = ExpandableListView.getPackedPositionGroup(acmi.packedPosition);
         final Song song = getSong(gpos, cpos);
         final boolean isGroupContextMenu = song == null;
-        final int projectIndex = isGroupContextMenu ? -1 : mProject.getIndexOf(song);
+        final int songIndex = isGroupContextMenu ? -1 : mProject.getIndexOf(song);
         final boolean isNoGroupItem = (gpos == mSongListAdapter.getGroupCount() - 1);
 
         final MenuItem deleteSongItem = menu.findItem(R.id.menu_delete_song);
@@ -136,11 +137,11 @@ public class MainActivity extends AppCompatActivity {
             public boolean onMenuItemClick(MenuItem item) {
                 new AlertDialog.Builder(MainActivity.this)
                         .setMessage(String.format(getString(R.string.confirm_deletition_string),
-                                mProject.getSong(projectIndex).getName()))
+                                mProject.getSong(songIndex).getName()))
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
-                                mProject.removeSong(projectIndex);
+                                mProject.removeSong(songIndex);
                             }
                         })
                         .setNegativeButton(android.R.string.no, null).show();
@@ -151,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
         renameSongItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                editSongName(projectIndex, false);
+                editSongName(songIndex, false);
                 return true;
             }
         });
@@ -159,7 +160,7 @@ public class MainActivity extends AppCompatActivity {
         editGroupItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                editSongGroup(projectIndex);
+                editSongGroup(songIndex);
                 return true;
             }
         });

@@ -1,6 +1,7 @@
 package com.example.pascal.canlight;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -164,7 +165,20 @@ public class ExpandableSongListAdapter extends BaseExpandableListAdapter {
         txtListChild.setText(childText);
         txtListChild.setTextSize(25);
         txtListChild.setPadding(0, 0, 0, 0);
+        txtListChild.setBackgroundColor(prettifyColor(childSong.getColor()));
         return convertView;
+    }
+
+    public static int prettifyColor(int color) {
+        if (color == Color.TRANSPARENT) {
+            return color;
+        } else {
+            // make the color darker.
+            float[] hsv = new float[3];
+            Color.colorToHSV(color, hsv);
+            hsv[2] *= 0.5f;
+            return Color.HSVToColor(hsv);
+        }
     }
 
     public List<String> getGroupNames() {

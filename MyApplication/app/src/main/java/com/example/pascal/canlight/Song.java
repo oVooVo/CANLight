@@ -2,6 +2,7 @@ package com.example.pascal.canlight;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.os.SystemClock;
 import android.util.Log;
 
 import com.example.pascal.canlight.midi.MidiProgram;
@@ -31,6 +32,7 @@ public class Song implements Parcelable {
     private String mTrackId;
     private String mTrackService;
     private MidiProgram mMidiProgram;
+    private int mColor;
     public static final double DEFAULT_PATTERN_TEXT_SIZE = 18;
     private double patternTextSize = DEFAULT_PATTERN_TEXT_SIZE;
 
@@ -39,6 +41,7 @@ public class Song implements Parcelable {
         mUninitalizedPattern = true;
         mGroups = new HashSet<>();
         mMidiProgram = new MidiProgram();
+        mColor = 0;
     }
 
     public Song(Parcel in) {
@@ -54,6 +57,7 @@ public class Song implements Parcelable {
         mTrackId = in.readString();
         mTrackLabel = in.readString();
         mMidiProgram = in.readParcelable(MidiProgram.class.getClassLoader());
+        mColor = in.readInt();
     }
 
     public Set<String> getGroups() {
@@ -108,6 +112,7 @@ public class Song implements Parcelable {
         String trackLabel = song.getTrackLabel();
         String trackService = song.getTrackService();
         MidiProgram midiCommand = song.getMidiProgram();
+        int color = song.getColor();
 
         try { name = o.getString("name"); } catch (JSONException e) {
             throw new AssertionFailedError();
@@ -127,8 +132,12 @@ public class Song implements Parcelable {
             trackLabel = o.getString("TrackLabel");
         } catch (JSONException e) {} // ignore. it's okay.
         try {
-            midiCommand.fromJson(o.getJSONObject("MidiProgram"));
+            midiCommand.fromJSON(o.getJSONObject("MidiProgram"));
         } catch (JSONException e) {} // ignore. it's okay.
+        try {
+            color = o.getInt("color");
+            System.out.println("Restored Color: " + color);
+        } catch (JSONException e) { } // ignore. it's okay.
 
         song.setPattern(pattern);
         song.setScrollRate(scrollRate);
@@ -137,6 +146,7 @@ public class Song implements Parcelable {
         song.setGroups(groups);
         song.setTrack(trackService, trackId, trackLabel);
         song.setMidiCommand(midiCommand);
+        song.setColor(color);
         return song;
     }
 
@@ -155,7 +165,8 @@ public class Song implements Parcelable {
             o.put("TrackService", getTrackService());
             o.put("TrackId", getTrackId());
             o.put("TrackLabel", getTrackLabel());
-            o.put("MidiProgram", getMidiProgram().toJson());
+            o.put("MidiProgram", getMidiProgram().toJSON());
+            o.put("color", getColor());
         } catch (JSONException e) {
             throw new AssertionFailedError();
         }
@@ -183,6 +194,7 @@ public class Song implements Parcelable {
         dest.writeString(mTrackId);
         dest.writeString(mTrackLabel);
         dest.writeParcelable(mMidiProgram, 0);
+        dest.writeInt(mColor);
     }
 
     // this is used to regenerate your object. All Parcelables must have a CREATOR that implements these two methods
@@ -221,4 +233,11 @@ public class Song implements Parcelable {
         return mTrackService;
     }
 
+    public int getColor() {
+        return mColor;
+    }
+
+    public void setColor(int color) {
+        mColor = color;
+    }
 }
