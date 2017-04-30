@@ -1,6 +1,7 @@
 package com.example.pascal.canlight;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -8,12 +9,16 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.ContextMenu;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
@@ -317,7 +322,7 @@ public class MainActivity extends AppCompatActivity {
         d.show();
     }
 
-    private void editSongName(final int position, boolean itemIsNew) {
+    private void editSongName(final int position, final boolean itemIsNew) {
         final SpotifySpinner editName = new SpotifySpinner(this);
         editName.setMaxLines(1);
         editName.setText(mProject.getSong(position).getName());
@@ -333,10 +338,10 @@ public class MainActivity extends AppCompatActivity {
             }
         }, 100);
 
-        final boolean fItemIsNew = itemIsNew;
-        new AlertDialog(this) {
+        Dialog songNameDialog = new AlertDialog(this) {
             {
                 final View view = editName;
+                editName.setDropDownVerticalOffset(120);
                 setView(view);
                 getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN
                         | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
@@ -344,10 +349,15 @@ public class MainActivity extends AppCompatActivity {
                         new OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
                                 final String newName = editName.getText().toString();
-                                if (newName.isEmpty() && fItemIsNew) {
+                                Log.i(TAG, "Create new song with name <" + newName + ">");
+                                if (newName.isEmpty() && itemIsNew) {
+                                    Log.i(TAG, "Remove new song since name was empty");
                                     mProject.removeSong(position);
                                 } else {
                                     mProject.renameSong(position, newName);
+                                    if (itemIsNew) {
+                                        openEditMode(position);
+                                    }
                                     expandNoGroup();
                                 }
                             }
@@ -355,7 +365,7 @@ public class MainActivity extends AppCompatActivity {
                 setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.rename_dialog_cancel),
                         new OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
-                                if (fItemIsNew) {
+                                if (itemIsNew) {
                                     mProject.removeSong(position);
                                 }
                             }
@@ -368,6 +378,9 @@ public class MainActivity extends AppCompatActivity {
                         mProject.renameSong(position, label);
                         mProject.getSong(position).setTrack(editName.getService(), editName.getId(itemPosition), label);
                         expandNoGroup();
+                        if (itemIsNew) {
+                            openEditMode(position);
+                        }
                         d.cancel();
                     }
                 });
@@ -391,7 +404,14 @@ public class MainActivity extends AppCompatActivity {
                 final int lastGoup = listView.getExpandableListAdapter().getGroupCount() - 1;
                 listView.expandGroup(lastGoup);
             }
-        }.show();
+        };
+
+        Window window = songNameDialog.getWindow();
+        WindowManager.LayoutParams wlp = window.getAttributes();
+        wlp.gravity = Gravity.TOP;
+        wlp.flags &= ~WindowManager.LayoutParams.FLAG_DIM_BEHIND;
+        window.setAttributes(wlp);
+        songNameDialog.show();
     }
 
     void setProject(final Project project) {

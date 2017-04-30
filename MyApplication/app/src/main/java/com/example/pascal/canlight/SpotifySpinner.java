@@ -26,7 +26,7 @@ import retrofit.client.Response;
 /**
  * Created by pascal on 10.10.16.
  */
-public class SpotifySpinner extends AutoCompleteTextView {
+public class SpotifySpinner extends android.support.v7.widget.AppCompatAutoCompleteTextView {
     private static final String TAG = "SpotifySpinner";
     private static int requestId = 0;
     private Handler mHandler;
