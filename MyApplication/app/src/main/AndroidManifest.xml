@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <uses-feature android:name="android.hardware.usb.host" />
 
@@ -61,10 +62,6 @@
         <activity
             android:name="com.spotify.sdk.android.authentication.LoginActivity"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
-        <activity android:name=".googleDrive.ReceiverActivity" />
-        <activity android:name=".googleDrive.GoogleDriveCreateFileActivity" />
-        <activity android:name=".googleDrive.GoogleDriveActivity" />
-        <activity android:name=".ImportExportActivity" />
         <activity android:name=".audioPlayer.GetTrackActivity" />
 
         <meta-data

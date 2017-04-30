@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
@@ -16,7 +15,6 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -34,13 +32,10 @@ import android.widget.Toast;
 
 import com.example.pascal.canlight.chordPattern.EditActivity;
 import com.example.pascal.canlight.chordPattern.ImportPatternCache;
-import com.example.pascal.canlight.googleDrive.ReceiverActivity;
 import com.example.pascal.canlight.midi.Midi;
 
 import junit.framework.AssertionFailedError;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -211,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void save() {
-        mProject.save(getApplicationContext());
+        mProject.saveExtern(getApplicationContext());
         ImportPatternCache.save(getApplicationContext());
     }
 
@@ -340,9 +335,8 @@ public class MainActivity extends AppCompatActivity {
 
         Dialog songNameDialog = new AlertDialog(this) {
             {
-                final View view = editName;
                 editName.setDropDownVerticalOffset(120);
-                setView(view);
+                setView(editName);
                 getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN
                         | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
                 setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.rename_dialog_ok),
@@ -491,10 +485,17 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
-        menu.findItem(R.id.menu_share_all).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+        menu.findItem(R.id.menu_save).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                startExport();
+                save();
+                return true;
+            }
+        });
+        menu.findItem(R.id.menu_load).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                Toast.makeText(getApplicationContext(), "Loading is not yet implemented.", Toast.LENGTH_LONG).show();
                 return true;
             }
         });
@@ -506,55 +507,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         return true;
-    }
-
-    private void startExport() {
-        Intent intent = new Intent(MainActivity.this, ImportExportActivity.class);
-        intent.putExtra("project", mProject);
-        intent.putExtra("export", true);
-        startActivity(intent);
-    }
-
-
-    private void startImport(String id) {
-        Intent intent = new Intent(MainActivity.this, ReceiverActivity.class);
-        intent.putExtra("project", mProject);
-        intent.putExtra("export", false);
-        intent.putExtra("id", id);
-        startActivityForResult(intent, RETURN_IMPORT_REQUEST);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (handleImportIntent(getIntent())) {
-            setIntent(new Intent());
-        }
-        save();
-    }
-
-    private boolean handleImportIntent(Intent intent) {
-        final Uri uri = intent.getData();
-        if (uri != null) {
-            if (uri.getPathSegments().size() < 2) {
-                Toast.makeText(getApplicationContext(), "Could not get link", Toast.LENGTH_SHORT).show();
-            } else {
-                try {
-                    final String id = URLDecoder.decode(uri.getPathSegments().get(1), "utf-8");
-                    startImport(id);
-                    return true;
-                } catch (UnsupportedEncodingException e) {
-                    throw new AssertionFailedError();
-                }
-            }
-        }
-        return false;
-    }
-
-    protected void onNewIntent(Intent intent) {
-        // manifest: android:launchMode= "singleInstance"
-        super.onNewIntent(intent);
-        handleImportIntent(intent);
     }
 
     private void removeGroup(int gpos) {

@@ -2,12 +2,14 @@ package com.example.pascal.canlight;
 
 import android.content.Context;
 import android.nfc.Tag;
+import android.os.Environment;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.gms.drive.realtime.internal.event.ParcelableEventList;
+import com.google.api.client.util.DateTime;
 
 import junit.framework.AssertionFailedError;
 
@@ -17,16 +19,23 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Reader;
+import java.text.DateFormat;
+import java.text.FieldPosition;
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -221,4 +230,78 @@ public class Project implements Parcelable {
         songListChanged();
     }
 
+    private static final File createUniqueFile(Context context) {
+        if (!Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
+            Toast.makeText(context, "Cannot write external storage.", Toast.LENGTH_LONG);
+            return null;
+        } else {
+            File directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
+            final String nameTemplate = String.format("Collection_%s_%%04d.can", new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()));
+            List<String> files = Arrays.asList(directory.list());
+
+            int i = 0;
+            String candidate = "";
+            do {
+                candidate = String.format(nameTemplate, i);
+                i++;
+            } while (files.contains(candidate));
+
+            File file = new File(directory, candidate);
+            try {
+                if (!file.createNewFile()) {
+                    Log.w(TAG, "Cannot access file");
+                    Toast.makeText(context, "Cannot access file " + file.getAbsolutePath(), Toast.LENGTH_LONG);
+                    return null;
+                } else {
+                    Log.w(TAG, "Created file");
+                    return file;
+                }
+            } catch (IOException e) {
+                Log.w(TAG, "Something went wrong.");
+                return null;
+            }
+        }
+    }
+
+    public void saveExtern(Context context) {
+        Log.i(TAG, "Save file in external storage");
+        File file = createUniqueFile(context);
+
+        if (file != null) {
+            Log.i(TAG, "file name: " + file.getAbsolutePath());
+            try {
+                boolean j = file.mkdirs();
+                Log.i(TAG, "" + file.canWrite() + ", " + j);
+
+                FileOutputStream fos = new FileOutputStream(file);
+
+                try {
+                    fos.write(toJson().toString(4).getBytes());
+                    Log.i(TAG, "Wrote data to file");
+                } catch (JSONException e) {
+                    Log.w(TAG, "Unexpected JSON error.");
+                    throw new AssertionFailedError();
+                } catch (IOException e) {
+                    Log.w(TAG, "Writing data failed.");
+                    Toast.makeText(context, "Cannot write file.", Toast.LENGTH_LONG).show();
+                } finally {
+                    try {
+                        fos.close();
+                        Toast.makeText(context, "Wrote file: " + file.getAbsolutePath(), Toast.LENGTH_LONG).show();
+                        Log.i(TAG, "Closed file output stream");
+                    } catch (IOException e) {
+                        Log.wtf(TAG, "Cannot close file output stream.");
+                        throw new AssertionFailedError();
+                    }
+                }
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+
+                Log.w(TAG, "Cannot find file " + file.getAbsolutePath());
+                Toast.makeText(context, "Cannot find file " + file.getAbsolutePath(), Toast.LENGTH_LONG).show();
+            }
+        } else {
+            Log.w(TAG, "Could not get unique filename.");
+        }
+    }
 }

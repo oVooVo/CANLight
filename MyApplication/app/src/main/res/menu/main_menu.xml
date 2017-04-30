@@ -2,10 +2,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:compat="http://schemas.android.com/apk/res-auto">
 
-    <item android:id="@+id/menu_share_all"
-        android:title="@string/menu_share_all"
-        compat:showAsAction="ifRoom"
-        android:icon="@android:drawable/ic_menu_share"/>
+    <item android:id="@+id/menu_save"
+        android:title="@string/menu_save"
+        compat:showAsAction="never"
+        android:icon="@android:drawable/ic_menu_save"/>
+
+    <item android:id="@+id/menu_load"
+        android:title="@string/menu_load"
+        compat:showAsAction="never"/>
 
     <item android:id="@+id/menu_new_group"
         android:title="@string/menu_new_group_title"
@@ -13,6 +17,7 @@
 
     <item android:id="@+id/menu_settings"
         android:title="@string/menu_settings_title"
+        android:icon="@android:drawable/ic_menu_preferences"
         compat:showAsAction="never"/>
 
 </menu>
