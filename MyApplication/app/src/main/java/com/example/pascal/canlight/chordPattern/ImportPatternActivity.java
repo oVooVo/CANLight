@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.UnderlineSpan;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,17 +21,18 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.pascal.canlight.IconArrayAdapter;
 import com.example.pascal.canlight.MainActivity;
 import com.example.pascal.canlight.R;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ImportPatternActivity extends AppCompatActivity {
 
     ArrayList<String> items;
     ArrayList<String> urls;
     ArrayAdapter<String> adapter;
+    private ChordPatternImporter m_chordPatternImporter = new UltimateGuitarChordPatternImporter();
 
     private void showProgressBar() {
         ProgressBar bar = (ProgressBar) findViewById(R.id.progressBarImportTOC);
@@ -105,17 +107,23 @@ public class ImportPatternActivity extends AppCompatActivity {
     private void onItemClick(int position) {
         final String url = urls.get(position);
         showProgressBar();
-        new PatternImporter.Pattern(url, getApplicationContext()) {
+        m_chordPatternImporter.getChordPattern(getApplicationContext(), url, new ChordPatternImporter.OnResult<String>() {
             @Override
-            void onPatternArrived(String pattern) {
-                hideProgressBar();
+            public void onSuccess(String pattern) {
                 if (pattern != null) {
                     Intent intent = new Intent(ImportPatternActivity.this, PatternPreviewActivity.class);
                     intent.putExtra("pattern", pattern);
                     ImportPatternActivity.this.startActivityForResult(intent, MainActivity.IMPORT_PATTERN_PREVIEW_REQUEST);
                 }
+                hideProgressBar();
             }
-        };
+
+            @Override
+            void onFail(String error) {
+                Toast.makeText(ImportPatternActivity.this, "Failed to download pattern.", Toast.LENGTH_SHORT).show();
+                hideProgressBar();
+            }
+        });
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -136,27 +144,30 @@ public class ImportPatternActivity extends AppCompatActivity {
     private void search() {
         final String key = ((EditText) findViewById(R.id.importSearchKeywordEdit)).getText().toString();
         showProgressBar();
-        new PatternImporter.SearchResults(key, getApplicationContext()) {
-            @Override
-            void onSearchResultsArrived(PatternImporter.SearchResult[] results) {
-                items.clear();
-                urls.clear();
-                for (PatternImporter.SearchResult e : results) {
-                    String label = e.type + ": " + e.name + " - " + e.artist;
-                    items.add(label);
-                    urls.add(e.url);
-                }
-                adapter.notifyDataSetChanged();
+        m_chordPatternImporter.getSearchResults(getApplicationContext(), key, 5,
+                new ChordPatternImporter.OnResult<List<ChordPatternImporter.SearchResult>>() {
+                    @Override
+                    void onSuccess(List<ChordPatternImporter.SearchResult> results) {
+                        items.clear();
+                        urls.clear();
+                        for (ChordPatternImporter.SearchResult e : results) {
+                            final String label = e.type + ": " + e.name + " - " + e.artist;
+                            items.add(label);
+                            urls.add(e.url);
+                        }
+                        adapter.notifyDataSetChanged();
+                        hideProgressBar();
+                    }
 
-                if (items.isEmpty()) {
-                    Toast.makeText(ImportPatternActivity.this, R.string.nothing_found_search_songs, Toast.LENGTH_SHORT).show();
-                }
-                hideProgressBar();
-            }
-        };
-
+                    @Override
+                    void onFail(String error) {
+                        items.clear();
+                        urls.clear();
+                        Toast.makeText(ImportPatternActivity.this, R.string.nothing_found_search_songs, Toast.LENGTH_SHORT).show();
+                        adapter.notifyDataSetChanged();
+                        hideProgressBar();
+                    }
+                });
     }
-
-
 }
 

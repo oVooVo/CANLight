@@ -25,7 +25,7 @@ public class ImportPatternCache {
     private static final String TAG = "ImportPatternCache";
     private static final String FILENAME = "ImportPatternCache";
 
-    static private HashMap<String, PatternImporter.SearchResult[]> mSearchResultCache = new HashMap<>();
+    static private HashMap<String, ChordPatternImporter.SearchResult[]> mSearchResultCache = new HashMap<>();
     static private HashMap<String, String> mPatternCache = new HashMap<>();
 
     public static boolean isPatternCached(String url) {
@@ -34,7 +34,7 @@ public class ImportPatternCache {
     public static boolean isSearchCached(String key) {
         return mSearchResultCache.containsKey(key);
     }
-    public static PatternImporter.SearchResult[] searchResults(String key) {
+    public static ChordPatternImporter.SearchResult[] searchResults(String key) {
         return mSearchResultCache.get(key);
     }
     public static String pattern(String url) {
@@ -43,7 +43,7 @@ public class ImportPatternCache {
     public static void putPattern(String url, String pattern) {
         mPatternCache.put(url, pattern);
     }
-    public static void putSearchResults(String key, PatternImporter.SearchResult[] searchResults) {
+    public static void putSearchResults(String key, ChordPatternImporter.SearchResult[] searchResults) {
         mSearchResultCache.put(key, searchResults);
     }
     public static void load(Context context) {
@@ -82,19 +82,19 @@ public class ImportPatternCache {
         mSearchResultCache.clear();
     }
 
-    private static JSONArray toJsonArray(PatternImporter.SearchResult[] srs) {
+    private static JSONArray toJsonArray(ChordPatternImporter.SearchResult[] srs) {
         JSONArray array = new JSONArray();
-        for (PatternImporter.SearchResult sr : srs) {
+        for (ChordPatternImporter.SearchResult sr : srs) {
             array.put(sr.toJson());
         }
         return array;
     }
 
-    private static PatternImporter.SearchResult[] fromJsonArray(JSONArray array) {
-        PatternImporter.SearchResult[] srs = new PatternImporter.SearchResult[array.length()];
+    private static ChordPatternImporter.SearchResult[] fromJsonArray(JSONArray array) {
+        ChordPatternImporter.SearchResult[] srs = new ChordPatternImporter.SearchResult[array.length()];
         try {
             for (int i = 0; i < array.length(); ++i) {
-                srs[i] = new PatternImporter.SearchResult(array.getJSONObject(i));
+                srs[i] = new ChordPatternImporter.SearchResult(array.getJSONObject(i));
             }
         } catch (JSONException e) {
             throw new AssertionFailedError();
