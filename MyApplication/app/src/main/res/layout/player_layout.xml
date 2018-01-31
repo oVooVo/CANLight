@@ -47,7 +47,7 @@
             android:id="@+id/songNameLabel"
             android:layout_gravity="center"
             android:gravity="center"
-            android:text=""
+            android:text="@string/player_noPlayerHint"
             android:singleLine="true"
             android:ellipsize="marquee"
             android:marqueeRepeatLimit="marquee_forever"

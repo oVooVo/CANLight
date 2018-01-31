@@ -3,6 +3,7 @@ package com.example.pascal.canlight.audioPlayer;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
@@ -14,49 +15,56 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.pascal.canlight.IconArrayAdapter;
 import com.example.pascal.canlight.R;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Created by pascal on 20.10.16.
  */
 public class GetTrackActivity extends Activity {
     private static final String TAG = "GetTrackActivity";
-    private int mCurrentService;
-    private SpotifyTrackAdapter mSpotifyAdapter;
-    private YouTubeTrackAdapter mYoutubeAdapter;
     private TrackAdapter mCurrentAdapter;
+    private List<TrackAdapter> mTrackAdapters = new ArrayList<>();
 
-    public final static List<String> SERVICES = Arrays.asList("Spotify", "YouTube");
+    private void maybeAddTrackAdapter(TrackAdapter newTrackAdapter) {
+        if (newTrackAdapter.readyToUse()) {
+            Log.i(TAG, "Init " + newTrackAdapter.getName() + " Track Adapter");
+            mTrackAdapters.add(newTrackAdapter);
+        }
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
 
         // create content
         setContentView(R.layout.activity_get_track);
 
+        maybeAddTrackAdapter(new SpotifyTrackAdapter(this));
+        maybeAddTrackAdapter(new YouTubeTrackAdapter(this));
+
         // service spinner
-        Spinner spinner = (Spinner) findViewById(R.id.switchServiceSpinner);
-        spinner.setAdapter(new IconArrayAdapter(this, SERVICES) {
+        Spinner spinner = findViewById(R.id.switchServiceSpinner);
+        spinner.setAdapter(new IconArrayAdapter(this, mTrackAdapters.stream().map(TrackAdapter::getName).collect(Collectors.toList())) {
             @Override
             protected void setIcon(ImageView view, int position) {
-                if (position == 0) {
-                    view.setImageResource(R.drawable.ic_spotify);
-                } else {
-                    view.setImageResource(R.drawable.ic_youtube);
-                }
+                view.setImageResource(mTrackAdapters.get(position).getIcon());
             }
         });
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                setService(position);
+                setTrackAdapter(position);
             }
 
             @Override
@@ -66,94 +74,94 @@ public class GetTrackActivity extends Activity {
         });
 
 
-        ListView resultListView = (ListView) findViewById(R.id.listViewResults);
-        resultListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                finish( SERVICES.get(mCurrentService),
-                        mCurrentAdapter.getId(position),
-                        mCurrentAdapter.getLabel(position) );
-            }
-        });
+        ListView resultListView = findViewById(R.id.listViewResults);
+        resultListView.setOnItemClickListener((parent, view, position, id) -> finish( mCurrentAdapter.getName(),
+                mCurrentAdapter.getId(position),
+                mCurrentAdapter.getLabel(position) ));
 
-        Button searchButton = (Button) findViewById(R.id.buttonSearch);
-        searchButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                search();
-            }
-        });
+        Button searchButton = findViewById(R.id.buttonSearch);
+        searchButton.setOnClickListener(v -> search());
 
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
                 | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
 
 
-        mSpotifyAdapter = new SpotifyTrackAdapter(this);
-        mYoutubeAdapter = new YouTubeTrackAdapter(this);
         findViewById(R.id.progressBar).setVisibility(View.INVISIBLE);
-        TrackAdapter.OnResultsArrivedListener onResultsArrivedListener = new TrackAdapter.OnResultsArrivedListener() {
-            @Override
-            public void onResultsArrived(List<?> results) {
-                findViewById(R.id.progressBar).setVisibility(View.INVISIBLE);
-                if (results.isEmpty()) {
-                    Toast.makeText(GetTrackActivity.this,
-                            R.string.no_results, Toast.LENGTH_LONG).show();
-                }
+        findViewById(R.id.no_results_hint).setVisibility(View.INVISIBLE);
+        TrackAdapter.OnResultsArrivedListener onResultsArrivedListener = results -> {
+            findViewById(R.id.progressBar).setVisibility(View.INVISIBLE);
+            if (results.isEmpty()) {
+                findViewById(R.id.no_results_hint).setVisibility(View.VISIBLE);
+            } else {
+                findViewById(R.id.no_results_hint).setVisibility(View.INVISIBLE);
             }
         };
-        mYoutubeAdapter.setOnResultsArrivedListener(onResultsArrivedListener);
-        mSpotifyAdapter.setOnResultsArrivedListener(onResultsArrivedListener);
 
+        for (TrackAdapter ta: mTrackAdapters) {
+            ta.setOnResultsArrivedListener(onResultsArrivedListener);
+        }
+
+        EditText editTextQuery = findViewById(R.id.textViewQuery);
         final String initialLabel = getIntent().getStringExtra("label");
-        EditText editTextQuery = (EditText) findViewById(R.id.textViewQuery);
-        editTextQuery.setText(initialLabel);
-        editTextQuery.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-                    search();
-                    return true;
-                } else {
-                    return false;
-                }
-            }
-        });
-        editTextQuery.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                ((EditText) v).setText(getIntent().getStringExtra("songName"));
+        if (initialLabel == null || initialLabel.isEmpty()) {
+            editTextQuery.setText(getIntent().getStringExtra("songName"));
+        } else {
+            editTextQuery.setText(initialLabel);
+        }
+        editTextQuery.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH) {
+                search();
+                return true;
+            } else {
                 return false;
             }
         });
+        editTextQuery.setOnLongClickListener(v -> {
+            ((EditText) v).setText(getIntent().getStringExtra("songName"));
+            return false;
+        });
 
-        final String initialService = getIntent().getStringExtra("service");
-        setService(SERVICES.indexOf(initialService));
+        int initialTrackAdapterId = 0;
+        final String initialServiceName = getIntent().getStringExtra("service");
+        if (initialServiceName != null) {
+            OptionalInt initialTrackAdapterIdOption = IntStream.range(0, mTrackAdapters.size())
+                    .filter(i -> mTrackAdapters.get(i).getName().equals(initialServiceName)).findAny();
+            if (!initialTrackAdapterIdOption.isPresent()) {
+                throw new IllegalArgumentException();
+            }
+            initialTrackAdapterId = initialTrackAdapterIdOption.getAsInt();
+        }
+
+        setTrackAdapter(initialTrackAdapterId);
 
         search();
     }
 
     protected void onDestroy() {
         super.onDestroy();
-        mYoutubeAdapter.deinit();
+
+        for (TrackAdapter ta: mTrackAdapters) {
+            ta.deinit();
+        }
     }
 
     private void search() {
-        EditText editText = (EditText) findViewById(R.id.textViewQuery);
+        EditText editText = findViewById(R.id.textViewQuery);
         mCurrentAdapter.search(editText.getText().toString());
         findViewById(R.id.progressBar).setVisibility(View.VISIBLE);
+        findViewById(R.id.no_results_hint).setVisibility(View.INVISIBLE);
     }
 
-    private void setService(int service) {
-        Spinner serviceSpinner = (Spinner) findViewById(R.id.switchServiceSpinner);
-        ListView resultListView = (ListView) findViewById(R.id.listViewResults);
-        mCurrentService = service;
-        if (service == 0) {
-            mCurrentAdapter = mSpotifyAdapter;
-        } else {
-            mCurrentAdapter = mYoutubeAdapter;
-        }
-        serviceSpinner.setSelection(service);
+    /**
+     * activates the ith track adapter in mTrackAdapters
+     * @param i is an index in mTrackAdapters
+     */
+    private void setTrackAdapter(int i) {
+        Spinner serviceSpinner = findViewById(R.id.switchServiceSpinner);
+        ListView resultListView = findViewById(R.id.listViewResults);
+        mCurrentAdapter = mTrackAdapters.get(i);
+        serviceSpinner.setSelection(i);
         resultListView.setAdapter(mCurrentAdapter);
     }
 

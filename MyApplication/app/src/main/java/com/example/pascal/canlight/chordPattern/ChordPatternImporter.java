@@ -19,9 +19,9 @@ import java.util.List;
 
 public abstract class ChordPatternImporter {
 
-    abstract static class OnResult<T> {
-        abstract void onSuccess(T result);
-        void onFail(String error) {}
+    abstract static public class OnResult<T> {
+        public abstract void onSuccess(T result);
+        public void onFail(String error) {}
     }
 
     String userAgent() {
@@ -58,9 +58,9 @@ public abstract class ChordPatternImporter {
         }
     }
 
-    protected abstract void getSearchResults(final Context context, final String query, final int maxPages,
+    public abstract void getSearchResults(final Context context, final String query, final int maxPages,
                                    final OnResult<List<SearchResult>> callback);
-    protected abstract void getChordPattern(final Context context, final String link,
+    public abstract void getChordPattern(final Context context, final String link,
                                   final OnResult<String> callback);
 
     static public class SearchResult {

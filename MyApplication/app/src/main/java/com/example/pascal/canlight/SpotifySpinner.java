@@ -10,6 +10,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Filter;
 
 import com.example.pascal.canlight.audioPlayer.GetTrackActivity;
+import com.example.pascal.canlight.audioPlayer.SpotifyTrackAdapter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -103,7 +104,7 @@ public class SpotifySpinner extends android.support.v7.widget.AppCompatAutoCompl
             public void success(TracksPager tracksPager, Response response) {
                 if (!tracksPager.tracks.items.isEmpty()) {
                     final Track track = tracksPager.tracks.items.get(0);
-                    song.setTrack(GetTrackActivity.SERVICES.get(0), track.id, getTrackLabel(track));
+                    song.setTrack(SpotifyTrackAdapter.NAME, track.id, getTrackLabel(track));
                     if (l != null) {
                         l.onTrackFound(song.getTrackService(), song.getTrackId(), song.getTrackLabel());
                     }
@@ -143,36 +144,31 @@ public class SpotifySpinner extends android.support.v7.widget.AppCompatAutoCompl
             mHandler.removeCallbacksAndMessages(null);
         }
         mHandler = new Handler();
-        mHandler.postDelayed(new Runnable()
-        {
-            @Override
-            public void run()
-            {
+        mHandler.postDelayed(() -> {
 
-                requestId++;
-                final int currentRequestId = requestId;
-                MySpotify.searchTracks(getContext(), key, new Callback<TracksPager>() {
-                    @Override
-                    public void success(TracksPager tracksPager, Response response) {
-                        if (currentRequestId == requestId) {
-                            mIds.clear();
-                            mLabels.clear();
-                            for (Track t : tracksPager.tracks.items) {
-                                final String trackName = getTrackLabel(t);
-                                mLabels.add(trackName);
-                                mIds.add(t.id);
-                                mAdapter.add(trackName);
-                            }
-                            mAdapter.notifyDataSetChanged();
+            requestId++;
+            final int currentRequestId = requestId;
+            MySpotify.searchTracks(getContext(), key, new Callback<TracksPager>() {
+                @Override
+                public void success(TracksPager tracksPager, Response response) {
+                    if (currentRequestId == requestId) {
+                        mIds.clear();
+                        mLabels.clear();
+                        for (Track t : tracksPager.tracks.items) {
+                            final String trackName = getTrackLabel(t);
+                            mLabels.add(trackName);
+                            mIds.add(t.id);
+                            mAdapter.add(trackName);
                         }
+                        mAdapter.notifyDataSetChanged();
                     }
+                }
 
-                    @Override
-                    public void failure(RetrofitError error) {
+                @Override
+                public void failure(RetrofitError error) {
 
-                    }
-                });
-            }
+                }
+            });
         }, 300);
     }
 
@@ -185,6 +181,6 @@ public class SpotifySpinner extends android.support.v7.widget.AppCompatAutoCompl
     }
 
     public String getService() {
-        return GetTrackActivity.SERVICES.get(0);
+        return SpotifyTrackAdapter.NAME;
     }
 }

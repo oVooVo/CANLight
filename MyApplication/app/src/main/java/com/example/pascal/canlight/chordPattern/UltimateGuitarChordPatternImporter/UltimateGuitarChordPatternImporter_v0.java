@@ -1,10 +1,11 @@
-package com.example.pascal.canlight.chordPattern;
+package com.example.pascal.canlight.chordPattern.UltimateGuitarChordPatternImporter;
 
 import android.content.Context;
 import android.os.Build;
 import android.util.Log;
 
 import com.example.pascal.canlight.BuildConfig;
+import com.example.pascal.canlight.chordPattern.ChordPatternImporter;
 
 import junit.framework.AssertionFailedError;
 
@@ -22,7 +23,7 @@ import java.util.List;
  * Created by pascal on 28.04.17.
  */
 
-class UltimateGuitarChordPatternImporter extends ChordPatternImporter {
+public class UltimateGuitarChordPatternImporter_v0 extends UltimateGuitarChordPatternImporter {
 
     private static final String TAG = "UltimateGuitarCPI";
 
@@ -206,7 +207,7 @@ class UltimateGuitarChordPatternImporter extends ChordPatternImporter {
     }
 
     @Override
-    protected void getSearchResults(Context context, String query, int maxPages,
+    public void getSearchResults(Context context, String query, int maxPages,
                           final OnResult<List<SearchResult>> callback) {
         getAllSearchPages(context, query, maxPages, new OnResult<List<String>>() {
             @Override
@@ -231,8 +232,8 @@ class UltimateGuitarChordPatternImporter extends ChordPatternImporter {
     }
 
     @Override
-    protected void getChordPattern(final Context context, String url,
-                           final OnResult<String> callback) {
+    public void getChordPattern(final Context context, String url,
+                                final OnResult<String> callback) {
         download(context, url, new OnResult<String>() {
             @Override
             public void onSuccess(String result) {

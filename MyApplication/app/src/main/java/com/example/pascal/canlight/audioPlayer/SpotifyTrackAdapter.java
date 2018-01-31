@@ -8,11 +8,14 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.pascal.canlight.MySpotify;
+import com.example.pascal.canlight.R;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import kaaes.spotify.webapi.android.SpotifyApi;
+import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.ArtistSimple;
 import kaaes.spotify.webapi.android.models.Track;
 import kaaes.spotify.webapi.android.models.TracksPager;
@@ -25,17 +28,17 @@ import retrofit.client.Response;
  */
 public class SpotifyTrackAdapter extends TrackAdapter {
     private final static String TAG = "SpotifyTrackAdapter";
-    final List<String> mIds;
-    final List<String> mLabels;
-    final Context mContext;
+    private final List<String> mIds;
+    private final List<String> mLabels;
+    private final Context mContext;
 
-    public SpotifyTrackAdapter(Context context) {
+    SpotifyTrackAdapter(Context context) {
         mIds = new LinkedList<>();
         mLabels = new LinkedList<>();
         mContext = context;
     }
 
-    public static String getTrackLabel(Track track) {
+    private static String getTrackLabel(Track track) {
         if (track == null) {
             return "";
         } else {
@@ -45,6 +48,11 @@ public class SpotifyTrackAdapter extends TrackAdapter {
             }
             return track.name + " - " + TextUtils.join(", ", artists);
         }
+    }
+
+    @Override
+    public boolean readyToUse() {
+        return true;
     }
 
     @Override
@@ -66,8 +74,10 @@ public class SpotifyTrackAdapter extends TrackAdapter {
             public void failure(RetrofitError error) {
                 mLabels.clear();
                 mIds.clear();
+
                 Log.w(TAG, "search tracks: failure " + error.toString());
                 notifyDataSetChanged();
+                onResultsArrived(mIds);
             }
         });
     }
@@ -80,6 +90,17 @@ public class SpotifyTrackAdapter extends TrackAdapter {
     @Override
     String getLabel(int position) {
         return mLabels.get(position);
+    }
+
+    @Override
+    int getIcon() {
+        return R.drawable.ic_spotify;
+    }
+
+    public static final String NAME = "Spotify";
+    @Override
+    String getName() {
+        return NAME;
     }
 
     @Override

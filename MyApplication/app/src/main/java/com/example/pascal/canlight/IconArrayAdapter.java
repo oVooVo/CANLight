@@ -20,7 +20,7 @@ public abstract class IconArrayAdapter extends ArrayAdapter<String> {
     public View getView(int position, View convertView, ViewGroup parent) {
         View view = super.getView(position, convertView, parent);
 
-        ImageView imageView = (ImageView) view.findViewById(R.id.iconView);
+        ImageView imageView = view.findViewById(R.id.iconView);
         setIcon(imageView, position);
         return view;
     }

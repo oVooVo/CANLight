@@ -6,6 +6,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.example.pascal.canlight.MainActivity;
+import com.example.pascal.canlight.MySpotify;
 import com.example.pascal.canlight.R;
 import com.spotify.sdk.android.authentication.AuthenticationClient;
 import com.spotify.sdk.android.authentication.AuthenticationRequest;
@@ -24,16 +25,12 @@ public class SpotifyPlayer extends Player
     private Activity mActivity;
     private String mId;
     private int mLastSeekPosition = 0;
-    private final String CLIENT_ID;
     private static final String TAG = "SpotifyPlayer";
 
     private static com.spotify.sdk.android.player.Player mPlayer;
 
-    private static final String REDIRECT_URI = "canlight-spotify://callback";
-
     public SpotifyPlayer(Context context, Activity activity) {
         super(context);
-        CLIENT_ID = context.getString(R.string.spotify_client_id);
         mActivity = activity;
 
         if (mPlayer != null) {
@@ -107,21 +104,11 @@ public class SpotifyPlayer extends Player
                 }
             }, "spotify:track:" + mId, 0, 0);
         } else {
-            spotifyConnectRequest();
+            if (mPlayer == null) {
+                MySpotify.spotifyConnectRequest(mActivity);
+            }
         }
     }
-
-    private void spotifyConnectRequest() {
-        if (mPlayer == null) {
-            AuthenticationRequest.Builder builder = new AuthenticationRequest.Builder(CLIENT_ID,
-                    AuthenticationResponse.Type.TOKEN, REDIRECT_URI);
-            builder.setScopes(new String[]{"user-read-private", "streaming"});
-            AuthenticationRequest request = builder.build();
-
-            AuthenticationClient.openLoginActivity(mActivity, MainActivity.LOGIN_SPOTIFY_REQUEST, request);
-        }
-    }
-
     public void onInitialized(com.spotify.sdk.android.player.SpotifyPlayer player) {
         mPlayer = player;
         mPlayer.addConnectionStateCallback(this);

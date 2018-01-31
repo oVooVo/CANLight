@@ -1,5 +1,6 @@
 package com.example.pascal.canlight;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
@@ -12,29 +13,32 @@ import android.util.Log;
 import android.view.View;
 
 import com.example.pascal.canlight.chordPattern.ImportPatternCache;
+import com.spotify.sdk.android.authentication.AuthenticationClient;
+import com.spotify.sdk.android.authentication.AuthenticationRequest;
+import com.spotify.sdk.android.authentication.AuthenticationResponse;
+
+import kaaes.spotify.webapi.android.SpotifyApi;
 
 public class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
     //@see http://stackoverflow.com/a/18807490/4248972
 
-    private static Context mContext;
     private static final String TAG = "SettingsFragment";
-
-    static void setContext(Context context) {
-        mContext = context;
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences);
         getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
-        findPreference(getString(R.string.pref_clear_cache_key)).setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                ImportPatternCache.clear();
-                updatePreference(preference);
-                return true;
-            }
+        findPreference(getString(R.string.pref_clear_cache_key)).setOnPreferenceClickListener(preference -> {
+            ImportPatternCache.clear();
+            updatePreference(preference);
+            return true;
+        });
+
+
+        findPreference(getString(R.string.pref_spotify_login_key)).setOnPreferenceClickListener(preference -> {
+            MySpotify.spotifyConnectRequest(getActivity());
+            return true;
         });
     }
 
@@ -69,7 +73,7 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
 
     private void updatePreference(Preference preference) {
         if (preference != null) {
-            if (mContext.getString(R.string.pref_clear_cache_key).equals(preference.getKey())) {
+            if (getActivity().getString(R.string.pref_clear_cache_key).equals(preference.getKey())) {
                 final int size = ImportPatternCache.computeSizeInKB();
                 final int count = ImportPatternCache.numberOfItems();
                 String text = getResources().getQuantityString(R.plurals.importCacheCount, count, count);

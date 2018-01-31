@@ -29,7 +29,7 @@ public class YouTubePlayer extends Player implements
         mPlayerFragment = playerFragment;
         Log.i(TAG, "initialize player ...");
         mPlayerFragment.initialize(activity.getString(R.string.google_developer_key),
-        new com.google.android.youtube.player.YouTubePlayer.OnInitializedListener() {
+            new com.google.android.youtube.player.YouTubePlayer.OnInitializedListener() {
                     @Override
                     public void onInitializationSuccess(com.google.android.youtube.player.YouTubePlayer.Provider provider,
                                                         com.google.android.youtube.player.YouTubePlayer youTubePlayer,
@@ -41,16 +41,13 @@ public class YouTubePlayer extends Player implements
                         mPlayer.setPlaybackEventListener(YouTubePlayer.this);
                         mPlayer.loadVideo(mVideoId, 0);
                         mPlayer.setFullscreenControlFlags(0);
-                        mPlayer.setOnFullscreenListener(new com.google.android.youtube.player.YouTubePlayer.OnFullscreenListener() {
-                            @Override
-                            public void onFullscreen(boolean b) {
-                                if (b) {
-                                    mPlayer.setPlayerStyle(com.google.android.youtube.player.YouTubePlayer.PlayerStyle.DEFAULT);
-                                } else {
-                                    mPlayer.setPlayerStyle(com.google.android.youtube.player.YouTubePlayer.PlayerStyle.CHROMELESS);
-                                }
-                                mIsInFullscreenMode = b;
+                        mPlayer.setOnFullscreenListener(isInFullscreenMode -> {
+                            if (isInFullscreenMode) {
+                                mPlayer.setPlayerStyle(com.google.android.youtube.player.YouTubePlayer.PlayerStyle.DEFAULT);
+                            } else {
+                                mPlayer.setPlayerStyle(com.google.android.youtube.player.YouTubePlayer.PlayerStyle.CHROMELESS);
                             }
+                            mIsInFullscreenMode = isInFullscreenMode;
                         });
                     }
 
@@ -59,7 +56,7 @@ public class YouTubePlayer extends Player implements
                                                         YouTubeInitializationResult youTubeInitializationResult) {
                         Log.w(TAG, "youtube player initialization error.");
                     }
-                });
+            });
     }
 
     @Override

@@ -1,37 +1,29 @@
 package com.example.pascal.canlight;
 
+import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
-import android.nfc.Tag;
 import android.os.Environment;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.widget.Toast;
-
-import com.google.android.gms.drive.realtime.internal.event.ParcelableEventList;
-import com.google.api.client.util.DateTime;
 
 import junit.framework.AssertionFailedError;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.input.ReaderInputStream;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FilenameFilter;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Reader;
-import java.text.DateFormat;
-import java.text.FieldPosition;
-import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,33 +37,18 @@ import java.util.Set;
  */
 public class Project implements Parcelable {
     private static final String TAG = "Project";
-    private final List<Song> mSongs;
+    private static final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 43;
+    private final List<Song> mSongs = new ArrayList<>();
 
     public Project() {
-        mSongs = new ArrayList<>();
     }
 
     public Project(Parcel in) {
-        this();
         readFromParcel(in);
     }
 
     public List<Song> getSongs() {
         return mSongs;
-    }
-
-    public int findSong(String name) {
-        for (int i = 0; i < mSongs.size(); ++i) {
-            if (mSongs.get(i).getName().equals(name)) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    public void addSong(Song song) {
-        mSongs.add(song);
-        songListChanged();
     }
 
     public int addSong(String name) {
@@ -90,6 +67,7 @@ public class Project implements Parcelable {
     public Song getSong(int position) {
         return mSongs.get(position);
     }
+
     public int getIndexOf(Song song) {
         for (int i = 0; i < mSongs.size(); ++i) {
             if (mSongs.get(i) == song) {
@@ -230,13 +208,22 @@ public class Project implements Parcelable {
         songListChanged();
     }
 
-    private static final File createUniqueFile(Context context) {
+    private static final File createUniqueFile(Activity activity) {
         if (!Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
-            Toast.makeText(context, "Cannot write external storage.", Toast.LENGTH_LONG);
+            Toast.makeText(activity, "Cannot write external storage.", Toast.LENGTH_LONG);
             return null;
         } else {
+            ActivityCompat.requestPermissions(activity, new String[] {
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
             File directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS);
             final String nameTemplate = String.format("Collection_%s_%%04d.can", new SimpleDateFormat("yyyyMMdd_HHmm").format(new Date()));
+
+            if (directory.list() == null) {
+                Log.w(TAG, "Cannot read or write in " + directory + ". Maybe not sufficient permissions?");
+                return null;
+            }
             List<String> files = Arrays.asList(directory.list());
 
             int i = 0;
@@ -250,7 +237,7 @@ public class Project implements Parcelable {
             try {
                 if (!file.createNewFile()) {
                     Log.w(TAG, "Cannot access file");
-                    Toast.makeText(context, "Cannot access file " + file.getAbsolutePath(), Toast.LENGTH_LONG);
+                    Toast.makeText(activity, "Cannot access file " + file.getAbsolutePath(), Toast.LENGTH_LONG);
                     return null;
                 } else {
                     Log.w(TAG, "Created file");
@@ -263,9 +250,9 @@ public class Project implements Parcelable {
         }
     }
 
-    public void saveExtern(Context context) {
+    void exportProject(Activity activity) {
         Log.i(TAG, "Save file in external storage");
-        File file = createUniqueFile(context);
+        File file = createUniqueFile(activity);
 
         if (file != null) {
             Log.i(TAG, "file name: " + file.getAbsolutePath());
@@ -283,11 +270,11 @@ public class Project implements Parcelable {
                     throw new AssertionFailedError();
                 } catch (IOException e) {
                     Log.w(TAG, "Writing data failed.");
-                    Toast.makeText(context, "Cannot write file.", Toast.LENGTH_LONG).show();
+                    Toast.makeText(activity, "Cannot write file.", Toast.LENGTH_LONG).show();
                 } finally {
                     try {
                         fos.close();
-                        Toast.makeText(context, "Wrote file: " + file.getAbsolutePath(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(activity, "Wrote file: " + file.getAbsolutePath(), Toast.LENGTH_LONG).show();
                         Log.i(TAG, "Closed file output stream");
                     } catch (IOException e) {
                         Log.wtf(TAG, "Cannot close file output stream.");
@@ -298,10 +285,50 @@ public class Project implements Parcelable {
                 e.printStackTrace();
 
                 Log.w(TAG, "Cannot find file " + file.getAbsolutePath());
-                Toast.makeText(context, "Cannot find file " + file.getAbsolutePath(), Toast.LENGTH_LONG).show();
+                Toast.makeText(activity, "Cannot find file " + file.getAbsolutePath(), Toast.LENGTH_LONG).show();
             }
         } else {
             Log.w(TAG, "Could not get unique filename.");
         }
+    }
+
+    void importProject(Activity activity) {
+        Log.i(TAG, "Load file from external storage");
+        final String filename = "/storage/emulated/0/Documents/importme.can";
+        File file = new File(filename);
+
+        BufferedReader br;
+        try {
+            br = new BufferedReader(new FileReader(file));
+        } catch (FileNotFoundException e) {
+            Log.e(TAG, "Cannot find file: " + e.getMessage());
+            Toast.makeText(activity, "The file \"" + filename + "\" cannot be found.", Toast.LENGTH_LONG).show();
+            return;
+        }
+        String line;
+        StringBuilder sb = new StringBuilder();
+        try {
+            while ((line = br.readLine()) != null) {
+                sb.append(line);
+                sb.append("\n");
+            }
+        } catch (IOException e) {
+            Log.e(TAG, "Cannot read file: " + e.getMessage());
+            Toast.makeText(activity, "Cannot read file \"" + filename + "\".", Toast.LENGTH_LONG).show();
+        }
+
+        JSONObject json;
+        try {
+            json = new JSONObject(sb.toString());
+        } catch (JSONException e) {
+            e.printStackTrace();
+            Log.e(TAG, "Failed to load JSON");
+            Toast.makeText(activity, "The file \"" + filename + "\" is not valid.", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        Log.d(TAG, "Add songs from json");
+        Toast.makeText(activity, "Add songs from \"" + filename + "\" to this project.", Toast.LENGTH_LONG).show();
+        fromJson(json);
     }
 }

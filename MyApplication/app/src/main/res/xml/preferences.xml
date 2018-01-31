@@ -8,9 +8,14 @@
         android:summary="@string/pref_keep_screen_on_summary"
         android:defaultValue="true"
         android:key="@string/pref_keep_screen_on_key" />
+    <Preference
+        android:title="@string/pref_spotify_login_title"
+        android:icon="@drawable/ic_spotify"
+        android:key="@string/pref_spotify_login_key"/>
     <ListPreference
         android:key="@string/pref_spotifyMarket"
-        android:title="Spotify Market"
+        android:icon="@drawable/ic_spotify"
+        android:title="@string/pref_spotify_market_title"
         android:summary="%s"
         android:defaultValue="DE"
         android:entries="@array/SpotifyMarkets"

@@ -87,7 +87,7 @@
     <string name="created_drive_file_id">"Created an empty file: "</string>
     <string name="share_drive">Share CANLight collection</string>
     <string name="import_pattern_activity_title">Import Pattern</string>
-    <string name="confirm_deletition_string">Do you really want to delete \"%s\" from all groups?</string>
+    <string name="confirm_deletion_string">Do you really want to delete \"%s\" from all groups?</string>
     <string name="groups_containing">Groups containing\n\"%s\"</string>
     <string name="group_name_must_not_be_empty">Group name must not be empty</string>
     <string name="no_song_selected">No song selected</string>
@@ -98,12 +98,19 @@
     <string name="google_drive_cannot_get_drive_id">Cannot get drive id. Do you have access rights?</string>
     <string name="error_read_file">Error while reading from the file</string>
     <string name="cannot_authorize">Unable to authorize</string>
-    <string name="authorize_successfull">Authorized successfully</string>
-    <string name="projectfFile_mime">application/json</string>
+    <string name="authorize_successful">Authorized successfully</string>
+    <string name="projectFile_mime">application/json</string>
     <string name="pref_spotifyMarket">pref_spotifyMarket</string>
     <string name="pref_midi_channel_title">MIDI Channel</string>
     <string name="pref_midi_channel">pref_midi_channel</string>
     <string name="ChooseColorActivityTitle">Set Color</string>
     <string name="menu_save">Save</string>
     <string name="menu_load">Load</string>
+    <string name="menu_import_project">Import</string>
+    <string name="menu_export_project">Export</string>
+    <string name="player_noPlayerHint">Touch me!</string>
+    <string name="no_results_hint_text">No results.</string>
+    <string name="pref_spotify_login_title">Login</string>
+    <string name="pref_spotify_login_key">pref_spotify_login</string>
+    <string name="pref_spotify_market_title">Market</string>
 </resources>

@@ -1,23 +1,31 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion '25.0.0'
+    compileSdkVersion 27
+    buildToolsVersion '26.0.2'
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 
     defaultConfig {
         applicationId "com.example.pascal.canlight"
-        minSdkVersion 21
-        targetSdkVersion 24
+        minSdkVersion 24
+        targetSdkVersion 27
         versionCode 1
         versionName "1.0"
+        multiDexEnabled true
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+        debug {
+        }
     }
 }
+
 
 repositories {
     mavenCentral()
@@ -31,16 +39,16 @@ repositories {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:24.2.1'
+
+    compile 'com.android.support:appcompat-v7:27.0.2'
     compile 'org.jetbrains:annotations-java5:15.0'
     compile 'org.apache.directory.studio:org.apache.commons.io:2.4'
 
     //floating button
-    compile 'com.android.support:design:24.2.1'
+    compile 'com.android.support:design:27.0.2'
 
     // google drive, youtube
-    compile 'com.google.android.gms:play-services-drive:9.6.1'
+    compile 'com.google.android.gms:play-services-drive:11.8.0'
     compile 'com.google.apis:google-api-services-youtube:v3-rev178-1.22.0'
 
     // spotify
@@ -52,6 +60,17 @@ dependencies {
 
     // jsoup
     compile 'org.jsoup:jsoup:1.7.3'
+
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    compile 'jp.kshoji:midi-driver:0.1.4:@aar'
+
+    // Required -- JUnit 4 framework
+    testCompile 'junit:junit:4.12'
+    androidTestCompile 'junit:junit:4.12'
+    // Optional -- Mockito framework
+    testCompile 'org.mockito:mockito-core:1.10.19'
+    testCompile 'com.android.support.test:runner:1.0.1'
+    androidTestCompile 'com.android.support.test:runner:1.0.1'
 }
 
 repositories {
@@ -61,11 +80,9 @@ repositories {
     }
 }
 
-dependencies {
-    compile 'jp.kshoji:midi-driver:0.1.4:@aar'
+android {
+    packagingOptions {
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/DEPENDENCIES'
+    }
 }
-dependencies {
-    compile 'com.android.support.constraint:constraint-layout:+'
-}
-
-

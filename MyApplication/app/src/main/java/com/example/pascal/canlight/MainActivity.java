@@ -59,22 +59,17 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        SettingsFragment.setContext(getApplicationContext());
-
         mProject = new Project();
         mProject.load(getApplicationContext());
         ImportPatternCache.load(getApplicationContext());
-        final ExpandableListView listView = (ExpandableListView) findViewById(R.id.listView);
+        final ExpandableListView listView = findViewById(R.id.listView);
         listView.setClickable(true);
         registerForContextMenu(listView);
-        listView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
-            @Override
-            public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-                final Song song = getSong(groupPosition, childPosition);
-                final int projectIndex = song == null ? -1 : mProject.getIndexOf(song);
-                openEditMode(projectIndex);
-                return false;
-            }
+        listView.setOnChildClickListener((parent, v, groupPosition, childPosition, id) -> {
+            final Song song = getSong(groupPosition, childPosition);
+            final int projectIndex = song == null ? -1 : mProject.getIndexOf(song);
+            openEditMode(projectIndex);
+            return false;
         });
         setProject(mProject);
 
@@ -96,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void expandNonEmptyGroups() {
-        ExpandableListView songsView = (ExpandableListView) findViewById(R.id.listView);
+        ExpandableListView songsView = findViewById(R.id.listView);
         ExpandableListAdapter adapter = songsView.getExpandableListAdapter();
         for (int i = 0; i < adapter.getGroupCount(); ++i) {
             if (adapter.getChildrenCount(i) >= 0) {
@@ -132,82 +127,68 @@ public class MainActivity extends AppCompatActivity {
         final MenuItem removeGroupItem = menu.findItem(R.id.menu_remove_group);
 
         deleteSongItem.setVisible(!isGroupContextMenu);
-        deleteSongItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                new AlertDialog.Builder(MainActivity.this)
-                        .setMessage(String.format(getString(R.string.confirm_deletition_string),
-                                mProject.getSong(songIndex).getName()))
-                        .setIcon(android.R.drawable.ic_dialog_alert)
-                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton) {
-                                mProject.removeSong(songIndex);
-                            }
-                        })
-                        .setNegativeButton(android.R.string.no, null).show();
-                return true;
-            }
+        deleteSongItem.setOnMenuItemClickListener(item -> {
+            new AlertDialog.Builder(MainActivity.this)
+                    .setMessage(String.format(getString(R.string.confirm_deletion_string),
+                            mProject.getSong(songIndex).getName()))
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .setPositiveButton(android.R.string.yes, (dialog, whichButton) -> mProject.removeSong(songIndex))
+                    .setNegativeButton(android.R.string.no, null).show();
+            return true;
         });
         renameSongItem.setVisible(!isGroupContextMenu);
-        renameSongItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                editSongName(songIndex, false);
-                return true;
-            }
+        renameSongItem.setOnMenuItemClickListener(item -> {
+            editSongName(songIndex, false);
+            return true;
         });
         editGroupItem.setVisible(!isGroupContextMenu);
-        editGroupItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                editSongGroup(songIndex);
-                return true;
-            }
+        editGroupItem.setOnMenuItemClickListener(item -> {
+            editSongGroup(songIndex);
+            return true;
         });
 
         renameGroupItem.setVisible(isGroupContextMenu);
         if (isNoGroupItem) {
-            renameGroupItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-                @Override
-                public boolean onMenuItemClick(MenuItem item) {
-                    getString((String) mSongListAdapter.getGroup(gpos), new OnStringDialogOk() {
-                        @Override
-                        public void onStringDialogOk(String result) {
-                            Set<String> groups = new HashSet<>();
-                            groups.add(result);
-                            for (Song song : mProject.getSongs()) {
-                                song.setGroups(groups);
-                            }
-                            mSongListAdapter.notifyDataSetChanged();
-                            save();
+            renameGroupItem.setOnMenuItemClickListener(item -> {
+                getString((String) mSongListAdapter.getGroup(gpos), new OnStringDialogOk() {
+                    @Override
+                    public void onStringDialogOk(String result) {
+                        Set<String> groups = new HashSet<>();
+                        groups.add(result);
+                        for (Song song1 : mProject.getSongs()) {
+                            song1.setGroups(groups);
                         }
-                    });
-                    return true;
-                }
+                        mSongListAdapter.notifyDataSetChanged();
+                        save();
+                    }
+                });
+                return true;
             });
         } else {
-            renameGroupItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-                @Override
-                public boolean onMenuItemClick(MenuItem item) {
-                    editGroupName(gpos);
-                    return true;
-                }
+            renameGroupItem.setOnMenuItemClickListener(item -> {
+                editGroupName(gpos);
+                return true;
             });
         }
 
         removeGroupItem.setVisible(isGroupContextMenu && !isNoGroupItem);
-        removeGroupItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                removeGroup(gpos);
-                return true;
-            }
+        removeGroupItem.setOnMenuItemClickListener(item -> {
+            removeGroup(gpos);
+            return true;
         });
     }
 
     private void save() {
-        mProject.saveExtern(getApplicationContext());
-        ImportPatternCache.save(getApplicationContext());
+        mProject.save(this);
+        ImportPatternCache.save(this);
+    }
+
+    private void exportProject() {
+        mProject.exportProject(this);
+    }
+
+    private void importProject() {
+        mProject.importProject(this);
     }
 
     private interface OnStringDialogOk {
@@ -230,29 +211,19 @@ public class MainActivity extends AppCompatActivity {
 
                 getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN
                         | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-                setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.rename_dialog_ok), new OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        onOk.onStringDialogOk(editName.getText().toString());
-                    }
-                });
+                setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.rename_dialog_ok), (dialog, which) -> onOk.onStringDialogOk(editName.getText().toString()));
                 final AlertDialog d = this;
-                editName.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-                    @Override
-                    public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                        if (actionId == EditorInfo.IME_ACTION_DONE) {
-                            onOk.onStringDialogOk(editName.getText().toString());
-                            d.cancel();
-                            return true;
-                        } else {
-                            return false;
-                        }
+                editName.setOnEditorActionListener((v, actionId, event) -> {
+                    if (actionId == EditorInfo.IME_ACTION_DONE) {
+                        onOk.onStringDialogOk(editName.getText().toString());
+                        d.cancel();
+                        return true;
+                    } else {
+                        return false;
                     }
                 });
                 setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.rename_dialog_cancel),
-                        new OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton) {
-                            }
+                        (dialog, whichButton) -> {
                         });
             }
         }.show();
@@ -260,12 +231,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void editGroupName(final int position) {
         final String oldGroupName = (String) mSongListAdapter.getGroup(position);
-        getString(oldGroupName, new OnStringDialogOk() {
-            @Override
-            public void onStringDialogOk(String result) {
-                mProject.renameGroup(oldGroupName, result);
-            }
-        });
+        getString(oldGroupName, result -> mProject.renameGroup(oldGroupName, result));
     }
 
     private Song getSong(int groupPosition, int childPosition) {
@@ -317,7 +283,7 @@ public class MainActivity extends AppCompatActivity {
         d.show();
     }
 
-    private void editSongName(final int position, final boolean itemIsNew) {
+    private void  editSongName(final int position, final boolean itemIsNew) {
         final SpotifySpinner editName = new SpotifySpinner(this);
         editName.setMaxLines(1);
         editName.setText(mProject.getSong(position).getName());
@@ -325,12 +291,9 @@ public class MainActivity extends AppCompatActivity {
 
         // show keyboard
         editName.requestFocus();
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-                imm.showSoftInput(editName, InputMethodManager.SHOW_IMPLICIT);
-            }
+        new Handler().postDelayed(() -> {
+            InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+            imm.showSoftInput(editName, InputMethodManager.SHOW_IMPLICIT);
         }, 100);
 
         Dialog songNameDialog = new AlertDialog(this) {
@@ -359,6 +322,7 @@ public class MainActivity extends AppCompatActivity {
                 setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.rename_dialog_cancel),
                         new OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
+                                Log.d(TAG, "Item is new (cancel): " + itemIsNew);
                                 if (itemIsNew) {
                                     mProject.removeSong(position);
                                 }
@@ -411,22 +375,16 @@ public class MainActivity extends AppCompatActivity {
     void setProject(final Project project) {
         mProject = project;
         mSongListAdapter = new ExpandableSongListAdapter(this, project);
-        final ExpandableListView listView = (ExpandableListView) findViewById(R.id.listView);
+        final ExpandableListView listView = findViewById(R.id.listView);
         listView.setAdapter(mSongListAdapter);
-        project.setOnSongListChangedListener(new Project.OnSongListChangedListener() {
-            @Override
-            public void onSongListChanged() {
-                mSongListAdapter.notifyDataSetChanged();
-                save();
-            }
+        project.setOnSongListChangedListener(() -> {
+            mSongListAdapter.notifyDataSetChanged();
+            save();
         });
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                final int position = project.addSong(getString(R.string.default_song_name));
-                editSongName(position, true);
-            }
+        FloatingActionButton fab = findViewById(R.id.fab);
+        fab.setOnClickListener(view -> {
+            final int position = project.addSong(getString(R.string.default_song_name));
+            editSongName(position, true);
         });
     }
 
@@ -485,17 +443,17 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
-        menu.findItem(R.id.menu_save).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+        menu.findItem(R.id.menu_export_project).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                save();
+                exportProject();
                 return true;
             }
         });
-        menu.findItem(R.id.menu_load).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+        menu.findItem(R.id.menu_import_project).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                Toast.makeText(getApplicationContext(), "Loading is not yet implemented.", Toast.LENGTH_LONG).show();
+                importProject();
                 return true;
             }
         });

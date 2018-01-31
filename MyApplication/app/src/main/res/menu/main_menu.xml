@@ -2,13 +2,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:compat="http://schemas.android.com/apk/res-auto">
 
-    <item android:id="@+id/menu_save"
-        android:title="@string/menu_save"
+    <item android:id="@+id/menu_export_project"
+        android:title="@string/menu_export_project"
         compat:showAsAction="never"
         android:icon="@android:drawable/ic_menu_save"/>
 
-    <item android:id="@+id/menu_load"
-        android:title="@string/menu_load"
+    <item android:id="@+id/menu_import_project"
+        android:title="@string/menu_import_project"
         compat:showAsAction="never"/>
 
     <item android:id="@+id/menu_new_group"

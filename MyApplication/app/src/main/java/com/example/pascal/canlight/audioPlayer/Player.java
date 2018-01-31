@@ -3,6 +3,7 @@ package com.example.pascal.canlight.audioPlayer;
 import android.content.Context;
 import android.os.Handler;
 import android.support.annotation.CallSuper;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -75,7 +76,7 @@ public abstract class Player {
         return String.format(mContext.getString(R.string.player_time_format), min, sec, ms / 100);
     }
 
-    protected void updateSong(String label) {
+    protected void updateSong(@Nullable String label) {
         if (mOnSongChange != null) {
             if (label == null) {
                 mOnSongChange.onSongChange(mContext.getString(R.string.no_song), 0);

@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.UnderlineSpan;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,7 +14,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -23,6 +21,7 @@ import android.widget.Toast;
 
 import com.example.pascal.canlight.MainActivity;
 import com.example.pascal.canlight.R;
+import com.example.pascal.canlight.chordPattern.UltimateGuitarChordPatternImporter.UltimateGuitarChordPatternImporter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +31,7 @@ public class ImportPatternActivity extends AppCompatActivity {
     ArrayList<String> items;
     ArrayList<String> urls;
     ArrayAdapter<String> adapter;
-    private ChordPatternImporter m_chordPatternImporter = new UltimateGuitarChordPatternImporter();
+    private ChordPatternImporter m_chordPatternImporter = UltimateGuitarChordPatternImporter.getMostCurrentInstance();
 
     private void showProgressBar() {
         ProgressBar bar = (ProgressBar) findViewById(R.id.progressBarImportTOC);
@@ -119,7 +118,7 @@ public class ImportPatternActivity extends AppCompatActivity {
             }
 
             @Override
-            void onFail(String error) {
+            public void onFail(String error) {
                 Toast.makeText(ImportPatternActivity.this, "Failed to download pattern.", Toast.LENGTH_SHORT).show();
                 hideProgressBar();
             }
@@ -147,7 +146,7 @@ public class ImportPatternActivity extends AppCompatActivity {
         m_chordPatternImporter.getSearchResults(getApplicationContext(), key, 5,
                 new ChordPatternImporter.OnResult<List<ChordPatternImporter.SearchResult>>() {
                     @Override
-                    void onSuccess(List<ChordPatternImporter.SearchResult> results) {
+                    public void onSuccess(List<ChordPatternImporter.SearchResult> results) {
                         items.clear();
                         urls.clear();
                         for (ChordPatternImporter.SearchResult e : results) {
@@ -160,7 +159,7 @@ public class ImportPatternActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    void onFail(String error) {
+                    public void onFail(String error) {
                         items.clear();
                         urls.clear();
                         Toast.makeText(ImportPatternActivity.this, R.string.nothing_found_search_songs, Toast.LENGTH_SHORT).show();

@@ -9,6 +9,8 @@ import java.util.List;
  */
 public abstract class TrackAdapter extends BaseAdapter {
 
+    public abstract boolean readyToUse();
+
     interface OnResultsArrivedListener {
         void onResultsArrived(List<?> results);
     }
@@ -34,11 +36,15 @@ public abstract class TrackAdapter extends BaseAdapter {
         mOnResultsArrivedListener = c;
     }
 
-    protected void onResultsArrived(List<?> results) {
+    void onResultsArrived(List<?> results) {
         if (mOnResultsArrivedListener != null) {
             mOnResultsArrivedListener.onResultsArrived(results);
         }
     }
+
+    abstract int getIcon();
+    abstract String getName();
+    void deinit() {}
 
 
 }

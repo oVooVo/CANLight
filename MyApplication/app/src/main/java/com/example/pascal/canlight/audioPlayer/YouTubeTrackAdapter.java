@@ -12,8 +12,6 @@ import com.example.pascal.canlight.R;
 import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubeThumbnailLoader;
 import com.google.android.youtube.player.YouTubeThumbnailView;
-import com.google.api.client.http.HttpRequest;
-import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.youtube.YouTube;
@@ -35,17 +33,13 @@ public class YouTubeTrackAdapter extends TrackAdapter {
     private final YouTube mYouTube;
     private final Context mContext;
     private final List<SearchResult> mSearchResults;
-    final Map<View, YouTubeThumbnailLoader> mLoaders;
-    final Map<View, String> mCurrentIds;
+    private final Map<View, YouTubeThumbnailLoader> mLoaders;
+    private final Map<View, String> mCurrentIds;
 
     public YouTubeTrackAdapter(Context context) {
         mContext = context;
-        mYouTube = new YouTube.Builder(new NetHttpTransport(), new JacksonFactory(), new HttpRequestInitializer() {
-            @Override
-            public void initialize(HttpRequest request) throws IOException {
-
-            }
-        }).setApplicationName(context.getApplicationInfo().name).build();
+        mYouTube = new YouTube.Builder(new NetHttpTransport(), new JacksonFactory(), request -> {})
+                .setApplicationName(context.getApplicationInfo().name).build();
         mSearchResults = new ArrayList<>();
         mLoaders = new HashMap<>();
         mCurrentIds = new HashMap<>();
@@ -59,52 +53,63 @@ public class YouTubeTrackAdapter extends TrackAdapter {
     }
 
     @Override
+    public boolean readyToUse() {
+        // YouTube Adapter is always ready, one does not need a valid identity.
+        return true;
+    }
+
+    class GetSearchResultsAsync extends AsyncTask<String, Void, SearchListResponse>
+    {
+        @Override
+        protected void onPreExecute() {
+            mSearchResults.clear();
+            notifyDataSetChanged();
+        }
+
+        @Override
+        protected SearchListResponse doInBackground(String... params) {
+            final String query = params[0];
+            final String key = params[1];
+            SearchListResponse response = null;
+            try {
+                YouTube.Search.List search = mYouTube.search().list("id,snippet");
+                search.setKey(key);
+                search.setQ(query);
+                search.setType("video");
+                search.setFields("items(id/kind,id/videoId,snippet/title,snippet/thumbnails/default/url)");
+                search.setMaxResults((long) 25);
+                response = search.execute();
+                Log.d(TAG, "Success");
+            } catch (IOException e) {
+                Log.w(TAG, "IOException in search thread");
+                e.printStackTrace();
+            }
+            Log.d(TAG, "Response: " + response);
+            return response;
+        }
+
+        @Override
+        protected void onPostExecute(SearchListResponse result) {
+            if (result != null) {
+                Log.d(TAG, "#results: " + result.getItems().size());
+                for (SearchResult r : result.getItems()) {
+                    if ("youtube#video".equals(r.getId().getKind())) {
+                        mSearchResults.add(r);
+                    }
+                }
+            }
+            onResultsArrived(mSearchResults);
+            notifyDataSetChanged();
+        }
+    }
+
+    @Override
     void search(String key) {
         if (mYouTube == null) {
             Log.w(TAG, "YouTube not initialized");
             return;
         }
-        new AsyncTask<String, Void, SearchListResponse>() {
-
-            @Override
-            protected void onPreExecute() {
-                mSearchResults.clear();
-                notifyDataSetChanged();
-            }
-
-            @Override
-            protected SearchListResponse doInBackground(String... params) {
-                final String query = params[0];
-                final String key = params[1];
-                SearchListResponse response = null;
-                try {
-                    YouTube.Search.List search = mYouTube.search().list("id,snippet");
-                    search.setKey(key);
-                    search.setQ(query);
-                    search.setType("video");
-                    search.setFields("items(id/kind,id/videoId,snippet/title,snippet/thumbnails/default/url)");
-                    search.setMaxResults((long) 25);
-                    response = search.execute();
-                } catch (IOException e) {
-                    Log.w(TAG, "IOException in search thread");
-                    e.printStackTrace();
-                }
-                return response;
-            }
-
-            @Override
-            protected void onPostExecute(SearchListResponse result) {
-                if (result != null) {
-                    for (SearchResult r : result.getItems()) {
-                        if ("youtube#video".equals(r.getId().getKind())) {
-                            mSearchResults.add(r);
-                        }
-                    }
-                }
-                onResultsArrived(mSearchResults);
-                notifyDataSetChanged();
-            }
-        }.execute(key, mContext.getString(R.string.google_developer_key));
+        new GetSearchResultsAsync().execute(key, mContext.getString(R.string.google_developer_key));
     }
 
     @Override
@@ -115,6 +120,17 @@ public class YouTubeTrackAdapter extends TrackAdapter {
     @Override
     String getLabel(int position) {
         return mSearchResults.get(position).getSnippet().getTitle();
+    }
+
+    @Override
+    int getIcon() {
+        return R.drawable.ic_youtube;
+    }
+
+    public static final String NAME = "YouTube";
+    @Override
+    String getName() {
+        return NAME;
     }
 
     @Override
@@ -183,4 +199,5 @@ public class YouTubeTrackAdapter extends TrackAdapter {
             }
         }
     }
+
 }

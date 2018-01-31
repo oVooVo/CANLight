@@ -7,10 +7,7 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.spotify.sdk.android.authentication.AuthenticationClient;
-import com.spotify.sdk.android.authentication.AuthenticationRequest;
 import com.spotify.sdk.android.authentication.AuthenticationResponse;
-
-import java.util.Arrays;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -40,7 +37,7 @@ public class SettingsActivity extends AppCompatActivity {
                 if (AuthenticationResponse.Type.ERROR.equals(result)) {
                     Toast.makeText(this, R.string.cannot_authorize, Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(this, R.string.authorize_successfull, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, R.string.authorize_successful, Toast.LENGTH_SHORT).show();
                 }
                 break;
         }
