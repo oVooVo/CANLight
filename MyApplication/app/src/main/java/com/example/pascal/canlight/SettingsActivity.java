@@ -32,13 +32,8 @@ public class SettingsActivity extends AppCompatActivity {
         // Check if result comes from the correct activity
         switch (requestCode) {
             case MainActivity.LOGIN_SPOTIFY_REQUEST:
-                AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, intent);
-                AuthenticationResponse.Type result = MySpotify.onLoginResponse(response);
-                if (AuthenticationResponse.Type.ERROR.equals(result)) {
-                    Toast.makeText(this, R.string.cannot_authorize, Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(this, R.string.authorize_successful, Toast.LENGTH_SHORT).show();
-                }
+                MySpotify.onLoginResponse(this, resultCode, intent);
                 break;
         }
-    }}
+    }
+}

@@ -113,24 +113,15 @@ public class YouTubeTrackAdapter extends TrackAdapter {
     }
 
     @Override
-    String getId(int position) {
-        return mSearchResults.get(position).getId().getVideoId();
-    }
-
-    @Override
-    String getLabel(int position) {
-        return mSearchResults.get(position).getSnippet().getTitle();
-    }
-
-    @Override
     int getIcon() {
         return R.drawable.ic_youtube;
     }
 
-    public static final String NAME = "YouTube";
+    public static final String SERVICE_NAME = "YouTube";
+
     @Override
-    String getName() {
-        return NAME;
+    String getServiceName() {
+        return SERVICE_NAME;
     }
 
     @Override
@@ -138,9 +129,18 @@ public class YouTubeTrackAdapter extends TrackAdapter {
         return mSearchResults.size();
     }
 
+    @Override
+    public Object getItem(int i) {
+        return new Track(
+                mSearchResults.get(i).getSnippet().getTitle(),
+                getServiceName(),
+                mSearchResults.get(i).getId().getVideoId()
+        );
+    }
+
     private static class ViewHolder {
         YouTubeThumbnailView mThumbnailView;
-        TextView mtextView;
+        TextView mTextView;
     }
 
     @Override
@@ -152,10 +152,10 @@ public class YouTubeTrackAdapter extends TrackAdapter {
 
             viewHolder = new ViewHolder();
             viewHolder.mThumbnailView = new YouTubeThumbnailView(mContext);
-            viewHolder.mtextView = new TextView(mContext);
-            viewHolder.mtextView.setSingleLine(true);
+            viewHolder.mTextView = new TextView(mContext);
+            viewHolder.mTextView.setSingleLine(true);
 
-            ll.addView(viewHolder.mtextView);
+            ll.addView(viewHolder.mTextView);
             ll.addView(viewHolder.mThumbnailView);
             ll.setPadding(0, 0, 0, 10);
 
@@ -184,7 +184,7 @@ public class YouTubeTrackAdapter extends TrackAdapter {
             setVideo(viewHolder.mThumbnailView, mSearchResults.get(position).getId().getVideoId());
         }
 
-        viewHolder.mtextView.setText(mSearchResults.get(position).getSnippet().getTitle());
+        viewHolder.mTextView.setText(mSearchResults.get(position).getSnippet().getTitle());
 
         return convertView;
     }

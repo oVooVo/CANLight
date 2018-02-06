@@ -30,6 +30,7 @@ import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.pascal.canlight.audioPlayer.TrackAdapter;
 import com.example.pascal.canlight.chordPattern.EditActivity;
 import com.example.pascal.canlight.chordPattern.ImportPatternCache;
 import com.example.pascal.canlight.midi.Midi;
@@ -88,6 +89,8 @@ public class MainActivity extends AppCompatActivity {
         });
 
         Midi.init(this);
+
+        MySpotify.spotifyConnectRequest(this);
     }
 
     private void expandNonEmptyGroups() {
@@ -150,17 +153,14 @@ public class MainActivity extends AppCompatActivity {
         renameGroupItem.setVisible(isGroupContextMenu);
         if (isNoGroupItem) {
             renameGroupItem.setOnMenuItemClickListener(item -> {
-                getString((String) mSongListAdapter.getGroup(gpos), new OnStringDialogOk() {
-                    @Override
-                    public void onStringDialogOk(String result) {
-                        Set<String> groups = new HashSet<>();
-                        groups.add(result);
-                        for (Song song1 : mProject.getSongs()) {
-                            song1.setGroups(groups);
-                        }
-                        mSongListAdapter.notifyDataSetChanged();
-                        save();
+                getString((String) mSongListAdapter.getGroup(gpos), result -> {
+                    Set<String> groups = new HashSet<>();
+                    groups.add(result);
+                    for (Song song1 : mProject.getSongs()) {
+                        song1.setGroups(groups);
                     }
+                    mSongListAdapter.notifyDataSetChanged();
+                    save();
                 });
                 return true;
             });
@@ -273,9 +273,7 @@ public class MainActivity extends AppCompatActivity {
                             }
                         });
                 setButton(AlertDialog.BUTTON_NEGATIVE, getString(R.string.rename_dialog_cancel),
-                        new OnClickListener() {
-                            public void onClick(DialogInterface dialog, int whichButton) {
-                            }
+                        (dialog, whichButton) -> {
                         });
             }
         };
@@ -283,29 +281,29 @@ public class MainActivity extends AppCompatActivity {
         d.show();
     }
 
-    private void  editSongName(final int position, final boolean itemIsNew) {
-        final SpotifySpinner editName = new SpotifySpinner(this);
-        editName.setMaxLines(1);
-        editName.setText(mProject.getSong(position).getName());
-        editName.selectAll();
+    private void editSongName(final int position, final boolean itemIsNew) {
+        final SpotifySpinner nameEditor = new SpotifySpinner(this);
+        nameEditor.setMaxLines(1);
+        nameEditor.setText(mProject.getSong(position).getName());
+        nameEditor.selectAll();
 
         // show keyboard
-        editName.requestFocus();
+        nameEditor.requestFocus();
         new Handler().postDelayed(() -> {
             InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-            imm.showSoftInput(editName, InputMethodManager.SHOW_IMPLICIT);
+            imm.showSoftInput(nameEditor, InputMethodManager.SHOW_IMPLICIT);
         }, 100);
 
         Dialog songNameDialog = new AlertDialog(this) {
             {
-                editName.setDropDownVerticalOffset(120);
-                setView(editName);
+                nameEditor.setDropDownVerticalOffset(120);
+                setView(nameEditor);
                 getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN
                         | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
                 setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.rename_dialog_ok),
                         new OnClickListener() {
                             public void onClick(DialogInterface dialog, int whichButton) {
-                                final String newName = editName.getText().toString();
+                                final String newName = nameEditor.getText().toString();
                                 Log.i(TAG, "Create new song with name <" + newName + ">");
                                 if (newName.isEmpty() && itemIsNew) {
                                     Log.i(TAG, "Remove new song since name was empty");
@@ -329,12 +327,12 @@ public class MainActivity extends AppCompatActivity {
                             }
                         });
                 final AlertDialog d = this;
-                editName.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                nameEditor.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                     @Override
                     public void onItemClick(AdapterView<?> parent, View view, int itemPosition, long id) {
-                        final String label = editName.getLabel(itemPosition);
-                        mProject.renameSong(position, label);
-                        mProject.getSong(position).setTrack(editName.getService(), editName.getId(itemPosition), label);
+                        final TrackAdapter.Track track = nameEditor.getTrack(itemPosition);
+                        mProject.renameSong(position, track.label);
+                        mProject.getSong(position).setTrack(track);
                         expandNoGroup();
                         if (itemIsNew) {
                             openEditMode(position);
@@ -342,7 +340,7 @@ public class MainActivity extends AppCompatActivity {
                         d.cancel();
                     }
                 });
-                editName.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                nameEditor.setOnEditorActionListener(new TextView.OnEditorActionListener() {
                     @Override
                     public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                         if (actionId == EditorInfo.IME_ACTION_DONE) {
@@ -358,7 +356,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             void expandNoGroup() {
-                final ExpandableListView listView = (ExpandableListView) MainActivity.this.findViewById(R.id.listView);
+                final ExpandableListView listView = MainActivity.this.findViewById(R.id.listView);
                 final int lastGoup = listView.getExpandableListAdapter().getGroupCount() - 1;
                 listView.expandGroup(lastGoup);
             }
@@ -396,15 +394,15 @@ public class MainActivity extends AppCompatActivity {
         MainActivity.this.startActivityForResult(intent, PATTERN_REQUEST);
     }
 
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         switch (requestCode) {
             case PATTERN_REQUEST:
                 if (resultCode == RESULT_OK) {
                     if (currentEditPosition < 0) throw new AssertionFailedError();
 
-                    if (data.getExtras() != null && data.getExtras().containsKey("song")) {
+                    if (intent.getExtras() != null && intent.getExtras().containsKey("song")) {
                         // if EditActivity was not read-only.
-                        Song song = data.getExtras().getParcelable("song");
+                        Song song = intent.getExtras().getParcelable("song");
                         mProject.setSong(currentEditPosition, song);
                     }
                 }
@@ -412,14 +410,14 @@ public class MainActivity extends AppCompatActivity {
                 break;
             case RETURN_IMPORT_REQUEST:
                 if (resultCode == RESULT_OK) {
-                    Project project = data.getParcelableExtra("MergedProject");
+                    Project project = intent.getParcelableExtra("MergedProject");
                     setProject(project);
                 }
                 break;
             case NEW_GROUP_REQUEST:
                 if (resultCode == RESULT_OK) {
-                    final String groupName = data.getStringExtra("groupName");
-                    for (int p : data.getIntArrayExtra("songs")) {
+                    final String groupName = intent.getStringExtra("groupName");
+                    for (int p : intent.getIntArrayExtra("songs")) {
                         final Song s = mProject.getSong(p);
                         Set<String> groups = s.getGroups();
                         groups.add(groupName);
@@ -429,40 +427,31 @@ public class MainActivity extends AppCompatActivity {
                     save();
                 }
                 break;
+            case MainActivity.LOGIN_SPOTIFY_REQUEST:
+                MySpotify.onLoginResponse(this, resultCode, intent);
+                break;
         }
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_menu, menu);
-        menu.findItem(R.id.menu_settings).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
-                MainActivity.this.startActivityForResult(intent, PATTERN_REQUEST);
-                return true;
-            }
+        menu.findItem(R.id.menu_settings).setOnMenuItemClickListener(item -> {
+            Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+            MainActivity.this.startActivityForResult(intent, PATTERN_REQUEST);
+            return true;
         });
-        menu.findItem(R.id.menu_export_project).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                exportProject();
-                return true;
-            }
+        menu.findItem(R.id.menu_export_project).setOnMenuItemClickListener(item -> {
+            exportProject();
+            return true;
         });
-        menu.findItem(R.id.menu_import_project).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                importProject();
-                return true;
-            }
+        menu.findItem(R.id.menu_import_project).setOnMenuItemClickListener(item -> {
+            importProject();
+            return true;
         });
-        menu.findItem(R.id.menu_new_group).setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                newGroup();
-                return true;
-            }
+        menu.findItem(R.id.menu_new_group).setOnMenuItemClickListener(item -> {
+            newGroup();
+            return true;
         });
         return true;
     }
@@ -487,12 +476,12 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        SearchView sv = (SearchView) findViewById(R.id.searchView);
+        SearchView sv = findViewById(R.id.searchView);
         if (!sv.isIconified()) {
             sv.setQuery("", true);
             sv.setIconified(true);
         } else {
-            ExpandableListView songsView = (ExpandableListView) findViewById(R.id.listView);
+            ExpandableListView songsView = findViewById(R.id.listView);
             boolean allGroupsAreCollapsed = true;
             for (int i = 0; i < songsView.getExpandableListAdapter().getGroupCount(); ++i) {
                 if (songsView.isGroupExpanded(i)) {

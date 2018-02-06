@@ -5,6 +5,7 @@ import android.os.Parcelable;
 import android.os.SystemClock;
 import android.util.Log;
 
+import com.example.pascal.canlight.audioPlayer.TrackAdapter;
 import com.example.pascal.canlight.midi.MidiProgram;
 
 import junit.framework.AssertionFailedError;
@@ -22,19 +23,18 @@ import java.util.Set;
  * Created by pascal on 06.10.16.
  */
 public class Song implements Parcelable {
+
     private static final String TAG = "Song";
     private String mName;
     private String mPattern = "";
     private double mScrollRate = 2;
     private boolean mUninitalizedPattern;
     private Set<String> mGroups;
-    private String mTrackLabel;
-    private String mTrackId;
-    private String mTrackService;
     private MidiProgram mMidiProgram;
     private int mColor;
     public static final double DEFAULT_PATTERN_TEXT_SIZE = 18;
     private double patternTextSize = DEFAULT_PATTERN_TEXT_SIZE;
+    private TrackAdapter.Track mTrack;
 
     public Song(String name) {
         mName = name;
@@ -42,6 +42,7 @@ public class Song implements Parcelable {
         mGroups = new HashSet<>();
         mMidiProgram = new MidiProgram();
         mColor = 0;
+        mTrack = new TrackAdapter.Track();
     }
 
     public Song(Parcel in) {
@@ -53,9 +54,7 @@ public class Song implements Parcelable {
         List<String> groups = new ArrayList<>();
         in.readStringList(groups);
         mGroups = new HashSet<>(groups);
-        mTrackService = in.readString();
-        mTrackId = in.readString();
-        mTrackLabel = in.readString();
+        mTrack = in.readParcelable(TrackAdapter.Track.class.getClassLoader());
         mMidiProgram = in.readParcelable(MidiProgram.class.getClassLoader());
         mColor = in.readInt();
     }
@@ -108,9 +107,7 @@ public class Song implements Parcelable {
         double patternTextSize = song.getPatternTextSize();
         double scrollRate = song.getScrollRate();
         Set<String> groups = new HashSet<>();
-        String trackId = song.getTrackId();
-        String trackLabel = song.getTrackLabel();
-        String trackService = song.getTrackService();
+        TrackAdapter.Track track = song.getTrack();
         MidiProgram midiCommand = song.getMidiProgram();
         int color = song.getColor();
 
@@ -127,9 +124,7 @@ public class Song implements Parcelable {
             }
         } catch (JSONException e) {} // ignore. it's okay.
         try {
-            trackService = o.getString("TrackService");
-            trackId = o.getString("TrackId");
-            trackLabel = o.getString("TrackLabel");
+            track.fromJSON(o.getJSONObject("track"));
         } catch (JSONException e) {} // ignore. it's okay.
         try {
             midiCommand.fromJSON(o.getJSONObject("MidiProgram"));
@@ -144,7 +139,7 @@ public class Song implements Parcelable {
         song.setName(name);
         song.setPatternTextSize(patternTextSize);
         song.setGroups(groups);
-        song.setTrack(trackService, trackId, trackLabel);
+        song.setTrack(track);
         song.setMidiCommand(midiCommand);
         song.setColor(color);
         return song;
@@ -162,9 +157,7 @@ public class Song implements Parcelable {
                 groupArray.put(groupName);
             }
             o.put("groups", groupArray);
-            o.put("TrackService", getTrackService());
-            o.put("TrackId", getTrackId());
-            o.put("TrackLabel", getTrackLabel());
+            o.put("track", mTrack);
             o.put("MidiProgram", getMidiProgram().toJSON());
             o.put("color", getColor());
         } catch (JSONException e) {
@@ -190,9 +183,7 @@ public class Song implements Parcelable {
         dest.writeInt(mUninitalizedPattern ? 1 : 0);
         dest.writeDouble(patternTextSize);
         dest.writeStringList(new ArrayList<>(mGroups));
-        dest.writeString(mTrackService);
-        dest.writeString(mTrackId);
-        dest.writeString(mTrackLabel);
+        dest.writeParcelable(mTrack, 0);
         dest.writeParcelable(mMidiProgram, 0);
         dest.writeInt(mColor);
     }
@@ -215,22 +206,8 @@ public class Song implements Parcelable {
         return patternTextSize;
     }
 
-    public void setTrack(String service, String id, String label) {
-        mTrackId = id;
-        mTrackLabel = label;
-        mTrackService = service;
-    }
-
-    public String getTrackId() {
-        return mTrackId;
-    }
-
-    public String getTrackLabel() {
-        return mTrackLabel;
-    }
-
-    public String getTrackService() {
-        return mTrackService;
+    public void setTrack(TrackAdapter.Track track) {
+        mTrack = track;
     }
 
     public int getColor() {
@@ -239,5 +216,9 @@ public class Song implements Parcelable {
 
     public void setColor(int color) {
         mColor = color;
+    }
+
+    public TrackAdapter.Track getTrack() {
+        return mTrack;
     }
 }

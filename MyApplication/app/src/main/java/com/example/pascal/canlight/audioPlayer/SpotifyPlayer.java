@@ -2,6 +2,7 @@ package com.example.pascal.canlight.audioPlayer;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Parcel;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -32,44 +33,34 @@ public class SpotifyPlayer extends Player
     public SpotifyPlayer(Context context, Activity activity) {
         super(context);
         mActivity = activity;
-
-        if (mPlayer != null) {
-            mPlayer.addConnectionStateCallback(this);
-            mPlayer.addNotificationCallback(this);
-        }
+//        mPlayer.addConnectionStateCallback(this);
+//        mPlayer.addNotificationCallback(this);
     }
 
     public void deinit() {
-        if (mPlayer != null) {
-            mPlayer.removeConnectionStateCallback(this);
-            mPlayer.removeNotificationCallback(this);
-        }
+        mPlayer.removeConnectionStateCallback(this);
+        mPlayer.removeNotificationCallback(this);
         super.deinit();
     }
 
     public void togglePlayPause() {
-        if (mPlayer != null) {
-            if (mPlayer.getPlaybackState().isPlaying) {
-                mPlayer.pause(null);
-                Log.i(TAG, "toggle(pause)");
-            } else {
-                mPlayer.resume(null);
-                Log.i(TAG, "toggle(play)");
-            }
+        if (mPlayer.getPlaybackState().isPlaying) {
+            mPlayer.pause(null);
+            Log.i(TAG, "toggle(pause)");
+        } else {
+            mPlayer.resume(null);
+            Log.i(TAG, "toggle(play)");
         }
     }
     public void seekLastPosition() {
-        if (mPlayer != null) {
-            mPlayer.seekToPosition(null, mLastSeekPosition);
+        mPlayer.seekToPosition(null, mLastSeekPosition);
 
-            // in case player is paused.
-            updateCurrentPosition(mLastSeekPosition);
-        }
+        // in case player is paused.
+        updateCurrentPosition(mLastSeekPosition);
     }
 
     private void updateSong() {
-        if (mPlayer != null
-                && mPlayer.getMetadata() != null
+        if (mPlayer.getMetadata() != null
                 && mPlayer.getMetadata().currentTrack != null) {
             final Metadata.Track track = mPlayer.getMetadata().currentTrack;
             updateSong(track.name + " - " + track.artistName + " (" + track.albumName + ")");
@@ -79,35 +70,27 @@ public class SpotifyPlayer extends Player
     }
 
     public void seek(long pos) {
-        if (mPlayer != null) {
-            mLastSeekPosition = (int) pos;
-            mPlayer.seekToPosition(null, mLastSeekPosition);
-        }
+        mLastSeekPosition = (int) pos;
+        mPlayer.seekToPosition(null, mLastSeekPosition);
     }
 
     public void init(final String id, final long position) {
         super.init();
         mId = id;
-        if (mPlayer != null) {
-            mPlayer.playUri(new com.spotify.sdk.android.player.Player.OperationCallback() {
-                @Override
-                public void onSuccess() {
-                    mPlayer.pause(null);
-                    mPlayer.seekToPosition(null, (int) position); //todo apparently playUri has an argument for seek
-                    Log.i(TAG, "Play: " + id);
-                }
-
-                @Override
-                public void onError(com.spotify.sdk.android.player.Error error) {
-                    Log.w(TAG, "error: " + error.toString());
-                    updateSong(null);
-                }
-            }, "spotify:track:" + mId, 0, 0);
-        } else {
-            if (mPlayer == null) {
-                MySpotify.spotifyConnectRequest(mActivity);
+        mPlayer.playUri(new com.spotify.sdk.android.player.Player.OperationCallback() {
+            @Override
+            public void onSuccess() {
+                mPlayer.pause(null);
+                mPlayer.seekToPosition(null, (int) position); //todo apparently playUri has an argument for seek
+                Log.i(TAG, "Play: " + id);
             }
-        }
+
+            @Override
+            public void onError(com.spotify.sdk.android.player.Error error) {
+                Log.w(TAG, "error: " + error.toString());
+                updateSong(null);
+            }
+        }, "spotify:track:" + mId, 0, 0);
     }
     public void onInitialized(com.spotify.sdk.android.player.SpotifyPlayer player) {
         mPlayer = player;
@@ -123,7 +106,6 @@ public class SpotifyPlayer extends Player
 
     @Override
     public void onLoggedOut() {
-
         Toast.makeText(mActivity, R.string.spotify_logged_out, Toast.LENGTH_SHORT).show();
     }
 
@@ -149,8 +131,7 @@ public class SpotifyPlayer extends Player
         } else if (PlayerEvent.kSpPlaybackNotifyPlay.equals(playerEvent)) {
             updatePlayState(true);
         } else if (PlayerEvent.kSpPlaybackNotifyMetadataChanged.equals(playerEvent)){
-            if (mPlayer != null
-                    && mPlayer.getMetadata() != null
+            if ( mPlayer.getMetadata() != null
                     && mPlayer.getPlaybackState() != null
                     && mPlayer.getMetadata().currentTrack != null) {
                 updateCurrentPosition(mPlayer.getPlaybackState().positionMs);
@@ -173,13 +154,14 @@ public class SpotifyPlayer extends Player
     }
 
     public void pause() {
-        if (mPlayer != null) {
-            mPlayer.pause(null);
-        }
+        mPlayer.pause(null);
     }
 
     public int getCurrentPosition() {
-        if (mPlayer != null && mPlayer.getPlaybackState() != null) {
+        if (mPlayer == null) {
+            return -1;
+        }
+        if (mPlayer.getPlaybackState() != null) {
             // int is enough. 2147483647 milliseconds is about 24 days.
             if (mPlayer.getPlaybackState().isPlaying) {
                 return (int) mPlayer.getPlaybackState().positionMs;
@@ -189,8 +171,7 @@ public class SpotifyPlayer extends Player
     }
 
     public int getDuration() {
-        if (mPlayer != null
-                && mPlayer.getMetadata() != null
+        if (mPlayer.getMetadata() != null
                 && mPlayer.getMetadata().currentTrack != null) {
             return (int) mPlayer.getMetadata().currentTrack.durationMs;
         } else {

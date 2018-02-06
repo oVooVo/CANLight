@@ -2,8 +2,10 @@ package com.example.pascal.canlight;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.widget.Toast;
 
 import com.spotify.sdk.android.authentication.AuthenticationClient;
 import com.spotify.sdk.android.authentication.AuthenticationRequest;
@@ -24,7 +26,6 @@ public class MySpotify {
     private static SpotifyApi spotifyApi = null;
 
     private static final String REDIRECT_URI = "canlight-spotify://callback";
-    private static boolean mLoggedIn = false;
 
     public static SpotifyApi getSpotifyApi() {
         if (spotifyApi == null) {
@@ -48,23 +49,6 @@ public class MySpotify {
         AuthenticationClient.openLoginActivity(activity, MainActivity.LOGIN_SPOTIFY_REQUEST, request);
     }
 
-
-    static AuthenticationResponse.Type onLoginResponse(AuthenticationResponse r) {
-        switch (r.getType()) {
-            // Response was successful and contains auth token
-            case TOKEN:
-                // Handle successful response
-                getSpotifyApi().setAccessToken(r.getAccessToken());
-                mLoggedIn = true;
-                break;
-            default:
-                spotifyApi = null;
-                mLoggedIn = false;
-                break;
-        }
-        return r.getType();
-    }
-
     private static String getMarket(Context context) {
         final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         final String key = context.getString(R.string.pref_spotifyMarket);
@@ -78,4 +62,24 @@ public class MySpotify {
         getSpotifyService().searchTracks(query, searchParameters, callback);
     }
 
+    public static void onLoginResponse(Activity activity, int resultCode, Intent intent) {
+        AuthenticationResponse response = AuthenticationClient.getResponse(resultCode, intent);
+        switch (response.getType()) {
+            // Response was successful and contains auth token
+            case TOKEN:
+                // Handle successful response
+                getSpotifyApi().setAccessToken(response.getAccessToken());
+                break;
+            default:
+                spotifyApi = null;
+                break;
+        }
+
+        AuthenticationResponse.Type result = response.getType();
+        if (AuthenticationResponse.Type.ERROR.equals(result)) {
+            Toast.makeText(activity, R.string.cannot_authorize, Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(activity, R.string.authorize_successful, Toast.LENGTH_SHORT).show();
+        }
+    }
 }

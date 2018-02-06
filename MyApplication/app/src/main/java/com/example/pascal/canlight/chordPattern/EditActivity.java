@@ -31,6 +31,7 @@ import com.example.pascal.canlight.audioPlayer.GetTrackActivity;
 import com.example.pascal.canlight.audioPlayer.Player;
 import com.example.pascal.canlight.audioPlayer.PlayerFragment;
 import com.example.pascal.canlight.audioPlayer.SpotifyPlayer;
+import com.example.pascal.canlight.audioPlayer.TrackAdapter;
 import com.example.pascal.canlight.audioPlayer.YouTubePlayer;
 import com.example.pascal.canlight.midi.Midi;
 import com.example.pascal.canlight.midi.MidiProgram;
@@ -103,9 +104,7 @@ public class EditActivity extends AppCompatActivity {
 
         findViewById(R.id.songNameLabel).setOnClickListener(v -> {
             Intent intent = new Intent(EditActivity.this, GetTrackActivity.class);
-            intent.putExtra("label", mCurrentSong.getTrackLabel());
-            intent.putExtra("service", mCurrentSong.getTrackService());
-            intent.putExtra("songName", mCurrentSong.getName());
+            intent.putExtra("track", mCurrentSong.getTrack());
             EditActivity.this.startActivityForResult(intent, MainActivity.GET_TRACK_REQUEST);
         });
 
@@ -288,7 +287,7 @@ public class EditActivity extends AppCompatActivity {
                 YouTubePlayerSupportFragment ytsf = playerView.getYouTubePlayerSupportFragment();
                 mYouTubePlayer = new YouTubePlayer(this, ytsf);
             }
-            mYouTubePlayer.setLabel(mCurrentSong.getTrackLabel());
+            mYouTubePlayer.setLabel(mCurrentSong.getTrack().label);
             mActivePlayer = mYouTubePlayer;
             if (mSpotifyPlayer != null) {
                 mSpotifyPlayer.deinit();
@@ -312,8 +311,8 @@ public class EditActivity extends AppCompatActivity {
         View player = findViewById(R.id.player);
         if (isVisible) {
             mShowPlayer = true;
-            setTrack(mCurrentSong.getTrackService(),
-                    mCurrentSong.getTrackId(),
+            setTrack(mCurrentSong.getTrack().service,
+                    mCurrentSong.getTrack().id,
                     0);
             player.setVisibility(View.VISIBLE);
             ((Button) findViewById(R.id.togglePlayerVisibilityButton)).setCompoundDrawablesWithIntrinsicBounds(
@@ -413,10 +412,8 @@ public class EditActivity extends AppCompatActivity {
                 break;
             case MainActivity.GET_TRACK_REQUEST:
                 if (resultCode == RESULT_OK) {
-                    final String service = data.getStringExtra("service");
-                    final String id = data.getStringExtra("id");
-                    final String label = data.getStringExtra("label");
-                    mCurrentSong.setTrack(service, id, label);
+                    final TrackAdapter.Track track = data.getParcelableExtra("track");
+                    mCurrentSong.setTrack(track);
                     new Handler().postDelayed(() -> setPlayerVisibility(true), 50);
                 } else {
                     // ignore.
@@ -447,10 +444,10 @@ public class EditActivity extends AppCompatActivity {
     }
 
     private void initializeTrackId(Song song) {
-        if (mCurrentSong.getTrackId() == null || mCurrentSong.getTrackId().isEmpty()) {
-            SpotifySpinner.findTrack(this, song, (service, id, label) -> {
+        if (mCurrentSong.getTrack().id == null || mCurrentSong.getTrack().id.isEmpty()) {
+            SpotifySpinner.findTrack(this, song, track -> {
                 if (mShowPlayer) {
-                    mCurrentSong.setTrack(service, id, label);
+                    mCurrentSong.setTrack(track);
                     setPlayerVisibility(true);
                 }
             });

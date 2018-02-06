@@ -1,23 +1,12 @@
 package com.example.pascal.canlight;
 
-import android.app.Activity;
-import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
-import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceGroup;
-import android.util.Log;
-import android.view.View;
 
 import com.example.pascal.canlight.chordPattern.ImportPatternCache;
-import com.spotify.sdk.android.authentication.AuthenticationClient;
-import com.spotify.sdk.android.authentication.AuthenticationRequest;
-import com.spotify.sdk.android.authentication.AuthenticationResponse;
-
-import kaaes.spotify.webapi.android.SpotifyApi;
 
 public class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
     //@see http://stackoverflow.com/a/18807490/4248972

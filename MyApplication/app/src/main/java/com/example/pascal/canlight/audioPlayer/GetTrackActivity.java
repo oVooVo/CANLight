@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
@@ -14,15 +13,12 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Spinner;
-import android.widget.TextView;
 
 import com.example.pascal.canlight.IconArrayAdapter;
 import com.example.pascal.canlight.R;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -37,7 +33,7 @@ public class GetTrackActivity extends Activity {
 
     private void maybeAddTrackAdapter(TrackAdapter newTrackAdapter) {
         if (newTrackAdapter.readyToUse()) {
-            Log.i(TAG, "Init " + newTrackAdapter.getName() + " Track Adapter");
+            Log.i(TAG, "Init " + newTrackAdapter.getServiceName() + " Track Adapter");
             mTrackAdapters.add(newTrackAdapter);
         }
     }
@@ -55,7 +51,7 @@ public class GetTrackActivity extends Activity {
 
         // service spinner
         Spinner spinner = findViewById(R.id.switchServiceSpinner);
-        spinner.setAdapter(new IconArrayAdapter(this, mTrackAdapters.stream().map(TrackAdapter::getName).collect(Collectors.toList())) {
+        spinner.setAdapter(new IconArrayAdapter(this, mTrackAdapters.stream().map(TrackAdapter::getServiceName).collect(Collectors.toList())) {
             @Override
             protected void setIcon(ImageView view, int position) {
                 view.setImageResource(mTrackAdapters.get(position).getIcon());
@@ -69,15 +65,15 @@ public class GetTrackActivity extends Activity {
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-
+                // Do nothing
             }
         });
 
 
         ListView resultListView = findViewById(R.id.listViewResults);
-        resultListView.setOnItemClickListener((parent, view, position, id) -> finish( mCurrentAdapter.getName(),
-                mCurrentAdapter.getId(position),
-                mCurrentAdapter.getLabel(position) ));
+        resultListView.setOnItemClickListener(
+                (parent, view, position, id) -> finish((TrackAdapter.Track) mCurrentAdapter.getItem(position))
+        );
 
         Button searchButton = findViewById(R.id.buttonSearch);
         searchButton.setOnClickListener(v -> search());
@@ -126,7 +122,7 @@ public class GetTrackActivity extends Activity {
         final String initialServiceName = getIntent().getStringExtra("service");
         if (initialServiceName != null) {
             OptionalInt initialTrackAdapterIdOption = IntStream.range(0, mTrackAdapters.size())
-                    .filter(i -> mTrackAdapters.get(i).getName().equals(initialServiceName)).findAny();
+                    .filter(i -> mTrackAdapters.get(i).getServiceName().equals(initialServiceName)).findAny();
             if (!initialTrackAdapterIdOption.isPresent()) {
                 throw new IllegalArgumentException();
             }
@@ -163,13 +159,12 @@ public class GetTrackActivity extends Activity {
         mCurrentAdapter = mTrackAdapters.get(i);
         serviceSpinner.setSelection(i);
         resultListView.setAdapter(mCurrentAdapter);
+        search();
     }
 
-    private void finish(String service, String id, String label) {
+    private void finish(TrackAdapter.Track track) {
         Intent data = new Intent();
-        data.putExtra("service", service);
-        data.putExtra("id", id);
-        data.putExtra("label", label);
+        data.putExtra("track", track);
         setResult(RESULT_OK, data);
         finish();
     }

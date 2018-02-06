@@ -5,19 +5,16 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.pascal.canlight.MySpotify;
 import com.example.pascal.canlight.R;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import kaaes.spotify.webapi.android.SpotifyApi;
-import kaaes.spotify.webapi.android.SpotifyService;
-import kaaes.spotify.webapi.android.models.ArtistSimple;
-import kaaes.spotify.webapi.android.models.Track;
 import kaaes.spotify.webapi.android.models.TracksPager;
 import retrofit.Callback;
 import retrofit.RetrofitError;
@@ -28,26 +25,12 @@ import retrofit.client.Response;
  */
 public class SpotifyTrackAdapter extends TrackAdapter {
     private final static String TAG = "SpotifyTrackAdapter";
-    private final List<String> mIds;
-    private final List<String> mLabels;
+    private final List<kaaes.spotify.webapi.android.models.Track> mTracks;
     private final Context mContext;
 
     SpotifyTrackAdapter(Context context) {
-        mIds = new LinkedList<>();
-        mLabels = new LinkedList<>();
+        mTracks = new LinkedList<>();
         mContext = context;
-    }
-
-    private static String getTrackLabel(Track track) {
-        if (track == null) {
-            return "";
-        } else {
-            List<String> artists = new ArrayList<>(track.artists.size());
-            for (ArtistSimple a : track.artists) {
-                artists.add(a.name);
-            }
-            return track.name + " - " + TextUtils.join(", ", artists);
-        }
     }
 
     @Override
@@ -55,41 +38,33 @@ public class SpotifyTrackAdapter extends TrackAdapter {
         return true;
     }
 
+    private static String getLabel(kaaes.spotify.webapi.android.models.Track track) {
+        List<String> artists = track.artists.stream().map(artist -> artist.name).collect(Collectors.toList());
+        return track.name
+                + " • " + TextUtils.join(", ", artists);
+    }
+
     @Override
     void search(String key) {
         MySpotify.searchTracks(mContext, key, new Callback<TracksPager>() {
             @Override
             public void success(TracksPager tracksPager, Response response) {
-                mLabels.clear();
-                mIds.clear();
-                for (Track track : tracksPager.tracks.items) {
-                    mLabels.add(getTrackLabel(track));
-                    mIds.add(track.id);
-                }
-                onResultsArrived(mIds);
-                notifyDataSetChanged();
+                setTracks(tracksPager.tracks.items);
             }
 
             @Override
             public void failure(RetrofitError error) {
-                mLabels.clear();
-                mIds.clear();
-
                 Log.w(TAG, "search tracks: failure " + error.toString());
+                setTracks(new LinkedList<>());
+            }
+
+            private void setTracks(List<kaaes.spotify.webapi.android.models.Track> tracks) {
+                mTracks.clear();
+                mTracks.addAll(tracks);
+                onResultsArrived(mTracks);
                 notifyDataSetChanged();
-                onResultsArrived(mIds);
             }
         });
-    }
-
-    @Override
-    String getId(int position) {
-        return mIds.get(position);
-    }
-
-    @Override
-    String getLabel(int position) {
-        return mLabels.get(position);
     }
 
     @Override
@@ -97,25 +72,62 @@ public class SpotifyTrackAdapter extends TrackAdapter {
         return R.drawable.ic_spotify;
     }
 
-    public static final String NAME = "Spotify";
+    public static final String SERVICE_NAME = "Spotify";
+
     @Override
-    String getName() {
-        return NAME;
+    String getServiceName() {
+        return SERVICE_NAME;
     }
 
     @Override
     public int getCount() {
-        return mIds.size();
+        return mTracks.size();
+    }
+
+    @Override
+    public Track getItem(int i) {
+        final kaaes.spotify.webapi.android.models.Track track = mTracks.get(i);
+        return new Track(getLabel(track), getServiceName(), track.id);
     }
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        if (convertView == null) {
-            convertView = new TextView(mContext);
+
+        class SpotifyTrackResultView extends LinearLayout {
+            private TextView mTitleView;
+            private TextView mSubtitleView;
+
+            public SpotifyTrackResultView(Context context) {
+                super(context);
+                mTitleView = new TextView(context);
+                mSubtitleView = new TextView(context);
+                addView(mTitleView);
+                addView(mSubtitleView);
+            }
+
+            void setTrack(kaaes.spotify.webapi.android.models.Track track) {
+                final String title = track.name;
+                final List<String> artists = track.artists.stream().map(artist -> artist.name).collect(Collectors.toList());
+                final String subtitle =
+                        TextUtils.join(", ", artists)
+                        + " • " + track.album.name;
+                mTitleView.setText(title);
+                mTitleView.setTextSize(100);
+                mTitleView.setTextColor(mContext.getColor(R.color.colorTextPrimary));
+
+                mSubtitleView.setText(subtitle);
+                mSubtitleView.setTextColor(mContext.getColor(R.color.colorTextSecondary));
+            }
         }
 
-        TextView textView = (TextView) convertView;
-        textView.setText(mLabels.get(position));
-        return textView;
+        SpotifyTrackResultView srv = (SpotifyTrackResultView) convertView;
+        if (convertView == null) {
+            srv = new SpotifyTrackResultView(mContext);
+        }
+
+        srv.setTrack(mTracks.get(position));
+
+        return srv;
     }
+
 }

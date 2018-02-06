@@ -4,18 +4,14 @@ import android.content.Context;
 import android.os.Handler;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.Filter;
 
-import com.example.pascal.canlight.audioPlayer.GetTrackActivity;
 import com.example.pascal.canlight.audioPlayer.SpotifyTrackAdapter;
+import com.example.pascal.canlight.audioPlayer.TrackAdapter;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import kaaes.spotify.webapi.android.models.ArtistSimple;
 import kaaes.spotify.webapi.android.models.Track;
@@ -31,8 +27,8 @@ public class SpotifySpinner extends android.support.v7.widget.AppCompatAutoCompl
     private static final String TAG = "SpotifySpinner";
     private static int requestId = 0;
     private Handler mHandler;
-    private List<String> mIds;
-    private List<String> mLabels;
+    private List<TrackAdapter.Track> mTracks;
+    private Adapter mAdapter;
 
     private static class Adapter extends ArrayAdapter<String> {
         List<String> mItems;
@@ -71,7 +67,6 @@ public class SpotifySpinner extends android.support.v7.widget.AppCompatAutoCompl
             setNotifyOnChange(false);
         }
     }
-    private Adapter mAdapter;
 
     public SpotifySpinner(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -86,16 +81,15 @@ public class SpotifySpinner extends android.support.v7.widget.AppCompatAutoCompl
         // we need two dedicated lists for the displayNames
         // since onItemClick will trigger a new search which immediately clear the list
         // then we want to have the result of the (previous) search.
-        mLabels = new ArrayList<>();
-        mIds = new ArrayList<>();
-        mAdapter = new Adapter(getContext(), new ArrayList<String>());
+        mTracks = new ArrayList<>();
+        mAdapter = new Adapter(getContext(), new ArrayList<>());
         setAdapter(mAdapter);
         setMaxLines(1);
         setSingleLine(true);
     }
 
     public interface OnTrackFoundListener {
-        void onTrackFound(String service, String id, String label);
+        void onTrackFound(TrackAdapter.Track track);
     }
 
     public static void findTrack(Context context, final Song song, final OnTrackFoundListener l) {
@@ -104,12 +98,10 @@ public class SpotifySpinner extends android.support.v7.widget.AppCompatAutoCompl
             public void success(TracksPager tracksPager, Response response) {
                 if (!tracksPager.tracks.items.isEmpty()) {
                     final Track track = tracksPager.tracks.items.get(0);
-                    song.setTrack(SpotifyTrackAdapter.NAME, track.id, getTrackLabel(track));
+                    song.setTrack(new TrackAdapter.Track(getTrackLabel(track), SpotifyTrackAdapter.SERVICE_NAME, track.id));
                     if (l != null) {
-                        l.onTrackFound(song.getTrackService(), song.getTrackId(), song.getTrackLabel());
+                        l.onTrackFound(song.getTrack());
                     }
-                }
-                else {
                 }
             }
 
@@ -152,12 +144,10 @@ public class SpotifySpinner extends android.support.v7.widget.AppCompatAutoCompl
                 @Override
                 public void success(TracksPager tracksPager, Response response) {
                     if (currentRequestId == requestId) {
-                        mIds.clear();
-                        mLabels.clear();
+                        mTracks.clear();
                         for (Track t : tracksPager.tracks.items) {
                             final String trackName = getTrackLabel(t);
-                            mLabels.add(trackName);
-                            mIds.add(t.id);
+                            mTracks.add(new TrackAdapter.Track(getTrackLabel(t), SpotifyTrackAdapter.SERVICE_NAME, t.id));
                             mAdapter.add(trackName);
                         }
                         mAdapter.notifyDataSetChanged();
@@ -172,15 +162,7 @@ public class SpotifySpinner extends android.support.v7.widget.AppCompatAutoCompl
         }, 300);
     }
 
-    public String getId(int position) {
-        return mIds.get(position);
-    }
-
-    public String getLabel(int position) {
-        return mLabels.get(position);
-    }
-
-    public String getService() {
-        return SpotifyTrackAdapter.NAME;
+    public TrackAdapter.Track getTrack(int position) {
+        return mTracks.get(position);
     }
 }
