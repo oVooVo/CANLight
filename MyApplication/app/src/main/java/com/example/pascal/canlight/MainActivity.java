@@ -89,8 +89,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         Midi.init(this);
-
-        MySpotify.spotifyConnectRequest(this);
     }
 
     private void expandNonEmptyGroups() {

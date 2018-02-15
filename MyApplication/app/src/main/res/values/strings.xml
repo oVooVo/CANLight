@@ -97,8 +97,6 @@
     <string name="no_song">No Song</string>
     <string name="google_drive_cannot_get_drive_id">Cannot get drive id. Do you have access rights?</string>
     <string name="error_read_file">Error while reading from the file</string>
-    <string name="cannot_authorize">Unable to authorize</string>
-    <string name="authorize_successful">Authorized successfully</string>
     <string name="projectFile_mime">application/json</string>
     <string name="pref_spotifyMarket">pref_spotifyMarket</string>
     <string name="pref_midi_channel_title">MIDI Channel</string>
@@ -110,7 +108,13 @@
     <string name="menu_export_project">Export</string>
     <string name="player_noPlayerHint">Touch me!</string>
     <string name="no_results_hint_text">No results.</string>
-    <string name="pref_spotify_login_title">Login</string>
+    <string name="pref_spotify_login_title">Log in</string>
+    <string name="pref_spotify_logout_title">Log out</string>
     <string name="pref_spotify_login_key">pref_spotify_login</string>
     <string name="pref_spotify_market_title">Market</string>
+    <string name="authenticationSucceeded">Authorization succeeded</string>
+    <string name="authenticationFailed">Authorization failed</string>
+    <string name="authenticationCanceled">Authorization canceled</string>
+    <string name="spotifyNotLoggedIn">Not logged in</string>
+    <string name="retrievingUsername">Retrieving user name ...</string>
 </resources>

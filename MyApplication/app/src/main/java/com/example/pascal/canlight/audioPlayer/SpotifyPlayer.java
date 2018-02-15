@@ -30,11 +30,12 @@ public class SpotifyPlayer extends Player
 
     private static com.spotify.sdk.android.player.Player mPlayer;
 
-    public SpotifyPlayer(Context context, Activity activity) {
-        super(context);
+    public SpotifyPlayer(Activity activity, com.spotify.sdk.android.player.SpotifyPlayer player) {
+        super(activity);
+        mPlayer = player;
         mActivity = activity;
-//        mPlayer.addConnectionStateCallback(this);
-//        mPlayer.addNotificationCallback(this);
+        mPlayer.addConnectionStateCallback(this);
+        mPlayer.addNotificationCallback(this);
     }
 
     public void deinit() {
@@ -91,11 +92,6 @@ public class SpotifyPlayer extends Player
                 updateSong(null);
             }
         }, "spotify:track:" + mId, 0, 0);
-    }
-    public void onInitialized(com.spotify.sdk.android.player.SpotifyPlayer player) {
-        mPlayer = player;
-        mPlayer.addConnectionStateCallback(this);
-        mPlayer.addNotificationCallback(this);
     }
 
     @Override
